@@ -16,14 +16,25 @@ matching the spec's Project Structure (`src-tauri/`, `src/`). Install toolchain 
 and make the first commit. Get a blank overlay window opening in dev.
 
 **Acceptance criteria:**
-- [ ] `src-tauri/` (Rust) + `src/` (Svelte 5, runes) + `tests/` skeleton exist per spec structure.
-- [ ] `cargo tauri dev` opens a blank, undecorated window; `npm run build` succeeds.
-- [ ] `git init` done with a first commit; `node_modules/`, `target/` gitignored.
+- [x] `src-tauri/` (Rust) + `src/` (Svelte 5, runes) + `tests/` skeleton exist per spec structure.
+- [~] `cargo tauri dev` opens a blank, undecorated window; `npm run build` succeeds.
+      (`npm run build` PASS; the undecorated always-on-top window config is in `tauri.conf.json`. The
+       visual window-open and the X11 global-hotkey are not confirmable headless — see Result below.)
+- [x] `git init` done with a first commit; `node_modules/`/`target/`/`gen/` gitignored.
 
 **Verification:**
-- [ ] `npm run build` succeeds (Vite).
-- [ ] `cargo tauri dev` opens a window on the dev machine.
-- [ ] `git status` clean after first commit.
+- [x] `npm run build` succeeds (Vite → `dist/`, HTTP 200 on :1420 via `npm run dev`).
+- [ ] `cargo tauri dev` opens a window on the dev machine (needs a desktop session + `cargo install tauri-cli`;
+      verified via `npm run tauri dev`: full Rust build 434/434 crates + `target/debug/cheat-sheet-app` launches).
+- [x] `git status` clean after first commit (1 commit, 59 files, no `node_modules`/`target`/`gen`/`dist` leak).
+
+**Result (Task 1 — 2026-08-28):** Scaffold complete and committed (`a0d6767`). Green baseline:
+`npm run build` PASS · `npm test` PASS (1 smoke test) · `npm run lint` PASS · `cargo check` PASS ·
+`cargo clippy --all-targets -- -D warnings` PASS. `tauri init` generated `src-tauri/`; window config set to
+v1 spec (decorations=false, alwaysOnTop=true, center=true, 640x800, solid). Module stubs for
+`commands/`/`settings/`/`sheets/`/`shortcuts` wired into `lib.rs`. **Caveat:** the actual window appearing and
+the X11 `Ctrl-Shift-Q` binding are Task 2's manual gate — this session is non-interactive/Wayland, so they
+are flagged for human verification, not blocking here. The webkit system deps are installed on this box.
 
 **Dependencies:** None
 **Files likely touched:** `src-tauri/Cargo.toml`, `src-tauri/src/main.rs`, `src-tauri/tauri.conf.json`,
