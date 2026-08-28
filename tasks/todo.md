@@ -24,17 +24,17 @@ and make the first commit. Get a blank overlay window opening in dev.
 
 **Verification:**
 - [x] `npm run build` succeeds (Vite → `dist/`, HTTP 200 on :1420 via `npm run dev`).
-- [ ] `cargo tauri dev` opens a window on the dev machine (needs a desktop session + `cargo install tauri-cli`;
-      verified via `npm run tauri dev`: full Rust build 434/434 crates + `target/debug/cheat-sheet-app` launches).
-- [x] `git status` clean after first commit (1 commit, 59 files, no `node_modules`/`target`/`gen`/`dist` leak).
+- [~] `cargo tauri` builds + launches the app (visual render not confirmable headless): `cargo tauri build
+      --no-bundle` → `src-tauri/target/release/cheat-sheet-app` (EXIT 0); binary runs 12s, no crash/errors.
+- [x] `git status` clean after first commit (no `node_modules`/`target`/`gen`/`dist` leak).
 
-**Result (Task 1 — 2026-08-28):** Scaffold complete and committed (`a0d6767`). Green baseline:
-`npm run build` PASS · `npm test` PASS (1 smoke test) · `npm run lint` PASS · `cargo check` PASS ·
-`cargo clippy --all-targets -- -D warnings` PASS. `tauri init` generated `src-tauri/`; window config set to
-v1 spec (decorations=false, alwaysOnTop=true, center=true, 640x800, solid). Module stubs for
-`commands/`/`settings/`/`sheets/`/`shortcuts` wired into `lib.rs`. **Caveat:** the actual window appearing and
-the X11 `Ctrl-Shift-Q` binding are Task 2's manual gate — this session is non-interactive/Wayland, so they
-are flagged for human verification, not blocking here. The webkit system deps are installed on this box.
+**Result (Task 1 — 2026-08-28, updated after env unblock):** Scaffold complete and committed (`a0d6767` +
+`c132a12`). Green baseline: `npm run build` / `npm test` / `npm run lint` / `cargo check` /
+`cargo clippy --all-targets -- -D warnings` all PASS. Env now has `libwebkit2gtk-4.1-dev` +
+`cargo-tauri 2.11.4`: `cargo tauri build --no-bundle` succeeds (1m28s, 10.7MB release binary) and the binary
+launches + stays alive 12s with **no errors** — so the full Tauri pipeline works via the spec's exact command.
+Remaining human eyeball: confirm the undecorated/always-on-top window actually *renders*; the X11 `Ctrl-Shift-Q`
+bind is Task 2's gate and needs an X11 session (this box is Wayland) or acceptance of the `--toggle` path.
 
 **Dependencies:** None
 **Files likely touched:** `src-tauri/Cargo.toml`, `src-tauri/src/main.rs`, `src-tauri/tauri.conf.json`,

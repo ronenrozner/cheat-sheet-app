@@ -39,7 +39,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 ## Task List
 
 ### Phase 0 — Spike & Scaffold (high-risk, fail fast)
-- [ ] Task 1: Repo scaffold + Tauri v2 / Svelte 5 / Vite + git init
+- [x] Task 1: Repo scaffold + Tauri v2 / Svelte 5 / Vite + git init (done 2026-08-28, commit a0d6767)
 - [ ] Task 2: X11 global-hotkey + always-on-top overlay open/close spike (Session Type detect)  ← **risk gate**
 
 ### Checkpoint: Spike
