@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+coverage/
+public/
+src-tauri/target/
+src-tauri/gen/
+
+# Human-authored prose deliverables / specs are not auto-formatted.
+docs/
+tasks/

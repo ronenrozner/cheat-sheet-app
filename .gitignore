@@ -1,0 +1,24 @@
+# ---- Node / frontend ----
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+
+# ---- Tauri / Rust ----
+# generated icons + target are large; keep source icons in ./src-tauri/icons
+src-tauri/target/
+
+# ---- Logs / OS / editor ----
+*.log
+.DS_Store
+.vim/
+.idea/
+
+# ---- Secrets / env (never commit) ----
+.env
+.env.*
+*.local
+
+# ---- Keep empty structural dirs in git ----
+# (use .gitkeep inside the dir)

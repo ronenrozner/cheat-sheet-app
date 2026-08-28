@@ -1,0 +1,17 @@
+<!doctype html>
+   <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+       <!-- Tauri keeps a restrictive CSP; tighten further as the build grows. -->
+      <meta http-equiv="Content-Security-Policy"
+            content="default-src 'self';
+                     style-src 'self' 'unsafe-inline';
+                     img-src 'self' data:;" />
+      <title>Cheat-Sheet HUD</title>
+    </head>
+    <body>
+      <div id="app"></div>
+      <script type="module" src="./src/main.ts"></script>
+    </body>
+   </html>
