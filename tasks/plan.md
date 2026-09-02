@@ -14,8 +14,10 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 
 ## Architecture Decisions
 
-- **A1 — Spike the hotkey/overlay first.** Per spec §Hotkey strategy, the load-bearing risk is X11
-  `global-shortcut` + always-on-top overlay behavior under Tauri. Validate on a real X11 session in the very
+- **A1 — Spike the hotkey/overlay first, platform-aware.** Per spec §Hotkey strategy, the load-bearing
+  risk is `global-shortcut` + always-on-top overlay behavior under Tauri. The **must-path is
+  platform-dependent**: on the current Windows dev box it is `RegisterHotKey`; on Linux it is the X11
+  global grab (Wayland is best-effort + flagged). Validate the active-platform must-path in the very
   first checkpoint before building feature surface on top of it.
 - **A2 — Vertical slices, not horizontal layers.** Each task delivers a working, testable feature path
   (parse + render + a UI surface + a test), so the app is in a runnable state after each slice.
@@ -40,12 +42,13 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 
 ### Phase 0 — Spike & Scaffold (high-risk, fail fast)
 - [x] Task 1: Repo scaffold + Tauri v2 / Svelte 5 / Vite + git init (done 2026-08-28, commit a0d6767)
-- [ ] Task 2: X11 global-hotkey + always-on-top overlay open/close spike (Session Type detect)  ← **risk gate**
+- [ ] Task 2: global-hotkey + always-on-top overlay open/close spike (platform-aware; Linux session type detect)  ← **risk gate**
 
 ### Checkpoint: Spike
 - [ ] `cargo test` empty-but-clean; `npm run build` succeeds
-- [ ] **Manual: `Ctrl-Shift-Q` opens the overlay always-on-top centered; `Esc` closes it (X11 session)**
-- [ ] Human confirms the X11 hotkey path works before proceeding
+- [ ] **Manual: `Ctrl-Shift-Q` opens the overlay always-on-top centered; `Esc` closes it on the active
+     platform must-path (Windows on the dev box; X11 when on Linux).**
+- [ ] Human confirms the active-platform must-path works before proceeding
 
 ### Phase 1 — Content Pipeline (sheets flow end-to-end)
 - [ ] Task 3: Rust settings load/save (atomic JSON via `tauri-plugin-store`)
@@ -92,7 +95,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| X11 global hotkey fails/behaves oddly under Tauri | High (load-bearing) | Task 2 spikes it **first**; gate on manual X11 validation before building UI |
+| Global hotkey / overlay fails or behaves oddly under Tauri | High (load-bearing) | Task 2 spikes it **first** and is **platform-aware**; gate on manual validation of the active-platform must-path (Windows `RegisterHotKey` on the dev box; X11 on Linux) before building UI |
 | Wayland blocks global grab | Med | Best-effort + flagged; `--toggle` CLI + per-compositor snippets (Task 15); do not expand v1 scope |
 | XSS from untrusted Markdown into webview | High | Sanitize + CSP + isolated render surface (A3); golden + manual checks; "Never raw dangerouslySetInnerHTML" |
 | GPL upstream entanglement on first run | Med | App-authored CC0/MIT defaults (D1); GPL notice on upstream sheets (Task 16) |

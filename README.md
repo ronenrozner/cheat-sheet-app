@@ -16,6 +16,27 @@ Tauri's system webview needs the WebKit stack. Debian/Ubuntu:
 sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev
 ```
 
+## Prerequisites (Windows)
+
+Tauri's shell is already cross-platform (build config uses `targets: "all"`, `icon.ico` is
+shipped, and `main.rs` carries the `windows_subsystem` attribute). Windows needs no code changes
+at this stage — only these system bits:
+
+1. **WebView2 runtime** — the webview on Windows. It is bundled with Windows 11; on Windows 10 it
+   may need the standalone [Evergreen runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
+2. **Microsoft C++ build tools** — Tauri links C/C++ glue through MSVC. Install the **VS 2022
+   “Desktop development with C++”** workload, or the
+   [Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with “C++
+   build tools.” This provides the MSVC linker the `x86_64-pc-windows-msvc` Rust target requires.
+3. **Rust + Node** — as in this repo (Rust `>= 1.85`, active `msvc` target; Node for the build).
+
+> **Hotkey note (Windows):** Tauri's `global-shortcut` plugin maps to the Win32
+> `RegisterHotKey` API on Windows, so the default `Ctrl-Shift-Q` bind works **without** the
+> X11/Wayland special-casing that Linux needs. That Linux-only logic (session-type detection,
+> `--toggle` fallback, `xdg-open`) is built in later tasks and is **not** Windows-specific.
+
+> Build/run on Windows via the npm CLI: `npm run tauri dev` and `npm run tauri build`.
+
 ## Commands
 
 ```sh

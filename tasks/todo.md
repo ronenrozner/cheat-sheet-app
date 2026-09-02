@@ -41,29 +41,41 @@ bind is Task 2's gate and needs an X11 session (this box is Wayland) or acceptan
 `src-tauri/src/lib.rs`, `package.json`, `vite.config.ts`, `src/App.svelte`, `.gitignore`
 **Estimated scope:** M
 
-## Task 2: X11 global-hotkey + always-on-top overlay spike  ← RISK GATE
+## Task 2: Global-hotkey + always-on-top overlay spike (platform-aware)  ← RISK GATE
 **Description:** Wire `tauri-plugin-global-shortcut` to register the default `Ctrl-Shift-Q`, show a
-solid, undecorated, always-on-top, centered overlay on trigger, and close on `Esc`. Add runtime session-type
-detection (`$XDG_SESSION_TYPE`). **Validate on a real X11 session before building UI on top.**
+solid, undecorated, always-on-top, centered overlay on trigger, and close on `Esc`. The spike is
+**platform-aware**, with one must-path per platform:
+- **Windows (must on the current dev box):** the hotkey route is the Win32 `RegisterHotKey` API via
+   `global-shortcut`; the overlay is the supported must-path. No session-type detection, no CLI fallback.
+- **Linux X11 (must on X11 sessions):** a real global grab via `global-shortcut`.
+- **Linux Wayland (best-effort + flagged):** if the grab cannot bind, surface a UI flag and offer the
+   `--toggle` CLI route via `tauri-plugin-single-instance` (Task 15).
+Add runtime session-type detection (`$XDG_SESSION_TYPE`) for Linux runs only. **Validate the
+must-path on the active platform before building UI on top** (Windows on the dev box; X11 when on Linux).
 
 **Acceptance criteria:**
-- [ ] `Ctrl-Shift-Q` opens the overlay always-on-top, centered, on an **X11** session.
+- [ ] `Ctrl-Shift-Q` opens the overlay always-on-top, centered, on the active platform's must-path
+     (Windows `RegisterHotKey`, or a Linux X11 global grab).
 - [ ] `Esc` closes it (hides, does not quit).
-- [ ] Session type (`$XDG_SESSION_TYPE`) is read and exposed to the frontend; no panic on Wayland.
+- [ ] On Linux, the session type (`$XDG_SESSION_TYPE`) is read and exposed to the frontend; no panic
+     on Wayland; if the Wayland grab cannot bind, the UI flags it and offers `--toggle`.
+- [ ] A single build runs on Windows and Linux; no platform-specific panic.
 
 **Verification:**
-- [ ] Manual: hotkey opens / `Esc` closes on X11 (the must path).
-- [ ] `cargo test` passes a session-detect unit (mocked env) if extracted; otherwise manual X11 check only.
+- [ ] Manual: hotkey opens / `Esc` closes on the active platform must-path
+     (Windows on the dev box; X11 when on a Linux X11 session).
+- [ ] `cargo test` passes a session-detect unit (mocked env) if extracted; otherwise manual check only.
 - [ ] No silent failure: on a non-binding session the registration surfaces a detectable result.
 
 **Dependencies:** Task 1
 **Files likely touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/lib.rs`,
 `src-tauri/src/commands/overlay.rs`, `src/lib/overlay/*`
-**Estimated scope:** M
+**Estimated scope:** M (platform branches add a small amount over the original Linux-only spike)
 
 ### Checkpoint: Spike
 - [ ] `cargo test` clean; `npm run build` clean.
-- [ ] **Manual: X11 `Ctrl-Shift-Q` opens always-on-top overlay; `Esc` closes.** Human confirms before continuing.
+- [ ] **Manual: `Ctrl-Shift-Q` opens always-on-top overlay on the active platform must-path (Windows on
+   the dev box; X11 on Linux); `Esc` closes.** Human confirms before continuing.
 
 ---
 

@@ -34,7 +34,7 @@ implementation) consumes this.
     sheet; changeable later). *One pinned sheet at a time.*
   - No contribute-back / PR / git login — local editing stays private; upstream sync is a
     *future* consideration, not early-stage.
-  - No Windows / macOS builds in v1 (sequenced after Linux).
+  - No Windows / macOS builds in v1 is **OVERRIDDEN** (see the revision at the end of this file): Windows support was pulled forward by user request; **macOS** remains last.
   - No UI customization beyond: window size, theme (light / dark / follow-system), retrigger key.
 
 ## Decisions captured during the interview
@@ -75,3 +75,21 @@ implementation) consumes this.
   to be acceptance criteria).
 - Before coding, flag the **Wayland vs X11 global-hotkey/overlay** risk for early technical
   validation.
+
+## Revision — Windows support pulled forward (added by user request)
+
+- **Override:** the out-of-scope item "No Windows/macOS builds in v1" is overturned for **Windows
+   only**. Windows support is now in scope and active; **macOS** remains last.
+- **What changes:** Task 2 becomes a **platform-aware** spike. The hotkey must-path is
+   platform-dependent — **Windows** uses the Win32 `RegisterHotKey` API through `tauri-plugin-`
+   `global-shortcut` (supported, no CLI fallback); **Linux X11** keeps the global grab as the must-
+   path, and **Linux Wayland** stays best-effort + flagged with the `--toggle` CLI fallback (Task 15).
+- **What does NOT change:** the Linux-first **design baseline** (architecture, storage dirs, the
+   X11-must / Wayland-best-effort hotkey strategy, GPL/license handling) is retained. The Tauri shell
+   was already cross-platform (`targets: "all"`, `icon.ico`, `windows_subsystem`), so enabling Windows
+   needs no rewrite — only the cross-platform design of Task 2 and the docs.
+- **Dev environment (confirmed):** the active machine is Windows 11 with WebView2 present; Rust
+   `x86_64-pc-windows-msvc` and the MSVC build tools are installed, and a `cargo check` for that
+   target compiles clean.
+- **Unresolved (flagged to the user):** whether the platform-aware spike **code** is written now or
+   reserved for the Task 2 checkpoint itself.
