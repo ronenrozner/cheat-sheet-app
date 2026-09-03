@@ -5,10 +5,17 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
-  // $state/$effect etc. land with the real overlay (Task 10).
+  import { getCurrentWindow } from '@tauri-apps/api/window';
+  // / etc. land with the real overlay (Task 10).
 
   onMount(() => {
     console.log('[cheat-sheet] overlay shell mounted');
+    // ESC is handled by the OS-level global shortcut in Rust
+    // (src-tauri/src/shortcuts.rs) so it works without the undecorated overlay
+    // window holding keyboard focus. The frontend keydown path could not rely on
+    // this, which is why it was broken.
+    const win = getCurrentWindow();
+    // click-to-close (later tasks) will use `win.hide()` here.
   });
 </script>
 
