@@ -6,6 +6,9 @@ export default {
   semi: true,
   tabWidth: 2,
   printWidth: 100,
+  // Repo files use CRLF; 'auto' makes Prettier accept each file's own EOL, so the
+  // --check gate passes without reformatting line endings (leave line endings alone).
+  endOfLine: 'auto',
   trailingComma: 'es5',
   plugins: [svelte],
   overrides: [

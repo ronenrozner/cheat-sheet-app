@@ -13,6 +13,10 @@ pub fn run() {
             .handle()
             .plugin(tauri_plugin_log::Builder::default().level(log::LevelFilter::Info).build())?;
         }
+    #[cfg(desktop)]
+   app.handle().plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
+    #[cfg(desktop)]
+   shortcuts::register_overlay_hotkey(app.handle())?;
       Ok(())
     })
     .run(tauri::generate_context!())
