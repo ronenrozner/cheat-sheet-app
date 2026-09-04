@@ -1,53 +1,207 @@
-//! Global-hotkey registration + overlay show/hide, platform-aware (Tasks 2, 15).
+//! Global-hotkey registration + overlay show/hide, platform-aware (Task 2; `--toggle` lands in Task 15).
 //!
 //! - Windows: `tauri-plugin-global-shortcut` maps to the Win32 `RegisterHotKey` API. The default
 //!   `Ctrl-Shift-Q` bind works directly and the overlay is the must-path. No session-type detection.
 //! - Linux X11: a real global grab via `global-shortcut`. This is the must-path on X11 sessions.
-//! - Linux Wayland: best-effort only. If the grab cannot bind, surface a UI flag and offer the
-//!   `--toggle` CLI route via `tauri-plugin-single-instance` (Task 15).
+//! - Linux Wayland: best-effort only. If the grab cannot bind, we still launch and surface a UI
+//!   flag + the `--toggle` CLI route (Task 15) instead of aborting the app.
 //!
-//! Session-type detection (`$XDG_SESSION_TYPE`) applies to Linux runs only.
-//! Task 2 (minimal spike): register `Ctrl-Shift-Q` to toggle the overlay window
-//! (show on trigger, hide if already visible) and `Esc` to hide it. Platform branches
-//! land in Task 15.
-use tauri::{AppHandle, Manager};
+//! Session-type detection (`$XDG_SESSION_TYPE`) applies to Linux runs only and drives the
+//! Wayland "best-effort + flagged" behavior (spec §Hotkey strategy / D3).
+//!
+//! Task 2 (spike): register `Ctrl-Shift-Q` to toggle the overlay window (show on trigger, hide if
+//! already visible) and `Esc` to hide it. Registration never aborts `setup` — a failed grab
+//! (Wayland) is reported via [`HotkeyStatus`] so the UI can flag it.
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
-/// Register the overlay hotkeys: `Ctrl-Shift-Q` toggles the window, `Esc` hides it.
-/// Call once, after the global-shortcut plugin is installed.
+/// A Linux desktop session type, detected from `$XDG_SESSION_TYPE`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LinuxSession {
+    /// X11 — the must-path; `global-shortcut` does a real global grab here.
+    X11,
+    /// Wayland — global grabs are compositor-dependent; best-effort + flagged.
+    Wayland,
+    /// Any other value (e.g. `tty`, `wayland-xwayland`).
+    Other(String),
+}
+
+/// Detect the Linux session type from an env iterator.
 ///
-/// `Ctrl-Shift-Q` toggles the `main` window: if it is visible, hide it; otherwise
-/// show and focus it. `Esc` only hides the window (it never re-shows it). Both are
-/// OS-level global shortcuts so they work even when the undecorated overlay window
-/// lacks keyboard focus (the frontend `keydown` path could not rely on this).
+/// Pure and unit-testable: pass a mocked `Vec<(String, String)>`. Returns `None` when the
+/// variable is absent (non-Linux, or unset). Case-insensitive on the value.
+pub fn detect_session_type(
+    env: impl IntoIterator<Item = (String, String)>,
+) -> Option<LinuxSession> {
+    env.into_iter()
+        .find(|(k, _)| k == "XDG_SESSION_TYPE")
+        .map(|(_, v)| match v.to_ascii_lowercase().as_str() {
+            "x11" => LinuxSession::X11,
+            "wayland" => LinuxSession::Wayland,
+            other => LinuxSession::Other(other.to_string()),
+        })
+}
+
+/// Read the current process session type (wrapper around [`detect_session_type`]).
+pub fn current_session_type() -> Option<LinuxSession> {
+    detect_session_type(std::env::vars())
+}
+
+/// Human-readable label for a session, exposed to the frontend.
+fn session_label(session: LinuxSession) -> String {
+    match session {
+        LinuxSession::X11 => "x11".to_string(),
+        LinuxSession::Wayland => "wayland".to_string(),
+        LinuxSession::Other(o) => o,
+    }
+}
+
+/// OS label for the running platform.
+fn current_platform_label() -> String {
+    if cfg!(target_os = "windows") {
+        "windows".to_string()
+    } else if cfg!(target_os = "macos") {
+        "macos".to_string()
+    } else if cfg!(target_os = "linux") {
+        "linux".to_string()
+    } else {
+        "other".to_string()
+    }
+}
+
+/// Snapshot of the overlay hotkey state, exposed to the frontend via [`get_hotkey_status`].
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct HotkeyStatus {
+    /// `windows` / `macos` / `linux` / `other`.
+    pub platform: String,
+    /// Linux session label (`x11` / `wayland` / other) or `None` off Linux.
+    pub linux_session: Option<String>,
+    /// Whether the OS-level global hotkey actually registered.
+    pub hotkey_available: bool,
+    /// Human-readable status, surfaced by the UI (e.g. the Wayland fallback hint).
+    pub message: String,
+}
+
+/// Register the overlay hotkeys, returning a [`HotkeyStatus`] snapshot.
 ///
-/// Registration errors are propagated so a non-binding session surfaces loudly
-/// instead of failing silently.
-pub fn register_overlay_hotkey(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-  app
-    .global_shortcut()
-    .on_shortcut("ctrl+shift+q", |app, _shortcut, event| {
-      if event.state == ShortcutState::Pressed {
-        if let Some(window) = app.get_webview_window("main") {
-          if window.is_visible().unwrap_or(false) {
-            let _ = window.hide();
-          } else {
-            let _ = window.show();
-            let _ = window.set_focus();
-          }
+/// `Ctrl-Shift-Q` toggles the `main` window: if it is visible, hide it; otherwise show and focus
+/// it. `Esc` only hides the window (it never re-shows it). Both are OS-level global shortcuts so
+/// they work even when the undecorated overlay window lacks keyboard focus (the frontend
+/// `keydown` path could not rely on this).
+///
+/// Registration errors are **not** fatal: a non-binding session (Wayland) is reported via the
+/// returned status so the UI can flag it, instead of aborting `setup` and failing silently.
+pub fn register_overlay_hotkey(app: &AppHandle) -> HotkeyStatus {
+    let platform = current_platform_label();
+    // Session detection drives the Wayland best-effort + flagged behavior; Linux only.
+    let linux_session = if cfg!(target_os = "linux") {
+        current_session_type().map(session_label)
+    } else {
+        None
+    };
+
+    match try_register(app) {
+        Ok(()) => {
+            log::info!(
+                "overlay hotkey registered (platform={platform}, linux_session={:?})",
+                linux_session
+            );
+            HotkeyStatus {
+                platform,
+                linux_session,
+                hotkey_available: true,
+                message: "Global hotkey registered.".to_string(),
+            }
         }
-      }
-    })?;
-  // ESC hides the overlay. Kept as its own handler on the same reliable OS-level path
-  // as the toggle so it works without the WebView holding keyboard focus.
-  app
-    .global_shortcut()
-    .on_shortcut("esc", |app, _shortcut, event| {
-      if event.state == ShortcutState::Pressed {
-        if let Some(window) = app.get_webview_window("main") {
-          let _ = window.hide();
+        Err(e) => {
+            log::warn!(
+                "overlay hotkey registration failed (platform={platform}, linux_session={:?}): {e:#}",
+                linux_session
+            );
+            HotkeyStatus {
+                platform,
+                linux_session,
+                hotkey_available: false,
+                message: "Global hotkey could not be registered on this session. \
+                          Use `cheatsheet-app --toggle` as a fallback (see settings)."
+                    .to_string(),
+            }
         }
-      }
-    })?;
-  Ok(())
+    }
+}
+
+/// The actual `global-shortcut` wiring. Returns `Err` on a non-binding session.
+fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    app.global_shortcut()
+        .on_shortcut("ctrl+shift+q", |app, _shortcut, event| {
+            if event.state == ShortcutState::Pressed {
+                if let Some(window) = app.get_webview_window("main") {
+                    if window.is_visible().unwrap_or(false) {
+                        let _ = window.hide();
+                    } else {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+            }
+        })?;
+    // ESC hides the overlay. Kept as its own handler on the same reliable OS-level path
+    // as the toggle so it works without the WebView holding keyboard focus.
+    app.global_shortcut()
+        .on_shortcut("esc", |app, _shortcut, event| {
+            if event.state == ShortcutState::Pressed {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.hide();
+                }
+            }
+        })?;
+    Ok(())
+}
+
+/// IPC command: report the current overlay hotkey status to the frontend.
+#[tauri::command]
+pub fn get_hotkey_status(status: State<'_, HotkeyStatus>) -> HotkeyStatus {
+    status.inner().clone()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_x11() {
+        assert!(matches!(
+            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "x11".to_string())]),
+            Some(LinuxSession::X11)
+        ));
+    }
+
+    #[test]
+    fn detects_wayland() {
+        assert!(matches!(
+            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "wayland".to_string())]),
+            Some(LinuxSession::Wayland)
+        ));
+    }
+
+    #[test]
+    fn normalizes_case() {
+        assert!(matches!(
+            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "WAYLAND".to_string())]),
+            Some(LinuxSession::Wayland)
+        ));
+    }
+
+    #[test]
+    fn unknown_session_is_other() {
+        assert!(matches!(
+            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "tty".to_string())]),
+            Some(LinuxSession::Other(ref s)) if s == "tty"
+        ));
+    }
+
+    #[test]
+    fn missing_key_is_none() {
+        assert!(detect_session_type(vec![("HOME".to_string(), "/root".to_string())]).is_none());
+    }
 }

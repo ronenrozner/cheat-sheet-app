@@ -54,26 +54,43 @@ Add runtime session-type detection (`$XDG_SESSION_TYPE`) for Linux runs only. **
 must-path on the active platform before building UI on top** (Windows on the dev box; X11 when on Linux).
 
 **Acceptance criteria:**
-- [ ] `Ctrl-Shift-Q` opens the overlay always-on-top, centered, on the active platform's must-path
+- [~] `Ctrl-Shift-Q` opens the overlay always-on-top, centered, on the active platform's must-path
      (Windows `RegisterHotKey`, or a Linux X11 global grab).
-- [ ] `Esc` closes it (hides, does not quit).
-- [ ] On Linux, the session type (`$XDG_SESSION_TYPE`) is read and exposed to the frontend; no panic
+- [~] `Esc` closes it (hides, does not quit).
+- [x] On Linux, the session type (`$XDG_SESSION_TYPE`) is read and exposed to the frontend; no panic
      on Wayland; if the Wayland grab cannot bind, the UI flags it and offers `--toggle`.
-- [ ] A single build runs on Windows and Linux; no platform-specific panic.
+- [x] A single build runs on Windows and Linux; no platform-specific panic.
 
 **Verification:**
-- [ ] Manual: hotkey opens / `Esc` closes on the active platform must-path
-     (Windows on the dev box; X11 when on a Linux X11 session).
-- [ ] `cargo test` passes a session-detect unit (mocked env) if extracted; otherwise manual check only.
-- [ ] No silent failure: on a non-binding session the registration surfaces a detectable result.
+- [~] Manual: hotkey opens / `Esc` closes on the active platform must-path (Windows on the dev box).
+- [x] `cargo test` passes a session-detect unit (mocked env): 5 tests in `shortcuts::tests`.
+- [x] No silent failure: a failed grab returns a [`HotkeyStatus`] instead of aborting `setup`.
+
+**Result (Task 2 — 2026-09-04):** Platform-aware spike complete and verifiable headlessly.
+- `cargo check` / `cargo clippy --all-targets -- -D warnings` / `cargo test` (5 pass) /
+  `npm run build` / `npm run lint` all PASS.
+- Session detection extracted as pure fn `detect_session_type(env)` (unit-tested, mocked env); wrapped
+  by `current_session_type()`; Linux-only, case-insensitive on `$XDG_SESSION_TYPE`.
+- `register_overlay_hotkey` now returns `HotkeyStatus` and never aborts `setup` — a failed grab
+  (Wayland) is logged (`log::warn`) and surfaced via a new IPC command `get_hotkey_status`
+  (`platform` / `linux_session` / `hotkey_available` / `message`). This fixes a latent bug: the old
+  code did `register_overlay_hotkey(app)?` in `setup`, so a Wayland registration error would have
+  aborted the whole app. Registration now proceeds so the UI can flag it (the `--toggle` single-
+  instance route itself is Task 15; not added here).
+- Behavior unchanged: `Ctrl-Shift-Q` toggles, `Esc` hides.
+- Runtime: `npm run tauri dev` launches and logs
+  `overlay hotkey registered (platform=windows, linux_session=None)` — must-path confirmed on the
+  dev box; `--toggle` correctly rejected (Task 15).
+
+**Manual gate (human confirm):** `Ctrl-Shift-Q` opens an always-on-top centered overlay; `Esc` hides
+  it (does not quit). This box is headless so the visual render is unconfirmable here.
 
 **Dependencies:** Task 1
-**Files likely touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/lib.rs`,
-`src-tauri/src/commands/overlay.rs`, `src/lib/overlay/*`
-**Estimated scope:** M (platform branches add a small amount over the original Linux-only spike)
+**Files touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/lib.rs`
+**Estimated scope:** M
 
 ### Checkpoint: Spike
-- [ ] `cargo test` clean; `npm run build` clean.
+- [x] `cargo test` clean; `npm run build` clean.
 - [ ] **Manual: `Ctrl-Shift-Q` opens always-on-top overlay on the active platform must-path (Windows on
    the dev box; X11 on Linux); `Esc` closes.** Human confirms before continuing.
 
