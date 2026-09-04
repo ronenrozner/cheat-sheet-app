@@ -21,7 +21,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 2. **Pinned sheet on open.** The user's pinned sheet renders front-and-center by default; first run falls back to a bundled default.
 3. **Switch sheets.** A sidebar lists other sheets; clicking one switches the main pane.
 4. **Two-way search.** A single search box surfaces matches by *both* NL description and literal combo; typing either direction works. *(verified by golden tests on a fixtures set)*
-5. **Source toggle.** `online` / `local` / `both` switches which sheets are visible; **first run auto-downloads a local snapshot.**
+5. **Source toggle.** `online` / `local` / `both` switches which sheets are visible. Upstream `.md` files are downloaded **manually from Settings** (Task 6); **nothing downloads on startup or on overlay open** — startup loads only the local file list plus the pinned sheet.
 6. **Local authoring.** Create/edit a `.md` in the local folder via the user's own editor; it appears after **Rescan** (no in-app editor in v1).
 7. **Persistent settings.** Theme (light/dark/follow-system), window size, trigger key, source mode, language persist across restarts.
 8. **i18n.** UI strings flow through a locale layer; **`en-US` only** in v1; selecting another language is a graceful no-op.
@@ -75,7 +75,7 @@ cheat-sheet-app/
 │   ├─ src/{main.rs,lib.rs}    → entry, plugin wiring, command handlers, arg parsing (--toggle)
 │   ├─ src/commands/           → IPC commands (overlay, sheets, settings, download)
 │   ├─ src/settings/           → settings load/save (atomic JSON)
-│   ├─ src/sheets/             → dir scan, tarball download+extract, source-mode resolution
+│   ├─ src/sheets/             → dir scan, per-file raw .md download, source-mode resolution
 │   ├─ src/shortcuts.rs        → X11 registration + session detect + Wayland CLI toggle wiring
 │   ├─ Cargo.toml, tauri.conf.json, build.rs, permissions
 ├─ src/                        → Svelte 5 frontend (runes)
@@ -97,11 +97,11 @@ cheat-sheet-app/
 └─ tasks/                      → plan.md, todo.md
 ```
 
-**Storage (Tauri dirs):**
-- `app_data_dir/cheatsheets/upstream/` → local snapshot downloaded from the source repo.
-- `app_data_dir/cheatsheets/local/` → user-authored/edited sheets (re-scanned).
+**Storage:**
+- `<home>/cheatsheets/` → the user's sheets folder (default read + download location), where `<home>` is the user's home directory (`C:\Users\<user>` on Windows, `/home/<user>` on Linux). On Linux this folder is **not** hidden (no leading dot). The folder is **flat**: every sheet lives directly in it, with no `local/` / `upstream/` split — once a sheet is on disk it is local, and the app makes no distinction by origin.
 - `app_config_dir/settings.json` → user settings (atomic write).
 - `app_config_dir/index.cache` → built search index (optional, regenerated on Rescan).
+- The default location is `<home>/cheatsheets/` until a new location is selected in settings (a later task).
 
 ---
 
@@ -128,7 +128,7 @@ export function normalizeCombo(input: string): string[] {
 ## Testing Strategy
 
 - **Level-by-concern (Vitest):** combo normalizer & two-way search (golden fixture set, deterministic), front-matter parsing, source-mode filtering, settings round-trip.
-- **Backend (`cargo test`):** dir scan, tarball download+extract (mock), settings atomic persistence, arg parsing (`--toggle`).
+- **Backend (`cargo test`):** dir scan, per-file raw `.md` download+scan (mock), settings atomic persistence, arg parsing (`--toggle`).
 - **Integration:** two-way search golden set — fixtures of NL-only, combo-only, and mixed queries returning expected slugs.
 - **Manual/optional E2E (Playwright):** overlay open/close + pin-on-open on the dev machine (X11, the must path).
 - **Coverage:** kept **modest** for v1 (early stage); require >80% on `lib/search` and `lib/sheets`, lower elsewhere. No coverage gate on UI chrome.
@@ -155,8 +155,8 @@ export function normalizeCombo(input: string): string[] {
 
 - **Online read:** `GET https://raw.githubusercontent.com/Fechin/reference/main/source/_posts/<slug>.md` (confirmed `200`/`text/plain`).
 - **Online list:** GitHub contents API `GET /repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100` (paginated) — used for online *listing*; cached locally.
-- **Local snapshot (download):** `GET /repos/Fechin/reference/tarball/main` → extract `*/source/_posts/*.md` into `…/cheatsheets/upstream/`.
-- **Source mode:** `online` | `local` | `both` (settings); first run auto-triggers a snapshot download.
+- **Local snapshot (download):** list `source/_posts/` via the contents API and download each `.md` file individually via `raw.githubusercontent.com/Fechin/reference/main/source/_posts/<slug>.md` into `<home>/cheatsheets/` (D2). **Downloaded manually from Settings, never on startup or overlay open.** Only `.md` files are downloaded — no tarball, no other file types. Sheets land directly in the flat folder; no origin distinction is stored.
+- **Source mode:** `online` | `local` | `both` (settings); upstream `.md` files download **manually from Settings** (Task 6), never on startup or overlay open.
 
 **Sheet front-matter (read the upstream schema, don't invent one):**
 ```yaml
@@ -195,7 +195,7 @@ Neither path fails silently: if the active path is unavailable, the UI says so. 
 ## Decisions (recommended defaults — confirm or override)
 
 - **D1 — License / defaults.** Don't bundle GPL upstream sheets as first-party defaults. Ship a small **app-authored** default set (app license **Apache-2.0**; default sheets **CC0/MIT**) so first-run isn't empty without GPL entanglement. Upstream sheets stay fetched/downloaded and show a `GPL-v3` notice.
-- **D2 — Download mechanism.** Local snapshot = **tarball** extract (one call, no per-file rate-limit); online *listing* = contents API (cached) / on-demand per-file `raw` fetch.
+- **D2 — Download mechanism.** Local snapshot = download each `.md` file individually via `raw.githubusercontent.com` (driven by the contents-API listing), **triggered manually from Settings, never on startup or overlay open**; downloads land directly in the flat `<home>/cheatsheets/` folder; online *listing* = contents API (cached) / on-demand per-file `raw` fetch.
 - **D3 — Window.** v1 = **solid, undecorated, always-on-top**, small + centered. Transparency/blur **deferred** (reduces Wayland risk). Adds **runtime session-type detection** (`$XDG_SESSION_TYPE`) to drive the Wayland "best-effort + flagged" behavior.
 - **D4 — Render/libs.** `marked` + `highlight.js` (defer `shiki`).
 - **D5 — Search.** `minisearch` + normalized-combo index; **no** NLP/embeddings.

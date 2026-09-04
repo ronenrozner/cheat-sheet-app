@@ -27,8 +27,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - **A4 — License hygiene (D1).** Ship a small **app-authored** default set (app = **Apache-2.0**, default
   sheets **CC0/MIT**) so first-run is non-empty without GPL entanglement. Upstream GPL sheets are
   fetched/downloaded and always carry a `GPL-v3` notice. No upstream content is bundled under our name.
-- **A5 — Two-tier storage (D2).** Upstream snapshot = **tarball** extract (one call, no per-file
-  rate-limiting). Online *listing* = GitHub contents API (cached). Local authored sheets re-scanned on open +
+- **A5 — Flat local storage (D2).** All sheets live directly in `<home>/cheatsheets/` (user home folder; visible, not hidden on Linux) — a flat folder with no origin split: downloaded and user-authored sheets are indistinguishable on disk. Online *listing* = GitHub contents API (cached). Sheets re-scanned on open +
   on explicit **Rescan**.
 - **A6 — Open-question defaults assumed** (confirm or override): **O2** hand-rolled `$: t()` over
   `locales/en-US.json` (no `svelte-i18n` dep); **O3** trigger-key change edits config only + prints the
@@ -54,7 +53,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - [ ] Task 3: Rust settings load/save (atomic JSON via `tauri-plugin-store`)
 - [ ] Task 4: Sheet model + front-matter parse + dir scan (Rust) → list IPC
 - [ ] Task 5: Markdown render (marked + highlight.js + sanitize) in webview + SheetView
-- [ ] Task 6: Upstream tarball download + extract + contents-API listing/cache
+- [ ] Task 6: Upstream raw `.md` download + contents-API listing/cache
 
 ### Checkpoint: Content Pipeline
 - [ ] `cargo test` + `npm test` pass; local dir list + upstream snapshot render in a basic pane
@@ -71,7 +70,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 
 ### Phase 3 — Overlay UI + Sources
 - [ ] Task 10: App shell / overlay pane routing + Sidebar (list + switch)
-- [ ] Task 11: Source-mode toggle (online / local / both) + first-run auto-download
+- [ ] Task 11: Source-mode toggle (online / local / both)
 - [ ] Task 12: Pinned sheet on open (first-run falls back to bundled default)
 
 ### Checkpoint: Overlay UI
@@ -100,7 +99,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 | XSS from untrusted Markdown into webview | High | Sanitize + CSP + isolated render surface (A3); golden + manual checks; "Never raw dangerouslySetInnerHTML" |
 | GPL upstream entanglement on first run | Med | App-authored CC0/MIT defaults (D1); GPL notice on upstream sheets (Task 16) |
 | Two-way search misses a direction | Med | Golden fixture set (NL-only / combo-only / mixed); >80% coverage on `lib/search` |
-| Rate-limiting / flaky upstream download | Low | Tarball extract (one call) + cache; source-mode toggle falls back to local |
+| Rate-limiting / flaky upstream download | Low | Per-file raw `.md` download + contents-API cache; source-mode toggle falls back to local |
 | New dependency scope creep | Low | Stack table is the allow-list; adding a dep is "Ask first" |
 
 ## Open Questions (carried from spec — confirm or override; plan assumes the recommendations)

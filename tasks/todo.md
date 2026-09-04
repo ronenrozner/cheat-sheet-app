@@ -133,7 +133,7 @@ must-path on the active platform before building UI on top** (Windows on the dev
 
 ## Task 4: Sheet model + front-matter parse + dir scan (Rust) → list IPC
 **Description:** Define the sheet model; parse Hexo YAML front-matter (title/intro/tags/categories) and the
-body; scan `app_data_dir/cheatsheets/local/` (+ upstream later). Expose a `list_sheets(source_mode)` IPC that
+body; scan `<home>/cheatsheets/`. Expose a `list_sheets(source_mode)` IPC that
 returns slugs + front-matter metadata.
 
 **Acceptance criteria:**
@@ -198,18 +198,17 @@ headlessly.
 `eslint.config.js`, `package.json`, `package-lock.json`, `tests/markdown/render.test.ts`
 **Estimated scope:** M
 
-## Task 6: Upstream tarball download + extract + contents-API listing/cache
-**Description:** Download the upstream snapshot via `GET /repos/Fechin/reference/tarball/main`, extract
-`*/source/_posts/*.md` into `…/cheatsheets/upstream/` (D2). Cache the contents-API listing for online listing.
-Fetch individual sheets on demand via `raw.githubusercontent.com`.
+## Task 6: Upstream raw `.md` download + contents-API listing/cache
+**Description:** For each sheet listed by the GitHub contents API (`GET /repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100`), download the individual `.md` file via `raw.githubusercontent.com/Fechin/reference/main/source/_posts/<slug>.md` into `<home>/cheatsheets/` (D2). **Downloaded manually from Settings, never on startup or overlay open.** Only `.md` files are downloaded — no tarball, no other file types. These are upstream sheets only; Task 6 makes no user edits to existing files. Cache the contents-API listing for online listing. Fetch individual sheets on demand via the same `raw` endpoint.
 
 **Acceptance criteria:**
-- [ ] Tarball download + extract populates `upstream/`; idempotent (re-run safe).
+- [ ] Raw `.md` downloads populate `<home>/cheatsheets/`; idempotent (re-run safe, no duplicate downloads).
+- [ ] Upstream `.md` files download **manually from Settings only** — no startup, overlay-open, or source-toggle auto-download.
+- [ ] On a filename collision with an existing file, the user is prompted **overwrite** or **rename** (e.g. append a numeric suffix) before the download writes; neither option writes blindly.
 - [ ] Online listing returns cached entries offline; on-demand `raw` fetch returns sheet body.
 
 **Verification:**
-- [ ] `cargo test`: extract+scan over a mock tarball fixture into a temp dir.
-- [ ] Manual: first-run auto-download populates upstream sheets.
+- [ ] `cargo test`: download+scan over mock `.md` fixtures into a temp dir, including a collision case that expects an overwrite-or-rename prompt (no silent overwrite).
 
 **Dependencies:** Task 4
 **Files likely touched:** `src-tauri/src/sheets/download.rs`, `src-tauri/src/commands/download.rs`
@@ -298,18 +297,16 @@ into. Switching a sidebar entry updates `SheetView`.
 **Files likely touched:** `src/components/Sidebar.svelte`, `src/App.svelte`, `src/lib/overlay/*`
 **Estimated scope:** M
 
-## Task 11: Source-mode toggle + first-run auto-download
-**Description:** Add the `online / local / both` toggle driving which sheets are visible; on first run,
-auto-trigger the local snapshot download (Task 6) so first-run isn't empty.
+## Task 11: Source-mode toggle
+**Description:** Add the `online / local / both` toggle driving which sheets are visible.
 
 **Acceptance criteria:**
 - [ ] Toggling source mode filters the visible sheet list per the mode.
-- [ ] First run with no local snapshot auto-downloads; empty state handles a failed download gracefully.
+- [ ] Source mode does **not** trigger any download; it only filters the already-available sheets.
 
 **Verification:**
 - [ ] `npm test`: source-mode filter returns the right subset.
-- [ ] `cargo test`: first-run trigger invokes download once.
-- [ ] Manual: toggle filters sheets; first run populates locally.
+- [ ] Manual: toggle filters sheets; no download happens on toggle.
 
 **Dependencies:** Task 6, Task 10
 **Files likely touched:** `src/components/*`, `src-tauri/src/sheets/mod.rs`
