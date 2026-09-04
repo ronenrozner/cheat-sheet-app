@@ -1,7 +1,7 @@
 // Spec module structure (filled in by later tasks): commands, settings, sheets, shortcuts.
 mod commands;
 pub mod settings;
-mod sheets;
+pub mod sheets;
 mod shortcuts;
 
 use tauri::Manager;
@@ -29,7 +29,8 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       shortcuts::get_hotkey_status,
       crate::commands::settings::get_settings,
-      crate::commands::settings::set_settings
+      crate::commands::settings::set_settings,
+      crate::commands::sheets::list_sheets
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

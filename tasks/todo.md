@@ -137,16 +137,31 @@ body; scan `app_data_dir/cheatsheets/local/` (+ upstream later). Expose a `list_
 returns slugs + front-matter metadata.
 
 **Acceptance criteria:**
-- [ ] Scanning both source dirs returns slug + parsed front-matter, honoring `source_mode` (local/both).
-- [ ] Missing/malformed front-matter degrades gracefully (sheet still listed with title fallback).
+- [x] Scanning both source dirs returns slug + parsed front-matter, honoring `source_mode` (local/both).
+- [x] Missing/malformed front-matter degrades gracefully (sheet still listed with title fallback).
 
 **Verification:**
-- [ ] `cargo test`: dir scan over a temp fixture dir returns expected slugs/metadata.
-- [ ] Source-mode filter returns the right subset for `local` vs `both`.
+- [x] `cargo test`: 17 tests (7 new sheets — scan over temp fixtures returns expected slugs/metadata,
+  source-mode filter, malformed/missing front-matter fallback, front-matter split).
+- [x] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
+- [x] `npm run build` + `npm run lint` clean.
+- [x] Runtime: `npm run tauri dev` launches cleanly — `list_sheets` registered, no panic.
+
+**Result (Task 4 — 2026-09-04):** Sheet model + front-matter parse + dir scan complete and verifiable
+headlessly.
+- `Sheet` struct (slug/title/intro/tags/categories/source) — metadata only, no body (body is on-demand
+  in Task 6).
+- `split_front_matter` + `parse_sheet` parse Hexo YAML front-matter (title/intro/tags/categories);
+  missing/malformed front-matter falls back to the slug as the title. No schema invented (spec schema used).
+- `scan_dir` scans local + upstream dirs; missing dir yields empty (no panic). `list_sheets(mode)`
+  returns `local` or `local`+`upstream`; `online` lists nothing (separate concern, Task 6).
+- `list_sheets` IPC command registered.
+- **Dependency flag:** added `serde_yaml` (not in the spec's stack table — spec says "ask first" for new
+  deps). Needed to parse Hexo YAML; user can veto.
 
 **Dependencies:** Task 3
-**Files likely touched:** `src-tauri/src/sheets/mod.rs`, `src-tauri/src/commands/sheets.rs`,
-`src/lib/sheets/*`
+**Files touched:** `src-tauri/Cargo.toml`, `src-tauri/src/sheets/mod.rs`,
+`src-tauri/src/commands/sheets.rs`, `src-tauri/src/commands/mod.rs`, `src-tauri/src/lib.rs`
 **Estimated scope:** M
 
 ## Task 5: Markdown render (marked + highlight.js + sanitize) + SheetView
