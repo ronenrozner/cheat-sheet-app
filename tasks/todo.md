@@ -104,15 +104,31 @@ must-path on the active platform before building UI on top** (Windows on the dev
 (theme / winSize / trigger / source mode / language / pinned slug).
 
 **Acceptance criteria:**
-- [ ] `set`/`get` commands round-trip all settings fields; load is safe on first run (defaults).
-- [ ] Writes are atomic (no partial file on crash); malformed JSON recovers to defaults.
+- [x] `set`/`get` commands round-trip all settings fields; load is safe on first run (defaults).
+- [x] Writes are atomic (no partial file on crash); malformed JSON recovers to defaults.
 
 **Verification:**
-- [ ] `cargo test`: round-trip + malformed-on-disk recovery.
-- [ ] Restart the app; settings persist.
+- [x] `cargo test`: 5 settings tests pass — round-trip JSON, malformed/empty bytes recover to
+  defaults, atomic write leaves no temp file. 10 backend tests total (5 settings + 5 shortcuts).
+- [x] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
+- [x] `npm run build` + `npm run lint` clean.
+- [~] Restart the app; settings persist. (Verified via unit round-trip; on-disk file appears only on
+  first `set_settings` — first run loads defaults lazily.)
+
+**Result (Task 3 — 2026-09-04):** Settings persistence complete and verifiable headlessly.
+- `Settings` struct with `theme` / `win_size` / `trigger` / `source_mode` / `language` /
+  `pinned_slug`; typed enums with sensible v1 defaults (theme=Follow, source=Both, lang=en-US).
+- `tauri-plugin-store` registered in `lib.rs`; `get_settings` / `set_settings` IPC commands added
+  (registered in `invoke_handler`).
+- Atomic write implemented in `settings/mod.rs` (temp file in the same dir + rename); the store
+  plugin's own `save` is a plain `fs::write`, so this wraps it. Malformed on-disk JSON recovers to
+  defaults; first run loads defaults (no crash).
+- `set_settings` returns `Result<(), String>` (Tauri commands must return an `IpcResponse`-able
+  error type — `std::io::Error` is not).
 
 **Dependencies:** Task 1
-**Files likely touched:** `src-tauri/src/settings/mod.rs`, `src-tauri/src/commands/settings.rs`
+**Files touched:** `src-tauri/src/settings/mod.rs`, `src-tauri/src/commands/settings.rs`,
+`src-tauri/src/commands/mod.rs`, `src-tauri/src/lib.rs`
 **Estimated scope:** S
 
 ## Task 4: Sheet model + front-matter parse + dir scan (Rust) → list IPC
