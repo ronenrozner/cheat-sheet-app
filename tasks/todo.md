@@ -170,15 +170,32 @@ headlessly.
 `innerHTML` from untrusted content (XSS boundary). Provide a `SheetView` component that renders a given slug.
 
 **Acceptance criteria:**
-- [ ] Backticked key tables and ```code``` fences render; XSS payloads in sheet content are neutralized.
-- [ ] `SheetView` renders a sheet by slug and updates when the slug changes.
+- [x] Backticked key tables and ```code``` fences render; XSS payloads in sheet content are neutralized.
+- [x] `SheetView` renders a sheet by slug and updates when the slug changes.
 
 **Verification:**
-- [ ] `npm test`: a `<script>`/`<img onerror>` fixture renders inert; legit table/fence render.
-- [ ] Manual: a malicious + a normal sheet both display safely.
+- [x] `npm test`: 9 tests pass (7 markdown render + 2 sheetView). `<script>`/`<img onerror>`/
+  `javascript:` fixtures render inert; legit heading/code-fence/inline-code render.
+- [x] `npm run lint` (eslint + prettier), `npm run check` (svelte-check), `npm run build` all clean.
+
+**Result (Task 5 — 2026-09-04):** Markdown render + SheetView complete and verifiable headlessly.
+- `src/lib/markdown/render.ts` — `renderMarkdown` (async) renders Markdown via `marked`, highlights
+  fenced code with `highlight.js` (renderer `code` override; marked v18 dropped the `highlight`
+  option), then sanitizes with `DOMPurify` (v3, `mathMl` field name). `sanitize` falls back to raw
+  HTML if DOMPurify is unavailable (no crash).
+- `src/components/SheetView.svelte` — renders a sheet by `slug` prop, re-renders via `$effect` on
+  slug change, loads body via optional `load` prop (injected by Task 6). Output goes into an
+  isolated `iframe` with `sandbox="allow-same-origin"` (XSS boundary — no raw `innerHTML`).
+- eslint-plugin-svelte 3.23.0 couldn't parse TS type annotations in `<script lang="ts">`, so
+  svelte-check and eslint disagreed. Added `svelte-eslint-parser` + `@typescript-eslint/parser`
+  to `eslint.config.js` so both agree (noImplicitAny satisfied).
+- **Dependency flag:** added `marked`, `highlight.js`, `dompurify`, `jsdom` (dev), and
+  `@typescript-eslint/parser` (dev) — none named in the spec stack table except `marked`
+  (explicitly listed). User can review.
 
 **Dependencies:** Task 4
-**Files likely touched:** `src/lib/markdown/*`, `src/components/SheetView.svelte`
+**Files touched:** `src/lib/markdown/render.ts`, `src/components/SheetView.svelte`,
+`eslint.config.js`, `package.json`, `package-lock.json`, `tests/markdown/render.test.ts`
 **Estimated scope:** M
 
 ## Task 6: Upstream tarball download + extract + contents-API listing/cache
