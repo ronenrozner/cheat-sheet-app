@@ -71,7 +71,12 @@ impl Default for Settings {
         Self {
             theme: Theme::Follow,
             win_size: WinSize::default(),
-            trigger: TriggerKey::default(),
+            trigger: TriggerKey {
+                ctrl: true,
+                alt: false,
+                shift: true,
+                key: "q".to_string(),
+            },
             source_mode: SourceMode::Both,
             language: Language::EnUs,
             pinned_slug: String::new(),
