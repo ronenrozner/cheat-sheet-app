@@ -49,7 +49,7 @@ solid, undecorated, always-on-top, centered overlay on trigger, and close on `Es
    `global-shortcut`; the overlay is the supported must-path. No session-type detection, no CLI fallback.
 - **Linux X11 (must on X11 sessions):** a real global grab via `global-shortcut`.
 - **Linux Wayland (best-effort + flagged):** if the grab cannot bind, surface a UI flag and offer the
-   `--toggle` CLI route via `tauri-plugin-single-instance` (Task 15).
+   `--toggle` CLI route via `tauri-plugin-single-instance` (Task 14).
 Add runtime session-type detection (`$XDG_SESSION_TYPE`) for Linux runs only. **Validate the
 must-path on the active platform before building UI on top** (Windows on the dev box; X11 when on Linux).
 
@@ -76,11 +76,11 @@ must-path on the active platform before building UI on top** (Windows on the dev
   (`platform` / `linux_session` / `hotkey_available` / `message`). This fixes a latent bug: the old
   code did `register_overlay_hotkey(app)?` in `setup`, so a Wayland registration error would have
   aborted the whole app. Registration now proceeds so the UI can flag it (the `--toggle` single-
-  instance route itself is Task 15; not added here).
+  instance route itself is Task 14; not added here).
 - Behavior unchanged: `Ctrl-Shift-Q` toggles, `Esc` hides.
 - Runtime: `npm run tauri dev` launches and logs
   `overlay hotkey registered (platform=windows, linux_session=None)` — must-path confirmed on the
-  dev box; `--toggle` correctly rejected (Task 15).
+  dev box; `--toggle` correctly rejected (Task 14).
 
 **Manual gate (human confirm):** `Ctrl-Shift-Q` opens an always-on-top centered overlay; `Esc` hides
   it (does not quit). This box is headless so the visual render is unconfirmable here.
@@ -101,7 +101,7 @@ must-path on the active platform before building UI on top** (Windows on the dev
 ## Task 3: Rust settings load/save (atomic JSON)
 **Description:** Implement settings persistence via `tauri-plugin-store` to
 `app_config_dir/settings.json` with an atomic write (temp + rename). Define the settings shape
-(theme / winSize / trigger / source mode / language / pinned slug).
+(theme / winSize / trigger / language / pinned slug).
 
 **Acceptance criteria:**
 - [x] `set`/`get` commands round-trip all settings fields; load is safe on first run (defaults).
@@ -142,7 +142,7 @@ returns slugs + front-matter metadata.
 
 **Verification:**
 - [x] `cargo test`: 17 tests (7 new sheets — scan over temp fixtures returns expected slugs/metadata,
-  source-mode filter, malformed/missing front-matter fallback, front-matter split).
+  malformed/missing front-matter fallback, front-matter split).
 - [x] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
 - [x] `npm run build` + `npm run lint` clean.
 - [x] Runtime: `npm run tauri dev` launches cleanly — `list_sheets` registered, no panic.
@@ -198,17 +198,18 @@ headlessly.
 `eslint.config.js`, `package.json`, `package-lock.json`, `tests/markdown/render.test.ts`
 **Estimated scope:** M
 
-## Task 6: Upstream raw `.md` download + contents-API listing/cache
-**Description:** For each sheet listed by the GitHub contents API (`GET /repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100`), download the individual `.md` file via `raw.githubusercontent.com/Fechin/reference/main/source/_posts/<slug>.md` into `<home>/cheatsheets/` (D2). **Downloaded manually from Settings, never on startup or overlay open.** Only `.md` files are downloaded — no tarball, no other file types. These are upstream sheets only; Task 6 makes no user edits to existing files. Cache the contents-API listing for online listing. Fetch individual sheets on demand via the same `raw` endpoint.
+## Task 6: contents-API listing + cache
+**Description:** Build the cached online listing via the GitHub contents API (`GET /repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100`) so the online browse surface works offline. **No download in Task 6** — the per-file download to `<home>/cheatsheets/` is a **later stage** (not implemented here). Only `.md` files are considered — no tarball, no other file types. The listing is cached locally.
+
+**Note:** The `raw.githubusercontent.com/.../main/source/_posts/<slug>.md` endpoint stays, but **only** to fetch a file for downloading in a later stage. **No online viewing** anywhere — a sheet is viewed only after it is downloaded.
 
 **Acceptance criteria:**
-- [ ] Raw `.md` downloads populate `<home>/cheatsheets/`; idempotent (re-run safe, no duplicate downloads).
-- [ ] Upstream `.md` files download **manually from Settings only** — no startup, overlay-open, or source-toggle auto-download.
-- [ ] On a filename collision with an existing file, the user is prompted **overwrite** or **rename** (e.g. append a numeric suffix) before the download writes; neither option writes blindly.
-- [ ] Online listing returns cached entries offline; on-demand `raw` fetch returns sheet body.
+- [ ] The online listing is cached locally and returned offline.
+- [ ] **No download happens in Task 6.** The per-file download to `<home>/cheatsheets/` is deferred to a later stage.
+- [ ] The listing is browse/download only; there is no online viewing.
 
 **Verification:**
-- [ ] `cargo test`: download+scan over mock `.md` fixtures into a temp dir, including a collision case that expects an overwrite-or-rename prompt (no silent overwrite).
+- [ ] `cargo test`: listing + cache over a mock contents-API response into a temp dir.
 
 **Dependencies:** Task 4
 **Files likely touched:** `src-tauri/src/sheets/download.rs`, `src-tauri/src/commands/download.rs`
@@ -297,22 +298,7 @@ into. Switching a sidebar entry updates `SheetView`.
 **Files likely touched:** `src/components/Sidebar.svelte`, `src/App.svelte`, `src/lib/overlay/*`
 **Estimated scope:** M
 
-## Task 11: Source-mode toggle
-**Description:** Add the `online / local / both` toggle driving which sheets are visible.
-
-**Acceptance criteria:**
-- [ ] Toggling source mode filters the visible sheet list per the mode.
-- [ ] Source mode does **not** trigger any download; it only filters the already-available sheets.
-
-**Verification:**
-- [ ] `npm test`: source-mode filter returns the right subset.
-- [ ] Manual: toggle filters sheets; no download happens on toggle.
-
-**Dependencies:** Task 6, Task 10
-**Files likely touched:** `src/components/*`, `src-tauri/src/sheets/mod.rs`
-**Estimated scope:** M
-
-## Task 12: Pinned sheet on open (+ first-run fallback to bundled default)
+## Task 11: Pinned sheet on open (+ first-run fallback to bundled default)
 **Description:** On overlay open, show the user's pinned sheet front-and-center. First run (no pin yet) shows a
 bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists via settings (Task 3/13).
 
@@ -330,15 +316,15 @@ bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists v
 
 ### Checkpoint: Overlay UI
 - [ ] `npm run build` + `cargo test` pass.
-- [ ] **Manual: open shows pinned sheet → sidebar switches → source toggle filters.**
+- [ ] **Manual: open shows pinned sheet → sidebar switches sheets.**
 
 ---
 
 ## Phase 4 — Settings, i18n, Hotkey CLI, License
 
-## Task 13: Persistent settings round-trip (UI ↔ store)
+## Task 12: Persistent settings round-trip (UI ↔ store)
 **Description:** Wire the frontend settings surface to the store bridge (Task 3): theme (light/dark/follow),
-window size, trigger key, source mode, language, pinned slug. Persist across restart.
+window size, trigger key, language, pinned slug. Persist across restart.
 
 **Acceptance criteria:**
 - [ ] Changing any setting persists and is reloaded on restart; defaults apply on first run.
@@ -346,14 +332,14 @@ window size, trigger key, source mode, language, pinned slug. Persist across res
 
 **Verification:**
 - [ ] `npm test` + `cargo test`: round-trip for every field.
-- [ ] Manual: change theme + trigger + source; restart; values persist.
+- [ ] Manual: change theme + trigger; restart; values persist.
 
 **Dependencies:** Task 3, Task 10
 **Files likely touched:** `src/lib/settings/*`, `src/components/SettingsPanel.svelte`,
 `src-tauri/src/commands/settings.rs`
 **Estimated scope:** M
 
-## Task 14: i18n `$: t()` layer + `locales/en-US.json` + graceful no-op  *(assumes O2)*
+## Task 13: i18n `$: t()` layer + `locales/en-US.json` + graceful no-op  *(assumes O2)*
 **Description:** Add a hand-rolled locale layer (O2 assumption): `t(key)` over `locales/en-US.json`, all UI
 strings routed through it, a language setting that is a graceful no-op for unimplemented locales. No
 `svelte-i18n` dependency.
@@ -370,7 +356,7 @@ strings routed through it, a language setting that is a graceful no-op for unimp
 **Files likely touched:** `src/lib/i18n/*`, `src/locales/en-US.json`
 **Estimated scope:** M
 
-## Task 15: `--toggle` single-instance CLI + Wayland flag + snippets  *(assumes O3)*
+## Task 14: `--toggle` single-instance CLI + Wayland flag + snippets  *(assumes O3)*
 **Description:** Use `tauri-plugin-single-instance` so `cheatsheet-app --toggle` routes to the running instance
 and toggles the overlay. Surface a Wayland "Global hotkey unavailable" flag with per-compositor bind snippets
 (Hyprland / Sway / GNOME). On trigger-key change, print the relevant snippet (O3: document, not auto-configure).
@@ -384,11 +370,11 @@ and toggles the overlay. Surface a Wayland "Global hotkey unavailable" flag with
 - [ ] `cargo test`: `--toggle` arg parses and routes (mocked single-instance).
 - [ ] Manual (X11): `--toggle` toggles the overlay.
 
-**Dependencies:** Task 2, Task 13
+**Dependencies:** Task 2, Task 12
 **Files likely touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/main.rs`, `src/components/SettingsPanel.svelte`
 **Estimated scope:** M
 
-## Task 16: License / secret hygiene
+## Task 15: License / secret hygiene
 **Description:** Ensure GPL upstream sheets carry a `GPL-v3` notice; ship app-authored CC0/MIT default sheets so
 first run isn't GPL-entangled (D1); add a `LICENSE` (Apache-2.0) + `NOTICE`; confirm no secrets are committed;
 keep license/NOTICE files intact.
@@ -401,14 +387,14 @@ keep license/NOTICE files intact.
 - [ ] `git log`/manual: no secrets committed; license files present.
 - [ ] Manual: upstream sheet shows the GPL notice; first-run default has no GPL entanglement.
 
-**Dependencies:** Task 6, Task 12
+**Dependencies:** Task 6, Task 11
 **Files likely touched:** `LICENSE`, `NOTICE`, bundled default sheets, `src/components/SheetView.svelte`
 **Estimated scope:** S
 
 ### Checkpoint: Complete
 - [ ] All spec acceptance criteria 1–10 met.
 - [ ] `npm test -- --coverage`, `cargo test`, `npm run lint`, `cargo clippy -- -D warnings` all clean.
-- [ ] **Manual: hotkey → pinned sheet → search (both directions) → switch source → author local .md → Rescan →
+- [ ] **Manual: hotkey → pinned sheet → search (both directions) → author local .md → Rescan →
       it appears; restart keeps settings.**
 - [ ] **Human review before any PR / ship.**
 
@@ -416,7 +402,7 @@ keep license/NOTICE files intact.
 
 ## Phase 5 — Optional / Non-blocking
 
-## Task 17 (optional): Playwright E2E — overlay open/close + pin-on-open  *(assumes O4)*
+## Task 16 (optional): Playwright E2E — overlay open/close + pin-on-open  *(assumes O4)*
 **Description:** If time allows, add a Playwright E2E for overlay open/close + pin-on-open on the dev machine
 (X11, the must path). Non-blocking for v1.
 
@@ -426,7 +412,7 @@ keep license/NOTICE files intact.
 **Verification:**
 - [ ] E2E passes (X11) or is skipped cleanly elsewhere.
 
-**Dependencies:** Task 12
+**Dependencies:** Task 11
 **Files likely touched:** `e2e/*`
 **Estimated scope:** M
 
@@ -435,4 +421,4 @@ keep license/NOTICE files intact.
 ## Done when
 - All Phase 0–4 tasks complete and every Checkpoint box is ticked.
 - Open questions O2–O5 confirmed by the human.
-- Optional Task 17 is explicitly accepted or deferred.
+- Optional Task 16 is explicitly accepted or deferred.

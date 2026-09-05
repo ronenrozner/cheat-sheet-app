@@ -8,8 +8,10 @@
 
 Build a Linux-first global-hotkey **HUD overlay** (Tauri v2 / Rust backend / Svelte 5 frontend) that, on one
 keystroke (`Ctrl-Shift-Q` default), shows a pinned cheat sheet front-and-center, a sidebar to switch sheets,
-and a two-way search (natural-language *or* literal key combo). Sheets stream online, render from a local
-snapshot, or both, via a source toggle. Users author/edit Markdown locally. This plan decomposes the v1 spec
+and a two-way search (natural-language *or* literal key combo). On launch the app reads the local folder
+`<home>/cheatsheets/` and shows the local sheets (seeded with a few out-of-box sheets). On demand the user
+opens a cached listing of all sheets in the online repo and downloads any sheet to the local folder. There is
+**no online viewing** — a sheet is viewed only after it is downloaded. Users author/edit Markdown locally. This plan decomposes the v1 spec
 into small, verifiable, vertically-sliced tasks with explicit acceptance criteria and checkpoints.
 
 ## Architecture Decisions
@@ -25,9 +27,9 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
   webview; render Markdown→HTML via `marked` + sanitizer, never raw `innerHTML`, keep Tauri's restrictive
   CSP, prefer an isolated render surface (iframe / sandbox). This is an "Always do" boundary.
 - **A4 — License hygiene (D1).** Ship a small **app-authored** default set (app = **Apache-2.0**, default
-  sheets **CC0/MIT**) so first-run is non-empty without GPL entanglement. Upstream GPL sheets are
-  fetched/downloaded and always carry a `GPL-v3` notice. No upstream content is bundled under our name.
-- **A5 — Flat local storage (D2).** All sheets live directly in `<home>/cheatsheets/` (user home folder; visible, not hidden on Linux) — a flat folder with no origin split: downloaded and user-authored sheets are indistinguishable on disk. Online *listing* = GitHub contents API (cached). Sheets re-scanned on open +
+  sheets **CC0/MIT**) so first-run isn't empty without GPL entanglement. The local sheets folder is seeded
+  with a few out-of-box sheets on first run; no GPL content is bundled under our name.
+- **A5 — Flat local storage (D2).** All sheets live directly in `<home>/cheatsheets/` (user home folder; visible, not hidden on Linux) — a flat folder. On first run the app seeds it with a few out-of-box sheets (D1). Online *listing* = GitHub contents API (cached). Sheets re-scanned on open +
   on explicit **Rescan**.
 - **A6 — Open-question defaults assumed** (confirm or override): **O2** hand-rolled `$: t()` over
   `locales/en-US.json` (no `svelte-i18n` dep); **O3** trigger-key change edits config only + prints the
@@ -53,11 +55,11 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - [ ] Task 3: Rust settings load/save (atomic JSON via `tauri-plugin-store`)
 - [ ] Task 4: Sheet model + front-matter parse + dir scan (Rust) → list IPC
 - [ ] Task 5: Markdown render (marked + highlight.js + sanitize) in webview + SheetView
-- [ ] Task 6: Upstream raw `.md` download + contents-API listing/cache
+- [ ] Task 6: contents-API listing + cache (no download in Task 6)
 
 ### Checkpoint: Content Pipeline
-- [ ] `cargo test` + `npm test` pass; local dir list + upstream snapshot render in a basic pane
-- [ ] **Manual: a downloaded upstream sheet renders sanitized HTML; a local .md renders after Rescan**
+- [ ] `cargo test` + `npm test` pass; local folder list + out-of-box sheets render in a basic pane
+- [ ] **Manual: out-of-box sheet renders sanitized HTML; a local `.md` renders after Rescan; online listing opens and caches
 
 ### Phase 2 — Two-Way Search
 - [ ] Task 7: Combo normalizer (`lib/search/comboNormalize`) + unit tests
@@ -68,17 +70,16 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - [ ] Golden tests pass at >80% coverage on `lib/search`
 - [ ] **Manual: `Win+Alt+V` and "windows paste plain text" both surface the same sheet**
 
-### Phase 3 — Overlay UI + Sources
+### Phase 3 — Overlay UI
 - [ ] Task 10: App shell / overlay pane routing + Sidebar (list + switch)
-- [ ] Task 11: Source-mode toggle (online / local / both)
 - [ ] Task 12: Pinned sheet on open (first-run falls back to bundled default)
 
 ### Checkpoint: Overlay UI
 - [ ] `npm run build` + `cargo test` pass
-- [ ] **Manual: open shows pinned sheet; sidebar switches; source toggle filters visible sheets**
+- [ ] **Manual: open shows pinned sheet; sidebar switches sheets**
 
 ### Phase 4 — Settings, i18n, Hotkey CLI, License
-- [ ] Task 13: Persistent settings round-trip (theme / size / trigger / source / language)
+- [ ] Task 13: Persistent settings round-trip (theme / size / trigger / language)
 - [ ] Task 14: i18n `$: t()` layer + `locales/en-US.json` + graceful no-op for unknown locale
 - [ ] Task 15: `--toggle` single-instance CLI route + Wayland flag + compositor-bind snippets
 - [ ] Task 16: License/secret hygiene (GPL notice, app-authored defaults, license NOTICE, no secret commit)
@@ -99,7 +100,6 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 | XSS from untrusted Markdown into webview | High | Sanitize + CSP + isolated render surface (A3); golden + manual checks; "Never raw dangerouslySetInnerHTML" |
 | GPL upstream entanglement on first run | Med | App-authored CC0/MIT defaults (D1); GPL notice on upstream sheets (Task 16) |
 | Two-way search misses a direction | Med | Golden fixture set (NL-only / combo-only / mixed); >80% coverage on `lib/search` |
-| Rate-limiting / flaky upstream download | Low | Per-file raw `.md` download + contents-API cache; source-mode toggle falls back to local |
 | New dependency scope creep | Low | Stack table is the allow-list; adding a dep is "Ask first" |
 
 ## Open Questions (carried from spec — confirm or override; plan assumes the recommendations)
@@ -108,7 +108,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - **O2 — i18n layer.** *Assumed:* hand-rolled `$: t()` over `locales/en-US.json` (no dep). Confirm.
 - **O3 — Trigger-key change surface.** *Assumed:* edits config only; on Wayland prints the compositor snippet,
   does not auto-bind. Confirm.
-- **O4 — E2E scope.** *Assumed:* manual-only in v1; Playwright optional (Task 17, not blocking). Confirm.
+- **O4 — E2E scope.** *Assumed:* manual-only in v1; Playwright optional (Task 16, not blocking). Confirm.
 - **O5 — Spec location.** *Assumed:* `docs/spec/cheat-sheet-overlay.md` (already in place). Confirm.
 
 ## Assumptions / Notes
@@ -118,6 +118,6 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - **No git repo yet** — Task 1 performs `git init`.
 - **Toolchain present:** Node v26.3.1, cargo 1.98.0. `tauri` CLI not yet installed — Task 1 installs the
   Tauri CLI (via `cargo`/npm as the scaffold decides).
-- **E2E (Playwright)** is an optional, non-blocking Task 17 appended after the Complete checkpoint.
+- **E2E (Playwright)** is an optional, non-blocking Task 16 appended after the Complete checkpoint.
 - Every "Ask first" boundary in the spec (source repo/URL, new dependency, storage dirs, GPL handling,
   local-sheet schema) must be confirmed before that change lands in a task.
