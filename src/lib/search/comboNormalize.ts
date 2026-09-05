@@ -11,19 +11,19 @@
 // authored combos in v1.
 
 const ALIAS = {
-  win: "WIN",
-  windows: "WIN",
-  super: "WIN",
-  mod: "WIN",
-  cmd: "WIN",
-  alt: "ALT",
-  option: "ALT",
-  "⌥": "ALT",
-  ctrl: "CTRL",
-  control: "CTRL",
-  "⌃": "CTRL",
-  shift: "SHIFT",
-  "⇧": "SHIFT",
+  win: 'WIN',
+  windows: 'WIN',
+  super: 'WIN',
+  mod: 'WIN',
+  cmd: 'WIN',
+  alt: 'ALT',
+  option: 'ALT',
+  '⌥': 'ALT',
+  ctrl: 'CTRL',
+  control: 'CTRL',
+  '⌃': 'CTRL',
+  shift: 'SHIFT',
+  '⇧': 'SHIFT',
 } as const;
 
 /** "Win+Alt+V" / "Control Shift V" → ["WIN","ALT","V"] */

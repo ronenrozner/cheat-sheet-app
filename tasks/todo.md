@@ -238,14 +238,26 @@ headlessly.
 per-platform remap of authored combos in v1.
 
 **Acceptance criteria:**
-- [ ] `normalizeCombo("Win+Alt+V")` and `normalizeCombo("Control Shift V")` both yield
-  `["WIN","ALT","V"]` (case/alias/separator-insensitive).
+- [x] `normalizeCombo("Win+Alt+V")` yields `["WIN","ALT","V"]` (case/alias/separator-insensitive).
+- [x] `normalizeCombo("Control Shift V")` yields `["CTRL","SHIFT","V"]` — per the authoritative
+  alias map, `Control`→`CTRL` and `Shift`→`SHIFT`. (The spec's prose example in the criteria is a
+  typo; the Code Style `ALIAS` map is authoritative. Implementation + test follow the map.)
 
 **Verification:**
-- [ ] `npm test`: alias, separator, and mixed-case cases pass; >80% coverage on the file.
+- [x] `npm test`: alias, separator, mixed-case, and edge cases pass; 100% coverage on the file
+  (statements 4/4, branches 2/2, functions 3/3, lines 4/4). 7 tests pass.
+
+**Result (Task 7 — 2026-09-04):** Combo normalizer complete and verifiable headlessly.
+- `src/lib/search/comboNormalize.ts` — `normalizeCombo` per the spec alias map (case-insensitive),
+  `+`/space separators, literal keys upper-cased. No per-platform remap in v1.
+- `tests/search/comboNormalize.test.ts` — 7 tests (alias, space separator, case-insensitivity, all
+  documented aliases, literal keys, adjacent/edge separators, empty/whitespace input).
+- Added `@vitest/coverage-v8` devDependency (was missing; coverage tooling was not installed).
+- `npm run build` clean; 7 tests pass; 100% coverage on the file.
 
 **Dependencies:** None (pure fn; may start in parallel)
-**Files likely touched:** `src/lib/search/comboNormalize.ts`, `tests/search/comboNormalize.test.ts`
+**Files touched:** `src/lib/search/comboNormalize.ts` (new),
+`tests/search/comboNormalize.test.ts` (new), `package.json`, `package-lock.json`
 **Estimated scope:** S
 
 ## Task 8: minisearch index builder + two-way query + golden fixtures
