@@ -30,7 +30,9 @@ pub fn run() {
       shortcuts::get_hotkey_status,
       crate::commands::settings::get_settings,
       crate::commands::settings::set_settings,
-      crate::commands::sheets::list_sheets
+      crate::commands::sheets::list_sheets,
+      crate::commands::sheets::get_online_listing,
+      crate::commands::sheets::refresh_online_listing
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

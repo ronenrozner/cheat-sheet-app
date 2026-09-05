@@ -204,15 +204,24 @@ headlessly.
 **Note:** The `raw.githubusercontent.com/.../main/source/_posts/<slug>.md` endpoint stays, but **only** to fetch a file for downloading in a later stage. **No online viewing** anywhere — a sheet is viewed only after it is downloaded.
 
 **Acceptance criteria:**
-- [ ] The online listing is cached locally and returned offline.
-- [ ] **No download happens in Task 6.** The per-file download to `<home>/cheatsheets/` is deferred to a later stage.
-- [ ] The listing is browse/download only; there is no online viewing.
+- [x] The online listing is cached locally and returned offline.
+- [x] **No download happens in Task 6.** The per-file download to `<home>/cheatsheets/` is deferred to a later stage.
+- [x] The listing is browse/download only; there is no online viewing.
 
 **Verification:**
-- [ ] `cargo test`: listing + cache over a mock contents-API response into a temp dir.
+- [x] `cargo test`: listing + cache over a mock contents-API response into a temp dir. (4 new tests: `parse_keeps_only_md_files`, `parse_empty_body_yields_empty_list`, `cache_round_trip_is_atomic_and_reusable`, `read_missing_cache_returns_empty`. 21 backend tests total.)
+
+**Result (Task 6 — 2026-09-04):** Online listing + cache complete and verifiable headlessly.
+- `src-tauri/src/sheets/online.rs` — `parse_contents_api_response` parses the contents-API page (objects `{ name, type, ... }`), keeps only `.md` files (extension check, no tarball/other-type), derives the slug from the file name, title falls back to slug. `read_cache` deserializes the cached `Sheet` array (cache stores `Sheet`, so it does **not** go through the contents-API parser). `write_cache` does an atomic temp-file+rename write.
+- `fetch_online_listing(app)` is cache-first: a non-empty cache is returned with no network. Otherwise it paginates the contents API (stops on the last/partial page), caches atomically, and returns. A network failure returns an empty list (no panic).
+- **New dependency:** `ureq` (2.x, `rustls` feature, no openssl) — the minimal HTTP client, not in the spec's stack table. **User can veto.** `http_get` uses `ureq::Agent::new()`.
+- IPC commands `get_online_listing` (offline cache read) and `refresh_online_listing` (fetch + cache) registered in `lib.rs` invoke_handler. `SheetSource::Online` variant added (used only by online.rs).
+- `cargo test` (21 pass) / `cargo clippy --all-targets -- -D warnings` (clean) / `cargo check` (clean) / `npm run build` (clean).
+- **No frontend wiring, no download, no online viewing** — all deferred, per spec.
 
 **Dependencies:** Task 4
-**Files likely touched:** `src-tauri/src/sheets/download.rs`, `src-tauri/src/commands/download.rs`
+**Files touched:** `src-tauri/src/sheets/online.rs` (new), `src-tauri/src/sheets/mod.rs`,
+`src-tauri/src/commands/sheets.rs`, `src-tauri/src/lib.rs`, `src-tauri/Cargo.toml` (**ureq dep**)
 **Estimated scope:** M
 
 ### Checkpoint: Content Pipeline

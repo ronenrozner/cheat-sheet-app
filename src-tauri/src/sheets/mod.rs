@@ -7,6 +7,9 @@
 //! - `app_data_dir/cheatsheets/local/` → user-authored sheets.
 //! - `app_data_dir/cheatsheets/upstream/` → downloaded snapshot.
 
+//!   Online listing + cache (Task 6): GitHub contents API, cached locally. No download, no online viewing.
+pub mod online;
+
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -16,6 +19,8 @@ use tauri::{AppHandle, Manager};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum SheetSource {
     Local,
+    Online,
+    /// The default source when none is specified.
     #[default]
     Upstream,
 }
