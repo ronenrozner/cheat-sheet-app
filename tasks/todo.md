@@ -360,6 +360,9 @@ window size, trigger key, language, pinned slug. Persist across restart.
 `src-tauri/src/commands/settings.rs`
 **Estimated scope:** M
 
+**Note:** Default trigger is `Ctrl+Shift+Q` (`ctrl=true, alt=false, shift=true, key="q"`), set in
+`Settings::default()` (committed `fb87e68`). The UI defaults to this; the user can change it later.
+
 ## Task 13: i18n `$: t()` layer + `locales/en-US.json` + graceful no-op  *(assumes O2)*
 **Description:** Add a hand-rolled locale layer (O2 assumption): `t(key)` over `locales/en-US.json`, all UI
 strings routed through it, a language setting that is a graceful no-op for unimplemented locales. No
@@ -394,6 +397,9 @@ and toggles the overlay. Surface a Wayland "Global hotkey unavailable" flag with
 **Dependencies:** Task 2, Task 12
 **Files likely touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/main.rs`, `src/components/SettingsPanel.svelte`
 **Estimated scope:** M
+
+**Note:** Default trigger is `Ctrl+Shift+Q` (see Task 12). This task handles the trigger-key change
+surface: changing the trigger updates config only and prints the Wayland compositor snippet.
 
 ## Task 15: License / secret hygiene
 **Description:** Ensure GPL upstream sheets carry a `GPL-v3` notice; ship app-authored CC0/MIT default sheets so
