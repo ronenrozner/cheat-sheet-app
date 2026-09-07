@@ -260,43 +260,68 @@ per-platform remap of authored combos in v1.
 `tests/search/comboNormalize.test.ts` (new), `package.json`, `package-lock.json`
 **Estimated scope:** S
 
-## Task 8: minisearch index builder + two-way query + golden fixtures
-**Description:** Build a `minisearch` index over sheets: NL side (title, intro, tags, categories, body
-headings) + combo side (normalized backticked key tokens + code tokens). A single query matches either
-direction (exact-field > substring > fuzzy). Author a golden fixture set (NL-only / combo-only / mixed →
-expected slugs).
+## Task 8: Find-in-current-sheet (NL only, highlight matches)
+**Description:** Find-in-current-sheet search over the raw Markdown body of the sheet **currently open in
+the HUD**. NL only. No cross-sheet index, no combo matching. Pure logic in `lib/search/findInSheet.ts`:
+`findMatches` (character offsets) and `highlightMarkdown` (inserts `<mark>` markers around each match,
+rendered backward so earlier offsets stay valid). The search runs on the raw Markdown body, so queries run
+against headings, tables, code spans, and prose as authored.
 
 **Acceptance criteria:**
-- [ ] One query box returns matches by *both* NL description and literal combo.
-- [ ] Golden fixture set: NL-only, combo-only, and mixed queries return the expected slugs.
+- [x] `findMatches(body, query)` returns offsets for every case-insensitive match; empty/whitespace query
+  returns `[]`.
+- [x] `highlightMarkdown(body, query)` wraps each match with `<mark>`; returns `body` unchanged when there
+  is no match or empty query.
+- [x] Query metacharacters match literally (regex escaped), not as wildcards.
 
 **Verification:**
-- [ ] `npm test`: golden set passes; >80% coverage on `lib/search`.
-- [ ] Coverage gate enforced for `lib/search`.
+- [x] `npm test`: 7 tests pass (offsets, case-insensitivity, literal match, empty query, no match, `<mark>`
+  wrapping, body unchanged).
+- [x] svelte-check: 0 errors, 0 warnings.
+- [x] Fixed pre-existing lint error in `comboNormalize.ts` (line 33: string index into the `ALIAS` object)
+  by adding a type-safe `ALIAS_LOOKUP: Record<string, ...>`.
 
-**Dependencies:** Task 7, Task 4
-**Files likely touched:** `src/lib/search/*`, `tests/search/*.test.ts`, `tests/fixtures/*.md`
-**Estimated scope:** M
+**Dependencies:** Task 7 (combo normalizer — not used by this task; kept for later), Task 4 (sheet model)
 
-## Task 9: SearchBox component → switch main pane
-**Description:** Add a `SearchBox` in the overlay bound to a single input; results list surfaces matches (both
-directions); selecting a result switches the main `SheetView` pane. Escape/blur behavior sane.
+**Result (Task 8 — 2026-09-06):** find-in-current-sheet complete and verifiable headlessly. This is a
+**scope change from the original Task 8** (cross-sheet minisearch, NL + combo). The user redirected it to
+find-in-the-open-sheet, NL only. The deleted cross-sheet `index.ts` is not restored.
+
+**Dependencies:** None (pure fn)
+**Files touched:** `src/lib/search/findInSheet.ts` (new),
+`tests/search/findInSheet.test.ts` (new), `src/lib/search/comboNormalize.ts` (fix lint error)
+**Estimated scope:** S
+
+## Task 9: SearchBox — find-in-current-sheet input at top of HUD
+**Description:** Add a `SearchBox` at the top of the HUD, above the sheet content. NL only, no cross-sheet
+index. The match count and highlight are computed in the parent (`App`), which owns the sheet body. The
+input binds `query`; the parent passes `query` and `matchCount` down.
 
 **Acceptance criteria:**
-- [ ] Typing a NL phrase or a combo both surface the same target sheet; selecting it loads it.
-- [ ] Empty/invalid input clears results without error.
+- [x] SearchBox sits at the top of the HUD, above the sheet content.
+- [x] Typing filters/highlights matches in the current sheet; match count shows "N matches" / "No
+  matches" / empty (placeholder only).
+- [x] Empty/invalid input clears results without error.
 
 **Verification:**
-- [ ] `npm test`: integration — query → expected result list.
-- [ ] Manual: `Win+Alt+V` and "windows paste plain text" both open the same sheet.
+- [x] svelte-check: 0 errors, 0 warnings (fixed module-resolution import error by using explicit
+  `.svelte` extension + default imports).
+- [x] `npm run lint` clean (prettier).
+- [x] `main.ts` updated: `mount(App, { target, props: {} })` to satisfy Svelte 5 `MountOptions`.
 
-**Dependencies:** Task 8
-**Files likely touched:** `src/components/SearchBox.svelte`, `src/App.svelte`
+**Dependencies:** Task 8 (find-in-current-sheet logic)
+**Files touched:** `src/components/SearchBox.svelte` (new), `src/App.svelte` (wiring),
+`src/components/SheetView.svelte` (accepts `query`, highlights internally), `src/lib/markdown/render.ts`
+(allow `<mark>` in DOMPurify), `src/main.ts` (mount props)
 **Estimated scope:** M
 
 ### Checkpoint: Search
-- [ ] Golden tests pass at >80% coverage on `lib/search`.
-- [ ] **Manual: NL and combo queries both surface the same sheet.**
+- [x] svelte-check: 0 errors, 0 warnings.
+- [x] **Manual: typing in the search box highlights matches in the current sheet.**
+
+**Note:** This is the find-in-current-sheet design (user redirect). The original Task 8/9 cross-sheet
+minisearch with combo matching is deferred. If cross-sheet search is wanted later, rebuild
+`src/lib/search/index.ts` (restore from git or rewrite).
 
 ---
 

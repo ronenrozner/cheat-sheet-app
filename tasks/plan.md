@@ -61,14 +61,14 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - [ ] `cargo test` + `npm test` pass; local folder list + out-of-box sheets render in a basic pane
 - [ ] **Manual: out-of-box sheet renders sanitized HTML; a local `.md` renders after Rescan; online listing opens and caches
 
-### Phase 2 — Two-Way Search
+### Phase 2 — Search
 - [ ] Task 7: Combo normalizer (`lib/search/comboNormalize`) + unit tests
-- [ ] Task 8: minisearch index builder (NL + normalized-combo) + two-way query + golden fixtures
-- [ ] Task 9: SearchBox component wired into overlay; results switch the main pane
+- [ ] Task 8: Find-in-current-sheet (NL only, highlight matches in the open sheet)
+- [ ] Task 9: SearchBox component at the top of the HUD above the sheet content
 
 ### Checkpoint: Search
-- [ ] Golden tests pass at >80% coverage on `lib/search`
-- [ ] **Manual: `Win+Alt+V` and "windows paste plain text" both surface the same sheet**
+- [ ] svelte-check clean (0 errors, 0 warnings); `npm run lint` clean.
+- [ ] **Manual: typing in the search box highlights matches in the current sheet.**
 
 ### Phase 3 — Overlay UI
 - [ ] Task 10: App shell / overlay pane routing + Sidebar (list + switch)
@@ -100,6 +100,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 | XSS from untrusted Markdown into webview | High | Sanitize + CSP + isolated render surface (A3); golden + manual checks; "Never raw dangerouslySetInnerHTML" |
 | GPL upstream entanglement on first run | Med | App-authored CC0/MIT defaults (D1); GPL notice on upstream sheets (Task 16) |
 | Two-way search misses a direction | Med | Golden fixture set (NL-only / combo-only / mixed); >80% coverage on `lib/search` |
+| Search scope changed (Task 8) | Low | Task 8 redirected to find-in-the-open-sheet (NL only, no combo, no cross-sheet index). Original minisearch two-way search deferred. See todo.md Task 8. |
 | New dependency scope creep | Low | Stack table is the allow-list; adding a dep is "Ask first" |
 
 ## Open Questions (carried from spec — confirm or override; plan assumes the recommendations)

@@ -53,7 +53,7 @@ export function sanitize(html: string): string {
       return DOMPurify.sanitize(html, {
         USE_PROFILES: { html: true, svg: false, mathMl: false },
         ADD_ATTR: ['target', 'rel'],
-        ADD_TAGS: ['code', 'pre'],
+        ADD_TAGS: ['code', 'pre', 'mark'],
       });
     }
   } catch {

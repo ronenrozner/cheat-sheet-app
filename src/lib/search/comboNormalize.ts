@@ -24,12 +24,17 @@ const ALIAS = {
   '⌃': 'CTRL',
   shift: 'SHIFT',
   '⇧': 'SHIFT',
-} as const;
+} as const satisfies Record<string, 'WIN' | 'ALT' | 'CTRL' | 'SHIFT'>;
+
+/** Type-safe alias lookup: string key returns a known alias or undefined. */
+const ALIAS_LOOKUP: Record<string, 'WIN' | 'ALT' | 'CTRL' | 'SHIFT' | undefined> = {
+  ...ALIAS,
+};
 
 /** "Win+Alt+V" / "Control Shift V" → ["WIN","ALT","V"] */
 export function normalizeCombo(input: string): string[] {
   return input
     .split(/\s*[\s+]+\s*/)
-    .map((tok) => ALIAS[tok.toLowerCase()] ?? tok.toUpperCase())
+    .map((tok) => ALIAS_LOOKUP[tok.toLowerCase()] ?? tok.toUpperCase())
     .filter((tok) => tok.length > 0);
 }

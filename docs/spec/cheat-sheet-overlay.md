@@ -6,11 +6,13 @@
 >
 > **Revisions:** *Hotkey constraint revised to **X11-must / Wayland-best-effort-flagged** (was "Wayland must"). This flips the §Hotkey strategy and resolves O1 — it is no longer architecture-blocking.*
 
+  * **Search scope revised (Task 8, 2026-09-06).** Original Task 8 was cross-sheet two-way search (minisearch, NL + combo, golden fixtures). **Redirected to find-in-current-sheet**: NL-only, highlight matches in the sheet currently open in the HUD, no combo matching, no cross-sheet index. The original minisearch two-way search is **deferred**, not deleted from the spec — the spec describes the intended design; Task 8 implements a narrower v1 scope. See `tasks/todo.md` Task 8 for the implementation note. The search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
+
 ---
 
 ## Objective
 
-A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a cheat sheet the user would otherwise have to hunt for. On open it shows a **pinned** sheet front-and-center, a **sidebar** to switch sheets, and a **two-way search** that matches *either* a natural-language description ("Windows paste plain text") *or* a literal key combo (`Ctrl+Shift+V`). Sheets load from a **local** folder (`<home>/cheatsheets/`) on launch; on demand the user opens a **cached listing** of all sheets in the online repo and **downloads** any sheet to the local folder. There is **no online viewing** — a sheet is viewed only after it is downloaded. The user can author/edit their own Markdown **locally** via their own editor.
+A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a cheat sheet the user would otherwise have to hunt for. On open it shows a **pinned** sheet front-and-center, a **sidebar** to switch sheets, and a **find-in-current-sheet search** (v1) that highlights matches in the sheet currently open. *(Original v1 design was a two-way search matching either a natural-language description or a literal key combo via a minisearch index — deferred; see §Search scope revision below.)* Sheets load from a **local** folder (`<home>/cheatsheets/`) on launch; on demand the user opens a **cached listing** of all sheets in the online repo and **downloads** any sheet to the local folder. There is **no online viewing** — a sheet is viewed only after it is downloaded. The user can author/edit their own Markdown **locally** via their own editor.
 
 - **User:** general-purpose; primary author is the developer themselves.
 - **Why now:** turn "I keep losing track of shortcuts / syntax" into "one key brings it up."
@@ -20,7 +22,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 1. **Toggle overlay (X11 — must).** Press `Ctrl-Shift-Q` → overlay opens **always-on-top**, centered; `Esc` closes it. On **Wayland** the global grab is **best-effort**; if unavailable the UI **flags** it and offers `cheatsheet-app --toggle` (see §Hotkey strategy).
 2. **Pinned sheet on open.** The user's pinned sheet renders front-and-center by default; first run falls back to a bundled default.
 3. **Switch sheets.** A sidebar lists other sheets; clicking one switches the main pane.
-4. **Two-way search.** A single search box surfaces matches by *both* NL description and literal combo; typing either direction works. *(verified by golden tests on a fixtures set)*
+4. **Find-in-current-sheet search.** A single search box highlights matches in the sheet currently open; typing NL text surfaces matches by description. *(v1 scope: NL-only, highlight inline. Original two-way search — NL + combo across all sheets — is deferred.)*
 5. **Local sheets on launch.** On launch the app reads `<home>/cheatsheets/` and shows the local sheets; the folder ships with a few **out-of-box** sheets (app-authored, CC0/MIT) so first run isn't empty. **No online viewing** — only local sheets are shown.
 6. **Local authoring.** Create/edit a `.md` in `<home>/cheatsheets/` via the user's own editor; it appears after **Rescan** (no in-app editor in v1).
 7. **Online listing (cached).** On demand the user opens a listing of all sheets in the online repo; the listing is cached locally (Task 6). **No online viewing** — the listing is browse/download only.
@@ -44,7 +46,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 | Settings | `tauri-plugin-store` → `config/settings.json` | atomic write |
 | Markdown render | **`marked`** + **`highlight.js`** | lightweight; alternative `shiki` (deferred, WASM/async) |
 | Front-matter | **`gray-matter`** (webview JS) | parses Hexo YAML |
-| Search | **`minisearch`** + normalized-combo index | client-side, no NLP |
+| Search | **`minisearch`** + normalized-combo index *(deferred)* | client-side, no NLP; v1 uses find-in-current-sheet (see §Search scope revision) |
 | Front-end test | **Vitest** (unit/integration) | |
 | Backend test | **`cargo test`** | |
 | E2E *(optional v1)* | **Playwright** | only for overlay open/close if time allows |
@@ -85,7 +87,7 @@ cheat-sheet-app/
 │   ├─ components/             → Overlay, Sidebar, SheetView, SearchBox, SettingsPanel
 │   ├─ lib/
 │   │   ├─ sheets/             → load/parse (gray-matter)
-│   │   ├─ search/            → minisearch index builder + combo normalizer
+│   │   ├─ search/            → combo normalizer (v1) + find-in-current-sheet; minisearch index builder (deferred)
 │   │   ├─ markdown/         → marked+highlight.js render + sanitize
 │   │   ├─ settings/        → typed settings + tauri-plugin-store bridge
 │   │   ├─ overlay/         → show/hide/toggle + Esc handling
@@ -93,7 +95,7 @@ cheat-sheet-app/
 │   ├─ locales/{en-US.json}   → v1 only
 │   └─ styles/               → theme tokens (light/dark)
 ├─ public/                     → static assets (icons, css)
-├─ tests/                      → Vitest units + fixtures (two-way search golden set)
+├─ tests/                      → Vitest units (find-in-current-sheet golden set); two-way search fixtures deferred
 ├─ e2e/                        → optional Playwright (overlay open/close)
 ├─ docs/{intent,spec}/        → intent + this spec
 └─ tasks/                      → plan.md, todo.md
@@ -130,9 +132,9 @@ export function normalizeCombo(input: string): string[] {
 
 ## Testing Strategy
 
-- **Level-by-concern (Vitest):** combo normalizer & two-way search (golden fixture set, deterministic), front-matter parsing, settings round-trip.
+- **Level-by-concern (Vitest):** combo normalizer, find-in-current-sheet (golden fixture set, deterministic), front-matter parsing, settings round-trip.
 - **Backend (`cargo test`):** dir scan, contents-API listing + cache (mock), settings atomic persistence, arg parsing (`--toggle`).
-- **Integration:** two-way search golden set — fixtures of NL-only, combo-only, and mixed queries returning expected slugs.
+- **Integration:** find-in-current-sheet golden set — fixtures of NL queries returning expected highlights; two-way search fixtures (combo-only, mixed) deferred.
 - **Manual/optional E2E (Playwright):** overlay open/close + pin-on-open on the dev machine (X11, the must path).
 - **Coverage:** kept **modest** for v1 (early stage); require >80% on `lib/search` and `lib/sheets`, lower elsewhere. No coverage gate on UI chrome.
 
@@ -174,7 +176,7 @@ intro: |                    # NL side (also one-line form)
 ```
 Body carries the **combo/syntax side**: `| `Ctrl+Shift+V` | Paste plain text |` tables (backticked key tokens) and ```` ``` ```` code fences. Upstream uses Tailwind class tokens and pandoc `{.shortcuts}` divs — **ignored**; we render standard Markdown.
 
-**Two-way search index** (single input matches either side):
+**Two-way search index** (single input matches either side): *(deferred — v1 uses find-in-current-sheet)*
 - *NL side:* `title`, `intro`, `tags`, `categories` (+ body headings).
 - *Combo/syntax side:* backticked key tokens in the body, **normalized** (`normalizeCombo`) + code tokens.
 - Match: exact-field > substring > fuzzy. Same query box services both directions → "two-way" by construction.
@@ -203,7 +205,7 @@ Neither path fails silently: if the active path is unavailable, the UI says so. 
 - **D2 — Listing + cache (download deferred).** The online listing = GitHub contents API cached locally (Task 6). **Per-file download to `<home>/cheatsheets/` is deferred to a later stage** (not part of v1 Task 6). Online *read* (`raw`) is used only to fetch a file for downloading — never for online viewing.
 - **D3 — Window.** v1 = **solid, undecorated, always-on-top**, small + centered. Transparency/blur **deferred** (reduces Wayland risk). Adds **runtime session-type detection** (`$XDG_SESSION_TYPE`) to drive the Wayland "best-effort + flagged" behavior.
 - **D4 — Render/libs.** `marked` + `highlight.js` (defer `shiki`).
-- **D5 — Search.** `minisearch` + normalized-combo index; **no** NLP/embeddings.
+- **D5 — Search.** `minisearch` + normalized-combo index; **no** NLP/embeddings. *(v1 implementation is find-in-current-sheet: NL-only, highlight matches in the open sheet. The minisearch two-way index is deferred — see §Search scope revision.)*
 - **D6 — Authoring.** Re-scan local dir on open + on explicit **Rescan**; open the folder in the user's editor (`open`/`xdg-open`). No in-app editor.
 
 ---

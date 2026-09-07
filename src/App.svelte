@@ -1,30 +1,72 @@
 <!--
-   Overlay shell (Task 1 scaffold). Replaced by the full Overlay/Sidebar/SheetView/SearchBox tree
-   in Tasks 9-12. v1 window is solid, undecorated, always-on-top (window config lives in
-   src-tauri/tauri.conf.json).
+   Overlay shell (Task 9 wiring). App owns the current sheet (`slug`) and the search `query`.
+   - SearchBox (top of HUD) binds `query`.
+   - SheetView renders the current sheet with matches highlighted internally.
+   The body loader is injectable (Task 12 wires the real Tauri store); a stub loader keeps the
+   shell runnable now.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getCurrentWindow } from '@tauri-apps/api/window';
-  // / etc. land with the real overlay (Task 10).
+  import SheetView from './components/SheetView.svelte';
+  import SearchBox from './components/SearchBox.svelte';
+  import { findMatches } from './lib/search/findInSheet';
 
+  // `load` (slug => body) is injected later (Task 12). Optional; defaults to a stub loader so
+  // the shell is runnable now.
+  let {
+    load = async () =>
+      [
+        '# Sample Sheet',
+        'This is a sample cheat sheet.',
+        '',
+        'To find something, type in the box above.',
+        'For example, search for "insert" — it matches the line below.',
+        '',
+        'Insert mode: `i` to enter insert mode in vim.',
+      ].join('\n'),
+  } = $props();
+
+  // Current sheet.
+  let slug = $state('sample');
+  // Search text bound to SearchBox.
+  let query = $state('');
+  // Raw body of the current sheet (for match count).
+  let body = $state('');
+
+  // Match count for the current body + query.
+  const matchCount = $derived(findMatches(body, query).length);
+
+  // Load the current sheet body, then keep `body` in sync for the search box.
+  async function refreshBody(): Promise<void> {
+    try {
+      const raw = await load(slug);
+      body = raw ?? '';
+    } catch {
+      body = '';
+    }
+  }
+
+  // Refresh whenever the current sheet changes.
   onMount(() => {
-    console.log('[cheat-sheet] overlay shell mounted');
-    // ESC is handled by the OS-level global shortcut in Rust
-    // (src-tauri/src/shortcuts.rs) so it works without the undecorated overlay
-    // window holding keyboard focus. The frontend keydown path could not rely on
-    // this, which is why it was broken.
-    const win = getCurrentWindow();
-    // click-to-close (later tasks) will use `win.hide()` here.
+    void refreshBody();
+  });
+
+  $effect(() => {
+    void refreshBody();
   });
 </script>
 
 <main class="overlay">
   <header class="title">
     <h1>Cheat-Sheet HUD</h1>
-    <span class="hint">Ctrl-Shift-Q placeholder — wired in Task 2</span>
+    <span class="hint">Ctrl-Shift-Q</span>
   </header>
-  <p class="scaffold">Svelte 5 overlay scaffold. UI surfaces land in Tasks 9-12.</p>
+
+  <SearchBox {query} {matchCount} />
+
+  <div class="sheet">
+    <SheetView {slug} {load} {query} />
+  </div>
 </main>
 
 <style>
@@ -54,9 +96,8 @@
     opacity: 0.7;
     margin: 0;
   }
-  .scaffold {
-    font-size: 0.9rem;
-    opacity: 0.85;
-    margin: 0;
+  .sheet {
+    flex: 1;
+    min-height: 0;
   }
 </style>

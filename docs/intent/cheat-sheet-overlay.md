@@ -93,3 +93,16 @@ implementation) consumes this.
    target compiles clean.
 - **Unresolved (flagged to the user):** whether the platform-aware spike **code** is written now or
    reserved for the Task 2 checkpoint itself.
+
+## Revision — Search scope narrowed to find-in-current-sheet (Task 8, added by user request)
+
+- **What changed:** Task 8 was redirected from cross-sheet two-way search (minisearch, NL + combo,
+   golden fixtures) to **find-in-current-sheet**: NL-only, highlight matches in the sheet currently
+   open in the HUD, no combo matching, no cross-sheet index.
+- **What does NOT change:** the intent's **two-way search** design (matching either a NL description
+   or a literal combo) is retained as the intended design. The minisearch index is **deferred**, not
+   deleted.
+- **Why:** simpler v1 scope. The combo/miniSearch machinery can be added later without rework.
+- **Notes:** the search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
+   See `tasks/todo.md` Task 8 for the implementation note and `docs/spec/cheat-sheet-overlay.md`
+   §Search scope revision for the spec-level record.

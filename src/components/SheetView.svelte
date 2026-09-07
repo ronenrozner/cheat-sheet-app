@@ -1,20 +1,22 @@
 <!--
   SheetView: renders one sheet's Markdown in an isolated iframe (sandbox) so untrusted HTML can't
-  reach the app shell (Task 5). Takes a `slug` prop and an optional `load` function prop (the
-  download layer, Task 6); re-renders when the slug changes.
+  reach the app shell (Task 5). Takes a `slug` prop, an optional `load` function prop (the
+  download layer, Task 6), and an optional `query` string (Task 8: highlight matches in the body).
+  Re-renders when the slug or query changes.
 -->
 <script lang="ts">
   import { renderMarkdown } from '../lib/markdown/render';
+  import { highlightMarkdown } from '../lib/search/findInSheet';
 
-  // `slug` (required) and optional `load` (slug => body). `load` is injected by the app (Task 6).
-  let { slug, load } = $props();
+  // `slug` (required), optional `load` (slug => body), and optional `query` (Task 8).
+  let { slug, load, query = '' } = $props();
 
   // Rendered HTML (sanitized).
   let html: string = $state('');
   // Error / empty message.
   let message: string | undefined = $state();
 
-  async function render(slug: string): Promise<void> {
+  async function render(slug: string, query: string): Promise<void> {
     if (!slug) {
       message = 'No sheet selected.';
       html = '';
@@ -28,7 +30,9 @@
         return;
       }
       message = undefined;
-      html = await renderMarkdown(body);
+      // Render Markdown to sanitized HTML, then wrap query matches with <mark>.
+      const rawHtml = await renderMarkdown(body);
+      html = highlightMarkdown(rawHtml, query);
     } catch (err) {
       message = `Failed to load sheet "${slug}".`;
       html = '';
@@ -36,9 +40,9 @@
     }
   }
 
-  // Re-render whenever the slug changes.
+  // Re-render whenever the slug or query changes.
   $effect(() => {
-    void render(slug);
+    void render(slug, query);
   });
 </script>
 
