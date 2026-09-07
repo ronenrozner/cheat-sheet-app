@@ -9,10 +9,12 @@
   import { onMount } from 'svelte';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
+  import Sidebar from './components/Sidebar.svelte';
+  import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { findMatches } from './lib/search/findInSheet';
 
-  // `load` (slug => body) is injected later (Task 12). Optional; defaults to a stub loader so
-  // the shell is runnable now.
+  // Body loader (Task 12 wires the real Tauri store). Optional; defaults to a stub loader so the
+  // shell is runnable now.
   let {
     load = async () =>
       [
@@ -26,11 +28,21 @@
       ].join('\n'),
   } = $props();
 
-  // Current sheet.
-  let slug = $state('sample');
+  // Selection is the single source of truth shared across the overlay: the Sidebar switches it,
+  // the SearchBox highlights matches in it, and SheetView renders it.
+  let selection = $state<Selection>(createSelection('', []));
   // Search text bound to SearchBox.
   let query = $state('');
-  // Raw body of the current sheet (for match count).
+
+  // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
+  function onSelect({ slug }: { slug: string }) {
+    const next = selectSheet(selection, slug);
+    if (next.changed) {
+      selection = next.selection;
+    }
+  }
+
+  // Raw body of the current sheet (for the SearchBox match count).
   let body = $state('');
 
   // Match count for the current body + query. `let` (not `const`) so `$derived` is a reactive
@@ -41,14 +53,14 @@
   // Load the current sheet body, then keep `body` in sync for the search box.
   async function refreshBody(): Promise<void> {
     try {
-      const raw = await load(slug);
+      const raw = await load(selection.slug);
       body = raw ?? '';
     } catch {
       body = '';
     }
   }
 
-  // Refresh whenever the current sheet changes.
+  // Refresh whenever the selected sheet changes.
   onMount(() => {
     void refreshBody();
   });
@@ -66,8 +78,13 @@
 
   <SearchBox {query} {matchCount} />
 
-  <div class="sheet">
-    <SheetView {slug} {load} {query} />
+  <div class="pane">
+    <div class="pane-body">
+      <Sidebar {selection} onselect={onSelect} />
+      <div class="sheet">
+        <SheetView slug={selection.slug} {load} {query} />
+      </div>
+    </div>
   </div>
 </main>
 
