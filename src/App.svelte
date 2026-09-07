@@ -33,8 +33,10 @@
   // Raw body of the current sheet (for match count).
   let body = $state('');
 
-  // Match count for the current body + query.
-  const matchCount = $derived(findMatches(body, query).length);
+  // Match count for the current body + query. `let` (not `const`) so `$derived` is a reactive
+  // variable that reads as a plain number — a `const` $derived is a getter object and must be
+  // called as `matchCount()`, which would break the SearchBox prop binding.
+  let matchCount = $derived(findMatches(body, query).length);
 
   // Load the current sheet body, then keep `body` in sync for the search box.
   async function refreshBody(): Promise<void> {
