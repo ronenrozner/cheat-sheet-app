@@ -3,6 +3,7 @@ mod commands;
 pub mod settings;
 pub mod sheets;
 mod shortcuts;
+mod seed;
 
 use tauri::Manager;
 
@@ -24,6 +25,14 @@ pub fn run() {
    app.manage(status);
     // Settings store (Task 3). Loaded lazily via the get_settings / set_settings commands.
    app.handle().plugin(tauri_plugin_store::Builder::new().build())?;
+    // Seed a few out-of-box sheets into the user's sheet folder on first run (spec D1). Runs
+    // only when the folder is empty/missing, so it never overwrites user sheets.
+    let sheet_dir = sheets::sheet_dir(app.handle());
+    if seed::seed_bundled(&sheet_dir) {
+        log::info!("seeded bundled sheets into {sheet_dir:?}");
+    } else {
+        log::info!("sheet folder {sheet_dir:?} already populated; skipping seed");
+    }
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![

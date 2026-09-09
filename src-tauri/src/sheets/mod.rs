@@ -3,9 +3,11 @@
 //! Front-matter (Hexo YAML) + body parsing happens on the JS side per the spec's `lib/sheets`;
 //! this module owns the filesystem + slug-listing side and exposes the parsed metadata.
 //!
-//! Storage dirs (spec):
-//! - `app_data_dir/cheatsheets/local/` → user-authored sheets.
-//! - `app_data_dir/cheatsheets/upstream/` → downloaded snapshot.
+//! Storage dirs (spec: `<home>/cheatsheets/`, flat, visible in the user's home folder):
+//! - `<home>/cheatsheets/` → user-authored + downloaded sheets (flat; every sheet is a `.md` file).
+//!
+//! The online listing + cache lives separately under `app_data_dir/` (see `online.rs`); it is not
+//! the sheet storage folder.
 
 //!   Online listing + cache (Task 6): GitHub contents API, cached locally. No download, no online viewing.
 pub mod online;
@@ -126,13 +128,25 @@ pub fn scan_dir(dir: &Path, source: SheetSource) -> Vec<Sheet> {
     sheets
 }
 
-/// Resolve the local + upstream sheet directories under `app_data_dir/cheatsheets/`.
+/// Resolve the sheet storage directory under `<home>/cheatsheets/`.
+///
+/// This is the user's sheets folder (spec): flat, visible in the home directory, no leading dot.
+/// It holds both user-authored and downloaded sheets. A missing folder yields `Ok(empty)` — the
+/// caller (`scan_dir`) returns an empty list and no panic; first-run seeding is a separate task.
+pub fn sheet_dir(app: &AppHandle) -> PathBuf {
+    app.path()
+        .resolve("cheatsheets", tauri::path::BaseDirectory::Home)
+        .unwrap_or_else(|_| PathBuf::from("cheatsheets"))
+}
+
+/// Resolve the sheet storage dir (`<home>/cheatsheets/`) and the (unused until download) upstream
+/// subfolder, for callers that expect a (local, upstream) pair.
+///
+/// `local` is `<home>/cheatsheets/`; `upstream` is `<home>/cheatsheets/upstream/` and is empty
+/// until the per-file download task creates it.
 pub fn sheet_dirs(app: &AppHandle) -> (PathBuf, PathBuf) {
-    let base = app
-        .path()
-        .resolve("cheatsheets", tauri::path::BaseDirectory::AppData)
-        .unwrap_or_else(|_| PathBuf::from("cheatsheets"));
-    (base.join("local"), base.join("upstream"))
+    let local = sheet_dir(app);
+    (local.clone(), local.join("upstream"))
 }
 
 /// List sheets for a source mode (`local` / `both`; `online` lists nothing — online listing is
