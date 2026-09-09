@@ -6,9 +6,15 @@ use tauri::AppHandle;
 
 /// List sheet metadata for a source mode. `local` scans the local dir; `both` also scans the
 /// downloaded snapshot. `online` lists nothing (online listing is a separate concern).
+///
+/// `source_mode` is optional: the backend falls back to its own default (`Both`) when the caller
+/// omits it, so the frontend does not need to send a Rust enum.
 #[tauri::command]
-pub fn list_sheets(app: AppHandle, source_mode: SourceMode) -> Vec<sheets::Sheet> {
-    sheets::list_sheets(&app, source_mode)
+pub fn list_sheets(
+    app: AppHandle,
+    source_mode: Option<SourceMode>,
+) -> Vec<sheets::Sheet> {
+    sheets::list_sheets(&app, source_mode.unwrap_or_default())
 }
 
 /// Load the cached online listing (offline). No network, no download.

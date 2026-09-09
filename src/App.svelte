@@ -41,6 +41,19 @@
   // Raw body of the current sheet (for the SearchBox match count).
   let body = $state('');
 
+  // Fetch the sheet list once, populate the selection, and select the first sheet.
+  async function loadSheets(): Promise<void> {
+    try {
+      const sheets = await invoke<[{ slug: string }]>('list_sheets', {});
+      const slugs = sheets.map((s: { slug: string }) => s.slug);
+      if (slugs.length > 0) {
+        selection = { slug: slugs[0]!, slugs };
+      }
+    } catch {
+      // empty list — the Sidebar stays empty
+    }
+  }
+
   // Match count for the current body + query. `let` (not `const`) so `$derived` is a reactive
   // variable that reads as a plain number — a `const` $derived is a getter object and must be
   // called as `matchCount()`, which would break the SearchBox prop binding.
@@ -60,6 +73,12 @@
   // block is needed here.
   $effect(() => {
     void refreshBody();
+  });
+
+  // Fetch the sheet list once on mount. This effect reads no reactive state, so it runs once
+  // and never re-runs when `selection` changes.
+  $effect(() => {
+    void loadSheets();
   });
 </script>
 
