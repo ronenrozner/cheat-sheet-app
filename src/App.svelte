@@ -6,7 +6,6 @@
    shell runnable now.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
@@ -60,11 +59,8 @@
     }
   }
 
-  // Refresh whenever the selected sheet changes.
-  onMount(() => {
-    void refreshBody();
-  });
-
+  // Refresh whenever the selected sheet changes. `$effect` also fires on mount, so no onMount
+  // block is needed here.
   $effect(() => {
     void refreshBody();
   });
