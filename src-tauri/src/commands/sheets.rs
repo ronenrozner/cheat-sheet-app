@@ -17,6 +17,15 @@ pub fn get_online_listing(app: AppHandle) -> Vec<sheets::Sheet> {
     sheets::online::load_cached(&app)
 }
 
+/// Load the Markdown body of one sheet by slug from `<home>/cheatsheets/<slug>.md`.
+///
+/// Returns `None` when the sheet is missing, unreadable, or empty — the frontend treats that as
+/// "not found" rather than an error. Front-matter is stripped before returning.
+#[tauri::command]
+pub fn load_sheet(app: AppHandle, slug: String) -> Option<String> {
+    sheets::read_sheet_body(&app, &slug)
+}
+
 /// Fetch the online listing from the contents API, caching it locally. First call hits the
 /// network; later calls return the cache.
 #[tauri::command]

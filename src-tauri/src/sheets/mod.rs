@@ -149,6 +149,23 @@ pub fn sheet_dirs(app: &AppHandle) -> (PathBuf, PathBuf) {
     (local.clone(), local.join("upstream"))
 }
 
+/// Read the Markdown body of one sheet by slug from `<home>/cheatsheets/<slug>.md`.
+///
+/// Returns the body with front-matter stripped. Returns `None` when the file is missing,
+/// unreadable, or empty — the frontend treats that as "not found" rather than an error.
+pub fn read_sheet_body(app: &AppHandle, slug: &str) -> Option<String> {
+    let path = sheet_dir(app).join(format!("{slug}.md"));
+    let Ok(content) = std::fs::read_to_string(&path) else {
+        return None;
+    };
+    let (_fm, body) = split_front_matter(&content);
+    let body = body.trim();
+    if body.is_empty() {
+        return None;
+    }
+    Some(body.to_string())
+}
+
 /// List sheets for a source mode (`local` / `both`; `online` lists nothing — online listing is
 /// a separate concern in Task 6).
 ///

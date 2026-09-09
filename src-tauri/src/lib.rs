@@ -40,6 +40,7 @@ pub fn run() {
       crate::commands::settings::get_settings,
       crate::commands::settings::set_settings,
       crate::commands::sheets::list_sheets,
+      crate::commands::sheets::load_sheet,
       crate::commands::sheets::get_online_listing,
       crate::commands::sheets::refresh_online_listing
     ])

@@ -2,30 +2,27 @@
    Overlay shell (Task 9 wiring). App owns the current sheet (`slug`) and the search `query`.
    - SearchBox (top of HUD) binds `query`.
    - SheetView renders the current sheet with matches highlighted internally.
-   The body loader is injectable (Task 12 wires the real Tauri store); a stub loader keeps the
-   shell runnable now.
+   The body loader is injectable (Task 12 wires the real Tauri store); the default calls the
+   Rust `load_sheet` command.
 -->
 <script lang="ts">
+  import { invoke } from '@tauri-apps/api/core';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { findMatches } from './lib/search/findInSheet';
 
-  // Body loader (Task 12 wires the real Tauri store). Optional; defaults to a stub loader so the
-  // shell is runnable now.
-  let {
-    load = async () =>
-      [
-        '# Sample Sheet',
-        'This is a sample cheat sheet.',
-        '',
-        'To find something, type in the box above.',
-        'For example, search for "insert" — it matches the line below.',
-        '',
-        'Insert mode: `i` to enter insert mode in vim.',
-      ].join('\n'),
-  } = $props();
+  // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
+  // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
+  // when the sheet is missing/unreadable/empty.
+  let { load = async (slug: string): Promise<string | null> => {
+    try {
+      return await invoke('load_sheet', { slug });
+    } catch {
+      return null;
+    }
+  } } = $props();
 
   // Selection is the single source of truth shared across the overlay: the Sidebar switches it,
   // the SearchBox highlights matches in it, and SheetView renders it.
