@@ -7,6 +7,7 @@
 > **Revisions:** *Hotkey constraint revised to **X11-must / Wayland-best-effort-flagged** (was "Wayland must"). This flips the §Hotkey strategy and resolves O1 — it is no longer architecture-blocking.*
 
   * **Search scope revised (Task 8, 2026-09-06).** Original Task 8 was cross-sheet two-way search (minisearch, NL + combo, golden fixtures). **Redirected to find-in-current-sheet**: NL-only, highlight matches in the sheet currently open in the HUD, no combo matching, no cross-sheet index. The original minisearch two-way search is **deferred**, not deleted from the spec — the spec describes the intended design; Task 8 implements a narrower v1 scope. See `tasks/todo.md` Task 8 for the implementation note. The search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
+  * **Sheet storage folder resolved to `<home>/cheatsheets/` (2026-09-09).** Storage path fixed from the previous `app_data_dir/cheatsheets` to `BaseDirectory::Home/cheatsheets` — a flat, visible folder in the user's home directory, per spec. `src-tauri/src/sheets/mod.rs::sheet_dir` resolves it; `src-tauri/src/seed.rs` seeds it on first run by embedding `src-tauri/bundled/` at compile time (`include_dir!`) and copying every `.md` file when the folder is empty/missing (never overwrites user sheets). New dependency: `include_dir` (Ask-first item per spec).
 
 ---
 
@@ -103,6 +104,7 @@ cheat-sheet-app/
 
 **Storage:**
 - `<home>/cheatsheets/` → the user's sheets folder (default read location), where `<home>` is the user's home directory (`C:\Users\<user>` on Windows, `/home/<user>` on Linux). On Linux this folder is **not** hidden (no leading dot). The folder is **flat**: every sheet lives directly in it. On first run the app seeds this folder with a few **out-of-box** sheets (app-authored, CC0/MIT, see D1).
+  - **Implementation (v1.0).** The folder is resolved as `BaseDirectory::Home/cheatsheets` (see `src-tauri/src/sheets/mod.rs::sheet_dir`). The default is populated by `src-tauri/src/seed.rs`, which embeds the sheets in `src-tauri/bundled/` at compile time (`include_dir!`) and copies every `.md` file into the folder on first run. Seeding runs **only** when the folder is empty or missing, so a user's own sheets are never overwritten. Drop a new `.md` into `src-tauri/bundled/` and rebuild to add a sheet; note the bundled folder is compiled into the binary, so it does not ship at runtime (see `src-tauri/Cargo.toml` — `include_dir` dependency).
 - `app_config_dir/settings.json` → user settings (atomic write).
 - `app_config_dir/index.cache` → built search index (optional, regenerated on Rescan).
 - The online listing is cached locally (Task 6).
