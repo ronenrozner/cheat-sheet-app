@@ -16,13 +16,15 @@
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
   // when the sheet is missing/unreadable/empty.
-  let { load = async (slug: string): Promise<string | null> => {
-    try {
-      return await invoke('load_sheet', { slug });
-    } catch {
-      return null;
-    }
-  } } = $props();
+  let {
+    load = async (slug: string): Promise<string | null> => {
+      try {
+        return await invoke('load_sheet', { slug });
+      } catch {
+        return null;
+      }
+    },
+  } = $props();
 
   // Selection is the single source of truth shared across the overlay: the Sidebar switches it,
   // the SearchBox highlights matches in it, and SheetView renders it.
