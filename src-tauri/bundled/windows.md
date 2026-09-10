@@ -1,4 +1,11 @@
-# Best Windows Shortcuts on Your Keyboard
+---
+title: Windows Shortcuts
+intro: Common Windows keybindings and shortcuts.
+tags: [Windows]
+categories: [Keyboard Shortcuts]
+---
+
+# Windows
 
 Copy selected content (Ctrl + C can also abort commands):
 
