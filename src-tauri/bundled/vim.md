@@ -14,10 +14,10 @@ categories: [Keyboard Shortcuts]
 
 ## Editing
 
-| Key | Action |
-| --- | --- |
-| `i` | Insert mode |
-| `A` | Append at end of line |
+| Key   | Action                |
+| ----- | --------------------- |
+| `i`   | Insert mode           |
+| `A`   | Append at end of line |
 | `Esc` | Return to normal mode |
 
 ## Saving
