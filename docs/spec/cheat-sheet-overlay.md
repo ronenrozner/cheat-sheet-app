@@ -1,7 +1,7 @@
 # Spec: Cheat-Sheet Global HUD Overlay (v1)
 
 > Upstream intent: [`../intent/cheat-sheet-overlay.md`](../intent/cheat-sheet-overlay.md) (confirmed, ~95%).
-> Status: **Draft for human review** — Phase 1 of spec-driven-development. Not approved yet.
+> Status: **Approved** — design baseline for the v1 build (Phase 1 of spec-driven-development).
 > Companion artifacts (generated later, in spec order): `../../tasks/plan.md`, `../../tasks/todo.md`.
 >
 > **Revisions:** *Hotkey constraint revised to **X11-must / Wayland-best-effort-flagged** (was "Wayland must"). This flips the §Hotkey strategy and resolves O1 — it is no longer architecture-blocking.*
