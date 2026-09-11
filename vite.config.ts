@@ -7,6 +7,12 @@ const host = process.env['TAURI_DEV_HOST'];
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Force the browser export conditions so Svelte 5 resolves the client build
+  // (import { mount } from 'svelte') for component tests. Without this, Vitest
+  // uses the Node conditions and mount resolves to the server build.
+  resolve: {
+    conditions: ['browser'],
+  },
   plugins: [svelte()],
   server: {
     port: 1420,

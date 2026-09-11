@@ -33,7 +33,7 @@
   let query = $state('');
 
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
-  function onSelect({ slug }: { slug: string }) {
+  function onSelect(slug: string) {
     const next = selectSheet(selection, slug);
     if (next.changed) {
       selection = next.selection;
