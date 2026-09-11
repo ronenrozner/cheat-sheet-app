@@ -1,0 +1,72 @@
+---
+title: KanbanMail
+intro: A visual cheat-sheet for the 29 keyboard shortcuts found in KanbanMail
+tags:
+  - 
+  - 
+---
+
+## Keyboard Shortcuts
+
+### Global
+
+| Shortcut   | Action            |
+| ---------- | ----------------- |
+| `Ctrl` `\` | Toggle split view |
+
+
+### Board
+
+| Shortcut   | Action                                       |
+| ---------- | -------------------------------------------- |
+| `C`        | Open composer                                |
+| `Ctrl` `N` | New note in the to-do column                 |
+| `/`        | Focus the search bar                         |
+| `Esc`      | Clear search, if it's on                     |
+| `1-5`      | Select the first thread in column \<number\> |
+
+
+### Email
+
+| Shortcut    | Action                                   |
+| ----------- | ---------------------------------------- |
+| `S`         | Star or unstar                           |
+| `I`         | Mark as important or not important       |
+| `U`         | Mark as read or unread                   |
+| `Shift` `P` | Pin                                      |
+| `R`         | Reply                                    |
+| `A`         | Reply all                                |
+| `F`         | Forward                                  |
+| `E`         | Move to archived                         |
+| `1-5`       | Move to column \<number\>                |
+| `Shift` `3` | Move to trash                            |
+| `P`         | Go to the previous message in the thread |
+| `N`         | Go to the next message in the thread     |
+| `Shift` `U` | Unsubscribe                              |
+| `Enter`     | Open selected thread                     |
+| `Esc`       | Close thread viewer, if open             |
+| `Esc`       | Clear selected threads                   |
+
+
+### Composer
+
+| Shortcut       | Action         |
+| -------------- | -------------- |
+| `Ctrl` `Enter` | Send email     |
+| `Ctrl` `S`     | Save as draft  |
+| `Esc`          | Close composer |
+
+
+### Editor
+
+| Shortcut   | Action        |
+| ---------- | ------------- |
+| `Ctrl` `B` | Bold          |
+| `Ctrl` `I` | Italic        |
+| `Ctrl` `U` | Underline     |
+| `Ctrl` `K` | Add hyperlink |
+
+
+## Also see
+
+- [Keyboard shortcuts for KanbanMail](https://guides.kanbanmail.app/keyboard-shortcuts) _(guides.kanbanmail.app)_
