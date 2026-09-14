@@ -389,16 +389,34 @@ bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists v
 window size, trigger key, language, pinned slug. Persist across restart.
 
 **Acceptance criteria:**
-- [ ] Changing any setting persists and is reloaded on restart; defaults apply on first run.
-- [ ] Malformed on-disk settings recover to defaults (reuse Task 3 behavior).
+- [x] Changing any setting persists and is reloaded on restart; defaults apply on first run.
+- [x] Malformed on-disk settings recover to defaults (reuse Task 3 behavior).
 
 **Verification:**
-- [ ] `npm test` + `cargo test`: round-trip for every field.
-- [ ] Manual: change theme + trigger; restart; values persist.
+- [x] `npm test`: 51 tests (9 settings bridge — coerce/defaults, get fallback, set validate/skip).
+- [x] `cargo test` clean (backend Task 3 already covers round-trip + malformed recovery).
+- [x] `npm run build`, `npm run check` (0 errors/warnings), `npm run lint`, prettier all clean.
+- [ ] **Manual: change theme + trigger; restart; values persist.** (frontend wiring verified headlessly;
+       on-disk persistence across restart needs the running app + store).
+
+**Result (Task 12 — 2026-09-04):** Frontend settings surface complete and verifiable headlessly.
+- `src/lib/settings/types.ts` — `Settings` model mirrors the Rust `Settings` (theme / win_size /
+  trigger / source_mode / language / pinned_slug); enum string values match the Rust unit-variant
+  serialization; `DEFAULT_SETTINGS` default trigger is `Ctrl+Shift+Q` (matches Rust `Settings::default`).
+- `src/lib/settings/bridge.ts` — `getSettings` falls back to defaults on error/partial response;
+  `setSettings` validates before persisting (rejects malformed snapshots without calling the backend)
+  and returns success/failure. `coerceSettings` + shape guards make recovery redundant-safe.
+- `src/components/SettingsPanel.svelte` — one control per field (theme select, window-size number
+  inputs, trigger checkboxes + key, language select, pinned-slug input); each edit calls `onSave`.
+- `src/App.svelte` — loads settings via `getSettings` on mount, wires the panel's `onSave` into a
+  `persist()` that calls `setSettings`. No backend change: the Task 3 `get_settings`/`set_settings`
+  commands already persist every field.
+- **No backend change**: `Settings` + `get_settings`/`set_settings` + malformed recovery all existed
+  from Task 3.
 
 **Dependencies:** Task 3, Task 10
-**Files likely touched:** `src/lib/settings/*`, `src/components/SettingsPanel.svelte`,
-`src-tauri/src/commands/settings.rs`
+**Files touched:** `src/lib/settings/types.ts`, `src/lib/settings/bridge.ts`,
+`src/components/SettingsPanel.svelte`, `src/App.svelte`, `tests/settings/bridge.test.ts`
 **Estimated scope:** M
 
 **Note:** Default trigger is `Ctrl+Shift+Q` (`ctrl=true, alt=false, shift=true, key="q"`), set in
@@ -471,7 +489,7 @@ keep license/NOTICE files intact.
 
 ## State-sync notes (todo.md reconciled to code)
 
-> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (42 pass) /
+> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (51 pass) /
 > `cargo test` (24 pass). Marked done what the code already ships; left open what is not yet
 > implemented.
 
@@ -481,11 +499,14 @@ keep license/NOTICE files intact.
   default → first available; `App.svelte` mounts settings + resolves open sheet; header "Pin this
   sheet" button persists `pinned_slug` via existing `set_settings` (no backend change). Committed
   (`4b8f7d6`).
+- **Task 12 (settings UI round-trip):** done. `src/lib/settings/types.ts` (Settings model),
+  `src/lib/settings/bridge.ts` (defensive get/set), `src/components/SettingsPanel.svelte` (one
+  control per field), wired into `App.svelte` (loads via `get_settings` on mount, persists on edit).
+  No backend change. Committed (`303f66d`, `34e9456`).
 - **Task 15 (license):** `LICENSE` + `NOTICE` present and committed; bundled defaults are app-authored.
   The upstream GPL-notice *display* in the HUD is still open (see verification above).
-- **Still open (surface not present in code):** Task 12 (settings UI panel), Task 13 (i18n layer),
-  Task 14 (`--toggle` single-instance CLI). `src/lib/settings/`, `src/lib/i18n/`, `src/locales/`, and
-  `src/components/SettingsPanel.svelte` do not exist yet.
+- **Still open (surface not present in code):** Task 13 (i18n layer), Task 14 (`--toggle` single-instance
+  CLI). `src/lib/i18n/`, `src/locales/`, and the single-instance plugin surface do not exist yet.
 
 ---
 
