@@ -1,0 +1,39 @@
+# NOTICE: Cheat-Sheet Global HUD Overlay
+
+Copyright 2026 RONEN ROZNER
+
+This product is licensed under the Apache License, Version 2.0. A copy of that
+license is provided in [`LICENSE`](./LICENSE).
+
+## Contents of this distribution
+
+- **Application source code** (`src/`, `src-tauri/`) — authored by Ronen Rozner,
+  licensed Apache-2.0.
+- **Bundled cheat sheets** (`src-tauri/bundled/`) — app-authored reference sheets,
+  released to the public domain (CC0) or under a permissive license, so the
+  shipped binary carries no GPL entanglement. These are the sheets seeded into
+  `<home>/cheatsheets/` on first run.
+- **Local dev reference** (`source-sheets/`) — a copy of the upstream
+  [Fechin/reference](https://github.com/Fechin/reference) cheat sheets, kept in
+  this repository for offline authoring reference only. That content is
+  **GPL-v3** and belongs to the upstream project and its contributors.
+  - It is **not** compiled into the binary and **not** shipped at runtime.
+  - It is committed under the terms of the upstream GPL-v3 license.
+
+## Open-source components
+
+This product bundles or depends on the following third-party components. Their
+license files are distributed with their respective packages.
+
+| Component | License |
+| --- | --- |
+| Tauri (`@tauri-apps/api`, `@tauri-apps/cli`) | Apache-2.0 OR MIT |
+| Svelte 5 (`svelte`, `@sveltejs/vite-plugin-svelte`) | MIT |
+| Vite | MIT |
+| Vitest | MIT |
+| svelte-check | MIT |
+| @typescript-eslint/parser | MIT |
+| marked | MIT |
+| highlight.js | BSD-3-Clause |
+| DOMPurify | MPL-2.0 OR Apache-2.0 |
+| Rust crates (serde, serde_json, serde_yaml, ureq, log, include_dir, etc.) | see their individual license files |
