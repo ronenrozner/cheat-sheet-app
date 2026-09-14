@@ -1,0 +1,222 @@
+<!--
+  SettingsPanel: edit the persisted settings snapshot (Task 12).
+
+  Props:
+  - `settings` (bound): the full snapshot from `lib/settings`.
+  - `onSave`: called with the updated snapshot when the user commits a change. The parent persists
+    it (and, if it changes the trigger, re-binds the global hotkey — Task 14).
+
+  One control per field: theme (select), window size (two number inputs), trigger (three
+  checkboxes + a key input), language (select), pinned slug (text input).
+
+  Every control is uncontrolled internally but the value is driven by the bound `settings` prop, so
+  a change updates the prop and the parent persists it.
+-->
+<script lang="ts">
+  import type { Settings, Theme, SourceMode, Language } from '../lib/settings/types';
+  import { DEFAULT_SETTINGS } from '../lib/settings/types';
+
+  let { settings = DEFAULT_SETTINGS, onSave } = $props<{
+    settings?: Settings;
+    onSave: (s: Settings) => void;
+  }>();
+
+  // Theme (Follow / Light / Dark).
+  function onTheme(e: Event) {
+    const v = (e.target as HTMLSelectElement).value;
+    settings = { ...settings, theme: v as Theme };
+    onSave(settings);
+  }
+
+  // Window size (width / height).
+  function onWidth(e: Event) {
+    const el = e.target as HTMLInputElement;
+    const width = Number.parseInt(el.value || '0', 10);
+    settings = {
+      ...settings,
+      win_size: {
+        ...settings.win_size,
+        width: Number.isFinite(width) ? width : settings.win_size.width,
+      },
+    };
+    onSave(settings);
+  }
+
+  function onHeight(e: Event) {
+    const el = e.target as HTMLInputElement;
+    const height = Number.parseInt(el.value || '0', 10);
+    settings = {
+      ...settings,
+      win_size: {
+        ...settings.win_size,
+        height: Number.isFinite(height) ? height : settings.win_size.height,
+      },
+    };
+    onSave(settings);
+  }
+
+  // Trigger key parts.
+  function onTrigger(part: 'ctrl' | 'alt' | 'shift', checked: boolean) {
+    settings = { ...settings, trigger: { ...settings.trigger, [part]: checked } };
+    onSave(settings);
+  }
+
+  function onKey(e: Event) {
+    const el = e.target as HTMLInputElement;
+    settings = { ...settings, trigger: { ...settings.trigger, key: el.value } };
+    onSave(settings);
+  }
+
+  // Language (v1 ships only en-US).
+  function onLanguage(e: Event) {
+    const v = (e.target as HTMLSelectElement).value;
+    settings = { ...settings, language: v as Language };
+    onSave(settings);
+  }
+
+  // Pinned sheet slug.
+  function onPinned(e: Event) {
+    const el = e.target as HTMLInputElement;
+    settings = { ...settings, pinned_slug: el.value };
+    onSave(settings);
+  }
+</script>
+
+<div class="panel">
+  <label class="row">
+    <span>Theme</span>
+    <select class="ctrl" bind:value={settings.theme} onchange={onTheme}>
+      <option value="Follow">Follow</option>
+      <option value="Light">Light</option>
+      <option value="Dark">Dark</option>
+    </select>
+  </label>
+
+  <div class="row">
+    <span>Window size</span>
+    <div class="size">
+      <input
+        class="ctrl"
+        type="number"
+        min="1"
+        placeholder="width"
+        bind:value={settings.win_size.width}
+        onchange={onWidth}
+      />
+      <input
+        class="ctrl"
+        type="number"
+        min="1"
+        placeholder="height"
+        bind:value={settings.win_size.height}
+        onchange={onHeight}
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <span>Trigger</span>
+    <div class="trigger">
+      <label
+        ><input
+          type="checkbox"
+          bind:checked={settings.trigger.ctrl}
+          onchange={(e) => onTrigger('ctrl', (e.target as HTMLInputElement).checked)}
+        /> Ctrl</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          bind:checked={settings.trigger.alt}
+          onchange={(e) => onTrigger('alt', (e.target as HTMLInputElement).checked)}
+        /> Alt</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          bind:checked={settings.trigger.shift}
+          onchange={(e) => onTrigger('shift', (e.target as HTMLInputElement).checked)}
+        /> Shift</label
+      >
+      <input
+        class="ctrl key"
+        type="text"
+        placeholder="key"
+        bind:value={settings.trigger.key}
+        onchange={onKey}
+      />
+    </div>
+  </div>
+
+  <label class="row">
+    <span>Language</span>
+    <select class="ctrl" bind:value={settings.language} onchange={onLanguage}>
+      <option value="EnUs">en-US</option>
+    </select>
+  </label>
+
+  <label class="row">
+    <span>Pinned sheet</span>
+    <input
+      class="ctrl"
+      type="text"
+      placeholder="(none)"
+      bind:value={settings.pinned_slug}
+      onchange={onPinned}
+    />
+  </label>
+</div>
+
+<style>
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border: 1px solid var(--cs-border, #44475a);
+    border-radius: 4px;
+    padding: 0.6rem;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .row span {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  .ctrl {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    border: 1px solid var(--cs-border, #44475a);
+    background: var(--cs-input-bg, #282c3f);
+    color: var(--cs-fg, #cdd6f4);
+  }
+  .ctrl:focus {
+    outline: 2px solid var(--cs-accent, #7d9ad4);
+    outline-offset: 1px;
+  }
+  .size {
+    display: flex;
+    gap: 0.4rem;
+    flex: 1;
+    max-width: 160px;
+  }
+  .trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    font-size: 0.85rem;
+  }
+  .trigger label {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .trigger .key {
+    width: 3rem;
+  }
+</style>

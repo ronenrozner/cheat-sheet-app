@@ -12,6 +12,12 @@
   import Sidebar from './components/Sidebar.svelte';
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { resolveInitialSlug } from './lib/overlay/initialSlug';
+  import {
+    getSettings as loadSettings,
+    setSettings as persistSettings,
+  } from './lib/settings/bridge';
+  import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
+  import SettingsPanel from './components/SettingsPanel.svelte';
   import { findMatches } from './lib/search/findInSheet';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
@@ -33,18 +39,9 @@
   // Search text bound to SearchBox.
   let query = $state('');
 
-  // Persisted settings (Task 11). Loaded once on mount so we can read the pinned slug for the
-  // open-sheet decision and persist new pins. Typed loosely; the backend returns the full
-  // `Settings` snapshot.
-  interface Settings {
-    theme: string;
-    win_size: { width: number; height: number };
-    trigger: { ctrl: boolean; alt: boolean; shift: boolean; key: string };
-    source_mode: string;
-    language: string;
-    pinned_slug: string;
-  }
-  let settings = $state<Settings | null>(null);
+  // Persisted settings (Task 11/12). Loaded once on mount so we can read the pinned slug for the
+  // open-sheet decision and persist new pins. Loaded defensively (falls back to defaults).
+  let settings = $state<SettingsModel | null>(null);
 
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
   function onSelect(slug: string) {
@@ -58,12 +55,18 @@
   async function onPin() {
     const slug = selection.slug;
     if (!settings || !slug) return;
-    const next: Settings = { ...settings, pinned_slug: slug };
+    const next: SettingsModel = { ...settings, pinned_slug: slug };
     settings = next;
+    await persist(next);
+  }
+
+  // Persist an updated settings snapshot (Task 12). The panel calls this on every edit.
+  async function persist(s: SettingsModel): Promise<void> {
+    settings = s;
     try {
-      await invoke('set_settings', { settings: next });
+      await persistSettings(s);
     } catch {
-      // Persist failed (e.g. store unavailable). The in-memory selection still reflects the pin.
+      // Persist failed (e.g. store unavailable). The in-memory settings still reflect the edit.
     }
   }
 
@@ -79,11 +82,11 @@
     try {
       const sheets = await invoke<[{ slug: string }]>('list_sheets', {});
       const slugs = sheets.map((s: { slug: string }) => s.slug);
-      // Load persisted settings once (Task 11): read the pinned slug for the open-sheet decision.
+      // Load persisted settings once (Task 11/12): read the pinned slug for the open-sheet decision.
       try {
-        settings = await invoke<Settings>('get_settings', {});
+        settings = await loadSettings();
       } catch {
-        settings = null;
+        settings = { ...DEFAULT_SETTINGS };
       }
       // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
       const initial = resolveInitialSlug(settings?.pinned_slug ?? '', slugs);
@@ -134,6 +137,13 @@
 
   <SearchBox {query} {matchCount} />
 
+  <div class="panel-row">
+    <SettingsPanel
+      settings={settings ?? DEFAULT_SETTINGS}
+      onSave={(s: SettingsModel) => void persist(s)}
+    />
+  </div>
+
   <div class="pane">
     <div class="pane-body">
       <Sidebar {selection} onselect={onSelect} />
@@ -174,6 +184,11 @@
   .sheet {
     flex: 1;
     min-height: 0;
+  }
+  .panel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   .pin {
     padding: 0.35rem 0.6rem;
