@@ -349,12 +349,28 @@ into. Switching a sidebar entry updates `SheetView`.
 bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists via settings (Task 3/13).
 
 **Acceptance criteria:**
-- [ ] Open shows the pinned sheet if set; otherwise the bundled default.
-- [ ] "Pin this sheet" sets the pin and persists across restart.
+- [x] Open shows the pinned sheet if set; otherwise the bundled default.
+- [x] "Pin this sheet" sets the pin and persists across restart.
 
 **Verification:**
-- [ ] `npm test`/`cargo test`: pin + fallback resolution.
-- [ ] Manual: open shows pinned sheet; after restart the pin sticks.
+- [x] `npm test`: 42 tests (8 `initialSlug` resolution + App mount-resolution regression + pin-click). `cargo test` clean.
+- [x] `npm run build`, `npm run check` (0 errors/warnings), `npm run lint`, prettier all clean.
+- [ ] **Manual: open shows pinned sheet; after restart the pin sticks.** (frontend logic verified headlessly;
+       restart persistence requires the running app + on-disk store).
+
+**Result (Task 11 — 2026-09-04):** Pinned-sheet-on-open complete and verifiable headlessly.
+- `src/lib/overlay/initialSlug.ts` — `resolveInitialSlug(pinnedSlug, available)`: pinned slug wins when
+  available, first run falls back to bundled defaults (`bash`/`git`/`powershell`/`vim`/`windows`, in that
+  order), then the first available sheet. Pure, unit-tested (8 tests, 8/8).
+- `src/App.svelte` — on mount, `get_settings` loads the persisted snapshot; `selection` resolves via
+  `resolveInitialSlug(settings.pinned_slug ?? '', slugs)`. Header adds a "Pin this sheet" / "Unpin this
+  sheet" button that calls `set_settings` (backend already provides `Settings.pinned_slug` from Task 3;
+  no backend change). `isPinned` drives the button label + `aria-pressed`.
+- `tests/overlay/App.svelte.test.ts` — updated the mount test to the new behavior (bundled default `git`
+  beats first-in-list `vim` with no pin); added a pin-click test asserting `set_settings` is called with
+  `{ pinned_slug: 'git' }` and the button flips to "Unpin".
+- **No backend change**: `get_settings`/`set_settings` already persisted `pinned_slug` (Task 3). Bundled
+  defaults already seeded on first run (`src-tauri/bundled/`).
 
 **Dependencies:** Task 10, Task 3
 **Files likely touched:** `src/App.svelte`, `src/components/Sidebar.svelte`, bundled default sheet(s)
@@ -455,17 +471,21 @@ keep license/NOTICE files intact.
 
 ## State-sync notes (todo.md reconciled to code)
 
-> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (33 pass) /
+> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (42 pass) /
 > `cargo test` (24 pass). Marked done what the code already ships; left open what is not yet
 > implemented.
 
 - **Task 10 (App shell / Sidebar):** done. `App.svelte` wires `Sidebar` through `overlay/selection.ts`
   (`{slug, slugs}` as the single source of truth shared with search); committed (`4c509d5`).
+- **Task 11 (pinned sheet on open):** done. `src/lib/overlay/initialSlug.ts` resolves pinned → bundled
+  default → first available; `App.svelte` mounts settings + resolves open sheet; header "Pin this
+  sheet" button persists `pinned_slug` via existing `set_settings` (no backend change). Committed
+  (`4b8f7d6`).
 - **Task 15 (license):** `LICENSE` + `NOTICE` present and committed; bundled defaults are app-authored.
   The upstream GPL-notice *display* in the HUD is still open (see verification above).
-- **Still open (surface not present in code):** Task 11 (pin-on-open), Task 12 (settings UI panel),
-  Task 13 (i18n layer), Task 14 (`--toggle` single-instance CLI). `src/lib/settings/`,
-  `src/lib/i18n/`, `src/locales/`, and `src/components/SettingsPanel.svelte` do not exist yet.
+- **Still open (surface not present in code):** Task 12 (settings UI panel), Task 13 (i18n layer),
+  Task 14 (`--toggle` single-instance CLI). `src/lib/settings/`, `src/lib/i18n/`, `src/locales/`, and
+  `src/components/SettingsPanel.svelte` do not exist yet.
 
 ---
 
