@@ -505,7 +505,7 @@ keep license/NOTICE files intact.
 
 ## State-sync notes (todo.md reconciled to code)
 
-> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (51 pass) /
+> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (60 pass) /
 > `cargo test` (24 pass). Marked done what the code already ships; left open what is not yet
 > implemented.
 
@@ -519,10 +519,13 @@ keep license/NOTICE files intact.
   `src/lib/settings/bridge.ts` (defensive get/set), `src/components/SettingsPanel.svelte` (one
   control per field), wired into `App.svelte` (loads via `get_settings` on mount, persists on edit).
   No backend change. Committed (`303f66d`, `34e9456`).
+- **Task 13 (i18n layer):** done. `src/lib/i18n/index.ts` — `t(key, data)` over an inline en-US
+  tree (dotted keys, `{{name}}` interpolation, key-fallback); `setLocale` no-ops on unimplemented
+  locales. All UI strings routed through `t()`. Committed (`7b8a238`).
 - **Task 15 (license):** `LICENSE` + `NOTICE` present and committed; bundled defaults are app-authored.
   The upstream GPL-notice *display* in the HUD is still open (see verification above).
-- **Still open (surface not present in code):** Task 13 (i18n layer), Task 14 (`--toggle` single-instance
-  CLI). `src/lib/i18n/`, `src/locales/`, and the single-instance plugin surface do not exist yet.
+- **Still open (surface not present in code):** Task 14 (`--toggle` single-instance CLI). The
+  single-instance plugin surface and CLI arg parsing do not exist yet.
 
 ---
 
