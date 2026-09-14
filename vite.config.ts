@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
@@ -37,5 +38,20 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
     },
+    // Vitest does not resolve `import x from './x.json'` out of the box. This tiny inline plugin
+    // loads JSON default imports so the i18n layer (which imports `locales/en-US.json`) is testable.
+    plugins: [
+      {
+        name: 'load-json',
+        resolveId(id) {
+          if (id.endsWith('.json')) return id;
+          return null;
+        },
+        load(id) {
+          if (!id.endsWith('.json')) return null;
+          return `export default ${readFileSync(id, 'utf8')};`;
+        },
+      },
+    ],
   },
 });

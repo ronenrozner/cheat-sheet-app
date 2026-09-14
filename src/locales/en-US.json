@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "Cheat-Sheet HUD",
+    "hotkey": "Ctrl-Shift-Q",
+    "pin": "Pin this sheet",
+    "unpin": "Unpin this sheet"
+  },
+  "search": {
+    "placeholder": "Find in this sheet…",
+    "match": "match",
+    "matches": "matches",
+    "noMatches": "No matches"
+  },
+  "sheet": {
+    "noneSelected": "No sheet selected.",
+    "notFound": "Sheet \"{{slug}}\" not found.",
+    "failed": "Failed to load sheet \"{{slug}}\"."
+  },
+  "sidebar": {
+    "label": "Sheets"
+  },
+  "settings": {
+    "theme": "Theme",
+    "windowSize": "Window size",
+    "trigger": "Trigger",
+    "ctrl": "Ctrl",
+    "alt": "Alt",
+    "shift": "Shift",
+    "language": "Language",
+    "pinnedSheet": "Pinned sheet",
+    "widthPlaceholder": "width",
+    "heightPlaceholder": "height",
+    "keyPlaceholder": "key",
+    "nonePlaceholder": "(none)",
+    "optionFollow": "Follow",
+    "optionLight": "Light",
+    "optionDark": "Dark",
+    "optionEnUs": "en-US"
+  }
+}

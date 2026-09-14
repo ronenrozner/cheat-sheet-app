@@ -1,57 +1,20 @@
 // Hand-rolled i18n layer (Task 13). No `svelte-i18n` dependency.
 //
-// `t(key)` resolves `key` (dot-separated) in the en-US locale tree, interpolating `{{name}}`
+// `t(key)` resolves `key` (dot-separated) in `locales/en-US.json`, interpolating `{{name}}`
 // placeholders. Missing keys fall back to the key itself. `setLocale(next)` switches locale, but
 // an unimplemented locale is a no-op (the current locale is retained, no crash).
 //
 // The locale is a plain module-level variable. Components that want it reactive import `getLocale`
 // and read it inside `$derived`/`$effect` (or bind it to a settings `language` field, Task 12).
 
+import enUS from '../../locales/en-US.json';
+
 /** The one implemented locale. Any other value is a graceful no-op (see setLocale). */
 export const SUPPORTED_LOCALES = ['en-US'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const LOCALES: Record<SupportedLocale, Record<string, unknown>> = {
-  'en-US': {
-    app: {
-      title: 'Cheat-Sheet HUD',
-      hotkey: 'Ctrl-Shift-Q',
-      pin: 'Pin this sheet',
-      unpin: 'Unpin this sheet',
-    },
-    search: {
-      placeholder: 'Find in this sheet…',
-      match: 'match',
-      matches: 'matches',
-      noMatches: 'No matches',
-    },
-    sheet: {
-      noneSelected: 'No sheet selected.',
-      notFound: 'Sheet "{{slug}}" not found.',
-      failed: 'Failed to load sheet "{{slug}}".',
-    },
-    sidebar: {
-      label: 'Sheets',
-    },
-    settings: {
-      theme: 'Theme',
-      windowSize: 'Window size',
-      trigger: 'Trigger',
-      ctrl: 'Ctrl',
-      alt: 'Alt',
-      shift: 'Shift',
-      language: 'Language',
-      pinnedSheet: 'Pinned sheet',
-      widthPlaceholder: 'width',
-      heightPlaceholder: 'height',
-      keyPlaceholder: 'key',
-      nonePlaceholder: '(none)',
-      optionFollow: 'Follow',
-      optionLight: 'Light',
-      optionDark: 'Dark',
-      optionEnUs: 'en-US',
-    },
-  },
+  'en-US': enUS as unknown as Record<string, unknown>,
 };
 
 let current: SupportedLocale = 'en-US';
