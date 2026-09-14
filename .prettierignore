@@ -9,3 +9,4 @@ src-tauri/gen/
 # Human-authored prose deliverables / specs are not auto-formatted.
 docs/
 tasks/
+source-sheets/

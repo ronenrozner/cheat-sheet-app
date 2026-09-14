@@ -82,7 +82,7 @@ describe('App sheet switching', () => {
     // Click the second sidebar item (Git).
     const gitBtn = root.querySelectorAll('button.sheet-item')[1];
     expect(gitBtn).toBeTruthy();
-    gitBtn.click();
+    (gitBtn as HTMLElement).click();
 
     await flush();
 
