@@ -225,7 +225,7 @@ headlessly.
 **Estimated scope:** M
 
 ### Checkpoint: Content Pipeline
-- [ ] `cargo test` + `npm test` pass.
+- [x] `cargo test` + `npm test` pass.
 - [ ] **Manual: a downloaded upstream sheet renders sanitized HTML; a local `.md` renders after Rescan.**
 
 ---
@@ -332,8 +332,8 @@ minisearch with combo matching is deferred. If cross-sheet search is wanted late
 into. Switching a sidebar entry updates `SheetView`.
 
 **Acceptance criteria:**
-- [ ] Sidebar lists available sheets; clicking switches the main pane.
-- [ ] Selection state is the single source of truth shared with search.
+- [x] Sidebar lists available sheets; clicking switches the main pane.
+- [x] Selection state is the single source of truth shared with search.
 
 **Verification:**
 - [ ] `npm test`: sidebar selection updates the rendered sheet.
@@ -361,7 +361,7 @@ bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists v
 **Estimated scope:** M
 
 ### Checkpoint: Overlay UI
-- [ ] `npm run build` + `cargo test` pass.
+- [x] `npm run build` + `cargo test` pass.
 - [ ] **Manual: open shows pinned sheet → sidebar switches sheets.**
 
 ---
@@ -433,7 +433,8 @@ keep license/NOTICE files intact.
 
 **Acceptance criteria:**
 - [ ] Upstream sheets display a `GPL-v3` notice; bundled defaults are CC0/MIT.
-- [ ] `LICENSE` + `NOTICE` present; no secrets in the tree or in `.env`/gitignore-gaps.
+- [x] `LICENSE` + `NOTICE` present; no secrets in the tree or in `.env`/gitignore-gaps.
+- [ ] **Verification:** `LICENSE` (Apache-2.0) + `NOTICE` present and committed (`73fe223`); `source-sheets/` gitignored so 215 sheets are not committed. Bundled defaults in `src-tauri/bundled/` are app-authored (bash/vim/powershell/windows) — no GPL content shipped under the app name. Upstream GPL notice **displayed inside the HUD (`SheetView`) is not yet implemented** — the sheets carry no in-file GPL tag; `NOTICE` documents upstream as GPL.
 
 **Verification:**
 - [ ] `git log`/manual: no secrets committed; license files present.
@@ -449,6 +450,22 @@ keep license/NOTICE files intact.
 - [ ] **Manual: hotkey → pinned sheet → search (both directions) → author local .md → Rescan →
       it appears; restart keeps settings.**
 - [ ] **Human review before any PR / ship.**
+
+---
+
+## State-sync notes (todo.md reconciled to code)
+
+> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (33 pass) /
+> `cargo test` (24 pass). Marked done what the code already ships; left open what is not yet
+> implemented.
+
+- **Task 10 (App shell / Sidebar):** done. `App.svelte` wires `Sidebar` through `overlay/selection.ts`
+  (`{slug, slugs}` as the single source of truth shared with search); committed (`4c509d5`).
+- **Task 15 (license):** `LICENSE` + `NOTICE` present and committed; bundled defaults are app-authored.
+  The upstream GPL-notice *display* in the HUD is still open (see verification above).
+- **Still open (surface not present in code):** Task 11 (pin-on-open), Task 12 (settings UI panel),
+  Task 13 (i18n layer), Task 14 (`--toggle` single-instance CLI). `src/lib/settings/`,
+  `src/lib/i18n/`, `src/locales/`, and `src/components/SettingsPanel.svelte` do not exist yet.
 
 ---
 
