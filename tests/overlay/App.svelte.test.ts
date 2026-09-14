@@ -5,6 +5,9 @@
 // the Sidebar emits a *string* slug, but App's `onSelect` destructured `{ slug }` from it, so
 // `selection.slug` never changed. This test mounts App, clicks a second sheet, and asserts the
 // SheetView iframe body updates to the new sheet.
+//
+// Also guards Task 11: on mount, no pin + a bundled default list resolves to the bundled default
+// (git), not the first-in-list sheet (vim).
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
@@ -17,6 +20,9 @@ vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(
 // Fake loader keyed by slug. Swapped per test via the `load` prop.
 let fakeLoad: (slug: string) => Promise<string | null>;
 
+// Settings returned by `get_settings`. Swapped per test.
+let fakeSettings: Record<string, unknown>;
+
 beforeEach(() => {
   vi.mocked(invoke).mockReset();
   fakeLoad = async (slug: string) => {
@@ -27,7 +33,20 @@ beforeEach(() => {
     return bodies[slug] ?? null;
   };
   // Default list_sheets response.
-  invoke.mockResolvedValue([{ slug: 'vim' }, { slug: 'git' }]);
+  invoke.mockImplementation(async (cmd: string, args: unknown) => {
+    switch (cmd) {
+      case 'list_sheets':
+        return [{ slug: 'vim' }, { slug: 'git' }];
+      case 'get_settings':
+        return fakeSettings;
+      case 'set_settings':
+        return undefined;
+      default:
+        return undefined;
+    }
+  });
+  // No pin: first run.
+  fakeSettings = { pinned_slug: '' };
 });
 
 afterEach(() => {
@@ -59,7 +78,7 @@ describe('App sheet switching', () => {
     document.body.removeChild(root);
   });
 
-  it('renders the first sheet on mount', async () => {
+  it('renders a bundled default on mount (Task 11: bundled default beats first-in-list)', async () => {
     inst = mount(App, {
       target: root,
       props: { load: fakeLoad },
@@ -67,8 +86,9 @@ describe('App sheet switching', () => {
 
     await flush();
 
+    // No pin. `git` is a bundled default and beats `vim` (first in the list) on open.
     const iframe = root.querySelector('iframe.sheet-view') as HTMLIFrameElement;
-    expect(iframe.srcdoc).toContain('Vim');
+    expect(iframe.srcdoc).toContain('Git');
   });
 
   it('refreshes the view when a different sheet is selected', async () => {
@@ -89,5 +109,32 @@ describe('App sheet switching', () => {
     const iframe = root.querySelector('iframe.sheet-view') as HTMLIFrameElement;
     expect(iframe.srcdoc).toContain('Git');
     expect(iframe.srcdoc).not.toContain('Vim');
+  });
+
+  it('pins the current sheet on click (Task 11)', async () => {
+    fakeSettings = { pinned_slug: '' };
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    // No pin: mount resolves to the bundled default `git`.
+    const pinBtn = root.querySelector('button.pin') as HTMLButtonElement;
+    expect(pinBtn).toBeTruthy();
+    expect(pinBtn.textContent).toBe('Pin this sheet');
+
+    pinBtn.click();
+    await flush();
+
+    // set_settings was called with the pinned slug, and the button flips to "Unpin".
+    const setSettings = invoke.mock.calls.find((c) => c[0] === 'set_settings');
+    expect(setSettings).toBeTruthy();
+    expect((setSettings![1] as { settings: { pinned_slug: string } }).settings.pinned_slug).toBe(
+      'git'
+    );
+    expect(pinBtn.textContent).toBe('Unpin this sheet');
+    expect(pinBtn.getAttribute('aria-pressed')).toBe('true');
   });
 });

@@ -11,6 +11,7 @@
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
+  import { resolveInitialSlug } from './lib/overlay/initialSlug';
   import { findMatches } from './lib/search/findInSheet';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
@@ -32,6 +33,19 @@
   // Search text bound to SearchBox.
   let query = $state('');
 
+  // Persisted settings (Task 11). Loaded once on mount so we can read the pinned slug for the
+  // open-sheet decision and persist new pins. Typed loosely; the backend returns the full
+  // `Settings` snapshot.
+  interface Settings {
+    theme: string;
+    win_size: { width: number; height: number };
+    trigger: { ctrl: boolean; alt: boolean; shift: boolean; key: string };
+    source_mode: string;
+    language: string;
+    pinned_slug: string;
+  }
+  let settings = $state<Settings | null>(null);
+
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
   function onSelect(slug: string) {
     const next = selectSheet(selection, slug);
@@ -40,16 +54,41 @@
     }
   }
 
+  // Pin the current sheet (Task 11). Persists the slug so the next open shows it front-and-center.
+  async function onPin() {
+    const slug = selection.slug;
+    if (!settings || !slug) return;
+    const next: Settings = { ...settings, pinned_slug: slug };
+    settings = next;
+    try {
+      await invoke('set_settings', { settings: next });
+    } catch {
+      // Persist failed (e.g. store unavailable). The in-memory selection still reflects the pin.
+    }
+  }
+
+  // Whether the current sheet is the pinned one (drives the header button label).
+  let isPinned = $derived(!!(settings && settings.pinned_slug === selection.slug));
+
   // Raw body of the current sheet (for the SearchBox match count).
   let body = $state('');
 
-  // Fetch the sheet list once, populate the selection, and select the first sheet.
+  // Fetch the sheet list once, load settings, and select the resolved open sheet (Task 11: pinned
+  // sheet wins, first run falls back to a bundled default, then the first available sheet).
   async function loadSheets(): Promise<void> {
     try {
       const sheets = await invoke<[{ slug: string }]>('list_sheets', {});
       const slugs = sheets.map((s: { slug: string }) => s.slug);
+      // Load persisted settings once (Task 11): read the pinned slug for the open-sheet decision.
+      try {
+        settings = await invoke<Settings>('get_settings', {});
+      } catch {
+        settings = null;
+      }
+      // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
+      const initial = resolveInitialSlug(settings?.pinned_slug ?? '', slugs);
       if (slugs.length > 0) {
-        selection = { slug: slugs[0]!, slugs };
+        selection = { slug: initial, slugs };
       }
     } catch {
       // empty list — the Sidebar stays empty
@@ -88,6 +127,9 @@
   <header class="title">
     <h1>Cheat-Sheet HUD</h1>
     <span class="hint">Ctrl-Shift-Q</span>
+    <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
+      {isPinned ? 'Unpin this sheet' : 'Pin this sheet'}
+    </button>
   </header>
 
   <SearchBox {query} {matchCount} />
@@ -132,5 +174,21 @@
   .sheet {
     flex: 1;
     min-height: 0;
+  }
+  .pin {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid var(--cs-border, #44475a);
+    background: transparent;
+    color: var(--cs-fg, #cdd6f4);
+    cursor: pointer;
+  }
+  .pin:hover {
+    background: var(--cs-hover-bg, #282c3f);
+  }
+  .pin[aria-pressed='true'] {
+    background: var(--cs-selected-bg, #7d9ad4);
+    color: #1e1e2e;
   }
 </style>
