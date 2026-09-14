@@ -4,6 +4,8 @@
   The match count and highlight are computed in the parent (App), which owns the sheet body.
 -->
 <script lang="ts">
+  import { t } from '../lib/i18n';
+
   // `query` (current text) and `matchCount` (matches in the current sheet, by the parent).
   let { query, matchCount } = $props();
 
@@ -13,7 +15,9 @@
     (() => {
       const q = query.trim();
       if (!q) return '';
-      return matchCount > 0 ? `${matchCount} match${matchCount === 1 ? '' : 'es'}` : 'No matches';
+      return matchCount > 0
+        ? `${matchCount} ${matchCount === 1 ? t('search.match') : t('search.matches')}`
+        : t('search.noMatches');
     })()
   );
 </script>
@@ -22,8 +26,8 @@
   <input
     class="search-input"
     type="text"
-    placeholder="Find in this sheet…"
-    aria-label="Find in this sheet"
+    placeholder={t('search.placeholder')}
+    aria-label={t('search.placeholder')}
     bind:value={query}
   />
   {#if label}

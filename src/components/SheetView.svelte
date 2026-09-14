@@ -7,6 +7,7 @@
 <script lang="ts">
   import { renderMarkdown } from '../lib/markdown/render';
   import { highlightMarkdown } from '../lib/search/findInSheet';
+  import { t } from '../lib/i18n';
 
   // `slug` (required), optional `load` (slug => body), and optional `query` (Task 8).
   let { slug, load, query = '' } = $props();
@@ -18,14 +19,14 @@
 
   async function render(slug: string, query: string): Promise<void> {
     if (!slug) {
-      message = 'No sheet selected.';
+      message = t('sheet.noneSelected');
       html = '';
       return;
     }
     try {
       const body = load ? await load(slug) : undefined;
       if (!body) {
-        message = `Sheet "${slug}" not found.`;
+        message = t('sheet.notFound', { slug });
         html = '';
         return;
       }
@@ -34,7 +35,7 @@
       const rawHtml = await renderMarkdown(body);
       html = highlightMarkdown(rawHtml, query);
     } catch (err) {
-      message = `Failed to load sheet "${slug}".`;
+      message = t('sheet.failed', { slug });
       html = '';
       console.error(err);
     }

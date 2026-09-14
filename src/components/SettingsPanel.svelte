@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { Settings, Theme, SourceMode, Language } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
+  import { t } from '../lib/i18n';
 
   let { settings = DEFAULT_SETTINGS, onSave } = $props<{
     settings?: Settings;
@@ -84,22 +85,22 @@
 
 <div class="panel">
   <label class="row">
-    <span>Theme</span>
+    <span>{t('settings.theme')}</span>
     <select class="ctrl" bind:value={settings.theme} onchange={onTheme}>
-      <option value="Follow">Follow</option>
-      <option value="Light">Light</option>
-      <option value="Dark">Dark</option>
+      <option value="Follow">{t('settings.optionFollow')}</option>
+      <option value="Light">{t('settings.optionLight')}</option>
+      <option value="Dark">{t('settings.optionDark')}</option>
     </select>
   </label>
 
   <div class="row">
-    <span>Window size</span>
+    <span>{t('settings.windowSize')}</span>
     <div class="size">
       <input
         class="ctrl"
         type="number"
         min="1"
-        placeholder="width"
+        placeholder={t('settings.widthPlaceholder')}
         bind:value={settings.win_size.width}
         onchange={onWidth}
       />
@@ -107,7 +108,7 @@
         class="ctrl"
         type="number"
         min="1"
-        placeholder="height"
+        placeholder={t('settings.heightPlaceholder')}
         bind:value={settings.win_size.height}
         onchange={onHeight}
       />
@@ -115,33 +116,36 @@
   </div>
 
   <div class="row">
-    <span>Trigger</span>
+    <span>{t('settings.trigger')}</span>
     <div class="trigger">
       <label
         ><input
           type="checkbox"
           bind:checked={settings.trigger.ctrl}
           onchange={(e) => onTrigger('ctrl', (e.target as HTMLInputElement).checked)}
-        /> Ctrl</label
+        />
+        {t('settings.ctrl')}</label
       >
       <label
         ><input
           type="checkbox"
           bind:checked={settings.trigger.alt}
           onchange={(e) => onTrigger('alt', (e.target as HTMLInputElement).checked)}
-        /> Alt</label
+        />
+        {t('settings.alt')}</label
       >
       <label
         ><input
           type="checkbox"
           bind:checked={settings.trigger.shift}
           onchange={(e) => onTrigger('shift', (e.target as HTMLInputElement).checked)}
-        /> Shift</label
+        />
+        {t('settings.shift')}</label
       >
       <input
         class="ctrl key"
         type="text"
-        placeholder="key"
+        placeholder={t('settings.keyPlaceholder')}
         bind:value={settings.trigger.key}
         onchange={onKey}
       />
@@ -149,18 +153,18 @@
   </div>
 
   <label class="row">
-    <span>Language</span>
+    <span>{t('settings.language')}</span>
     <select class="ctrl" bind:value={settings.language} onchange={onLanguage}>
-      <option value="EnUs">en-US</option>
+      <option value="EnUs">{t('settings.optionEnUs')}</option>
     </select>
   </label>
 
   <label class="row">
-    <span>Pinned sheet</span>
+    <span>{t('settings.pinnedSheet')}</span>
     <input
       class="ctrl"
       type="text"
-      placeholder="(none)"
+      placeholder={t('settings.nonePlaceholder')}
       bind:value={settings.pinned_slug}
       onchange={onPinned}
     />

@@ -10,14 +10,18 @@
   - `label`: optional per-sheet label (slug shown when absent).
 -->
 <script lang="ts">
+  import { t } from '../lib/i18n';
+
   let { selection, label = (slug: string) => slug, onselect } = $props();
+
+  const labelText = $derived(t('sidebar.label'));
 
   function onClick(slug: string) {
     onselect?.(slug);
   }
 </script>
 
-<aside class="sidebar" aria-label="Sheets">
+<aside class="sidebar" aria-label={labelText}>
   <ul class="sheet-list">
     {#each selection.slugs as slug (slug)}
       <li>

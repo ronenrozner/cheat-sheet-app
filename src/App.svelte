@@ -18,6 +18,7 @@
   } from './lib/settings/bridge';
   import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
   import SettingsPanel from './components/SettingsPanel.svelte';
+  import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
@@ -128,10 +129,10 @@
 
 <main class="overlay">
   <header class="title">
-    <h1>Cheat-Sheet HUD</h1>
-    <span class="hint">Ctrl-Shift-Q</span>
+    <h1>{t('app.title')}</h1>
+    <span class="hint">{t('app.hotkey')}</span>
     <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
-      {isPinned ? 'Unpin this sheet' : 'Pin this sheet'}
+      {isPinned ? t('app.unpin') : t('app.pin')}
     </button>
   </header>
 

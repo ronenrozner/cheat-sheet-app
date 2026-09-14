@@ -428,15 +428,31 @@ strings routed through it, a language setting that is a graceful no-op for unimp
 `svelte-i18n` dependency.
 
 **Acceptance criteria:**
-- [ ] UI strings resolve via `t(key)`; missing key falls back sensibly (key or fallback).
-- [ ] Selecting an unimplemented language is a no-op (no crash, stays `en-US`).
+- [x] UI strings resolve via `t(key)`; missing key falls back sensibly (key or fallback).
+- [x] Selecting an unimplemented language is a no-op (no crash, stays `en-US`).
 
 **Verification:**
-- [ ] `npm test`: `t()` resolves known keys; unknown locale no-ops.
-- [ ] Manual: UI is fully string-resolved with `en-US`.
+- [x] `npm test`: 60 tests (9 i18n — resolution, interpolation, missing-key fallback, unsupported locale no-op).
+- [x] `npm run build`, `npm run check` (0 errors/warnings), `npm run lint`, prettier all clean.
+- [x] `cargo test` clean (no backend change).
+- [ ] **Manual: UI is fully string-resolved with `en-US`.** (frontend wiring verified headlessly).
+
+**Result (Task 13 — 2026-09-04):** i18n layer complete and verifiable headlessly.
+- `src/lib/i18n/index.ts` — hand-rolled `t(key, data)` over an inline en-US tree (no `en-US.json` file
+  import, since vitest does not resolve `.json` default imports; the tree is inlined to stay testable).
+  Dotted-key resolution, `{{name}}` interpolation, key-fallback on miss. `getLocale`/`setLocale`: an
+  unimplemented locale is a no-op (returns false, current locale retained, no crash).
+- All UI strings routed through `t()`: `App.svelte` (title, hotkey, pin/unpin), `SearchBox.svelte`
+  (placeholder + match counts), `SheetView.svelte` (none-selected / not-found / failed),
+  `Sidebar.svelte` (aria-label), `SettingsPanel.svelte` (every label, placeholder, and option text).
+- No `svelte-i18n` dependency.
+- **No backend change.**
 
 **Dependencies:** Task 10
-**Files likely touched:** `src/lib/i18n/*`, `src/locales/en-US.json`
+**Files touched:** `src/lib/i18n/index.ts`, `src/locales/en-US.json` (superseded by inline tree),
+`src/App.svelte`, `src/components/SearchBox.svelte`, `src/components/SheetView.svelte`,
+`src/components/Sidebar.svelte`, `src/components/SettingsPanel.svelte`,
+`tests/i18n/index.test.ts`
 **Estimated scope:** M
 
 ## Task 14: `--toggle` single-instance CLI + Wayland flag + snippets  *(assumes O3)*
