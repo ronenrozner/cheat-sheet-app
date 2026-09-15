@@ -57,11 +57,16 @@ describe('setSettings', () => {
     invoke.mockResolvedValue(undefined);
     const result = await setSettings({ ...DEFAULT_SETTINGS, theme: 'Dark' });
     expect(result).toBe(true);
-    expect(invoke).toHaveBeenCalledWith('set_settings', { settings: { ...DEFAULT_SETTINGS, theme: 'Dark' } });
+    expect(invoke).toHaveBeenCalledWith('set_settings', {
+      settings: { ...DEFAULT_SETTINGS, theme: 'Dark' },
+    });
   });
 
   it('rejects a malformed snapshot without calling the backend', async () => {
-    const result = await setSettings({ ...DEFAULT_SETTINGS, theme: 'NotATheme' } as unknown as Settings);
+    const result = await setSettings({
+      ...DEFAULT_SETTINGS,
+      theme: 'NotATheme',
+    } as unknown as Settings);
     expect(result).toBe(false);
     expect(invoke).not.toHaveBeenCalled();
   });

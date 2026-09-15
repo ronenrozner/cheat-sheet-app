@@ -35,6 +35,13 @@
     "optionFollow": "Follow",
     "optionLight": "Light",
     "optionDark": "Dark",
-    "optionEnUs": "en-US"
+    "optionEnUs": "en-US",
+    "waylandTitle": "Global hotkey",
+    "waylandUnavailable": "Global hotkey is unavailable on Wayland.",
+    "waylandUseToggle": "Use the command-line toggle instead:",
+    "waylandManualBind": "Bind the compositor key to run the toggle:",
+    "waylandHint": "On Wayland, re-bind a compositor key to run this command.",
+    "waylandX11Ok": "Global hotkey is registered.",
+    "waylandOtherOk": "Global hotkey is registered."
   }
 }

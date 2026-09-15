@@ -16,10 +16,18 @@
   import type { Settings, Theme, SourceMode, Language } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
+  import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
 
-  let { settings = DEFAULT_SETTINGS, onSave } = $props<{
+  let {
+    settings = DEFAULT_SETTINGS,
+    onSave,
+    hotkeyStatus = null,
+    waylandSnippets = null,
+  } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
+    hotkeyStatus?: HotkeyStatus | null;
+    waylandSnippets?: WaylandSnippets | null;
   }>();
 
   // Theme (Follow / Light / Dark).
@@ -169,6 +177,29 @@
       onchange={onPinned}
     />
   </label>
+
+  <!-- Global hotkey status (Task 14). On Wayland the global grab is best-effort + flagged;
+       surface the `--toggle` fallback and per-compositor bind snippets. On X11/Windows it
+       confirms the registered path. -->
+  <div class="row wayland">
+    <span>{t('settings.waylandTitle')}</span>
+    <div class="wayland-body">
+      {#if isWayland(hotkeyStatus) && waylandSnippets}
+        <p class="warn">{t('settings.waylandUnavailable')}</p>
+        <p>{t('settings.waylandUseToggle')}</p>
+        <code class="cmd">cheatsheet-app --toggle</code>
+        <p>{t('settings.waylandManualBind')}</p>
+        <ul class="snippets">
+          <li><code>{waylandSnippets.hyprland}</code></li>
+          <li><code>{waylandSnippets.sway}</code></li>
+          <li><code>{waylandSnippets.gnome}</code></li>
+        </ul>
+        <p class="hint">{t('settings.waylandHint')}</p>
+      {:else}
+        <p class="ok">{t('settings.waylandX11Ok')}</p>
+      {/if}
+    </div>
+  </div>
 </div>
 
 <style>
@@ -222,5 +253,46 @@
   }
   .trigger .key {
     width: 3rem;
+  }
+
+  .wayland-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    max-width: 260px;
+    text-align: right;
+  }
+  .wayland-body p,
+  .wayland-body ul {
+    margin: 0;
+  }
+  .wayland-body .warn {
+    color: #f5deb3;
+  }
+  .wayland-body .ok {
+    color: var(--cs-fg, #cdd6f4);
+  }
+  .wayland-body .hint {
+    opacity: 0.65;
+  }
+  .wayland-body code.cmd {
+    font-family: ui-monospace, monospace;
+    background: var(--cs-input-bg, #282c3f);
+    padding: 0.15rem 0.35rem;
+    border-radius: 3px;
+  }
+  .wayland-body ul.snippets {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .wayland-body ul.snippets code {
+    font-family: ui-monospace, monospace;
+    background: var(--cs-input-bg, #282c3f);
+    padding: 0.15rem 0.35rem;
+    border-radius: 3px;
   }
 </style>

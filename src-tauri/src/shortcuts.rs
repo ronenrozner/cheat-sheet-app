@@ -56,6 +56,42 @@ fn session_label(session: LinuxSession) -> String {
     }
 }
 
+/// Compositor bind snippets for the `--toggle` fallback (Task 14).
+///
+/// On Wayland an unprivileged app cannot register a global key combo, so the user re-binds the
+/// compositor key to run `cheatsheet-app --toggle`. These are the per-compositor snippets the UI
+/// surfaces (spec §Hotkey strategy). Documented, not auto-configured.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct WaylandSnippets {
+    /// Hyprland `bind =` line.
+    pub hyprland: String,
+    /// Sway `bindsym` line.
+    pub sway: String,
+    /// GNOME: manual *Custom Shortcuts* steps.
+    pub gnome: String,
+}
+
+impl Default for WaylandSnippets {
+    fn default() -> Self {
+        Self {
+            hyprland: "bind = SUPER, SHIFT, Q, exec, cheatsheet-app --toggle".to_string(),
+            sway: "bindsym $mod+Shift+q exec cheatsheet-app --toggle".to_string(),
+            gnome: "Settings \u{2013} Keyboard \u{2013} Custom Shortcuts \u{2013} run "
+                .to_string()
+                + "`cheatsheet-app --toggle`",
+        }
+    }
+}
+
+/// Whether `--toggle` was passed on the command line (Task 14).
+///
+/// The `tauri-plugin-single-instance` routes a second `cheatsheet-app --toggle` invocation to the
+/// running instance, which toggles the overlay. This helper decides whether the incoming args are
+/// a toggle request so the single-instance callback can act on them. Pure and unit-testable.
+pub fn is_toggle_requested(args: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
+    args.into_iter().any(|a| a.as_ref() == "--toggle")
+}
+
 /// OS label for the running platform.
 fn current_platform_label() -> String {
     if cfg!(target_os = "windows") {
@@ -164,6 +200,12 @@ pub fn get_hotkey_status(status: State<'_, HotkeyStatus>) -> HotkeyStatus {
     status.inner().clone()
 }
 
+/// IPC command: report the Wayland `--toggle` compositor bind snippets (Task 14).
+#[tauri::command]
+pub fn get_wayland_snippets() -> WaylandSnippets {
+    WaylandSnippets::default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,5 +245,25 @@ mod tests {
     #[test]
     fn missing_key_is_none() {
         assert!(detect_session_type(vec![("HOME".to_string(), "/root".to_string())]).is_none());
+    }
+
+    #[test]
+    fn toggle_requested_with_flag() {
+        assert!(is_toggle_requested(["cheatsheet-app", "--toggle"]));
+    }
+
+    #[test]
+    fn not_toggle_without_flag() {
+        assert!(!is_toggle_requested(["cheatsheet-app", "--help"]));
+        assert!(!is_toggle_requested(["cheatsheet-app"]));
+        assert!(!is_toggle_requested(std::env::args()));
+    }
+
+    #[test]
+    fn wayland_snippets_are_non_empty() {
+        let s = WaylandSnippets::default();
+        assert!(s.hyprland.contains("--toggle"));
+        assert!(s.sway.contains("--toggle"));
+        assert!(s.gnome.contains("--toggle"));
     }
 }

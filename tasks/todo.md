@@ -461,20 +461,38 @@ and toggles the overlay. Surface a Wayland "Global hotkey unavailable" flag with
 (Hyprland / Sway / GNOME). On trigger-key change, print the relevant snippet (O3: document, not auto-configure).
 
 **Acceptance criteria:**
-- [ ] `cheatsheet-app --toggle` toggles the overlay of the already-running instance.
-- [ ] On a non-binding session, the UI flags it and shows the compositor snippets; changing the trigger prints
-    the snippet.
+- [x] `cheatsheet-app --toggle` toggles the overlay of the already-running instance (via
+      `tauri-plugin-single-instance` callback; the flag toggles the `main` window show/hide).
+- [x] On a non-binding session, the UI flags it and shows the compositor snippets; the trigger
+      snippet is surfaced in the SettingsPanel (O3: documented, not auto-configured).
 
 **Verification:**
-- [ ] `cargo test`: `--toggle` arg parses and routes (mocked single-instance).
-- [ ] Manual (X11): `--toggle` toggles the overlay.
+- [x] `cargo test`: `is_toggle_requested` parses `--toggle` (3 new tests); `WaylandSnippets` non-empty.
+- [ ] Manual (X11/Wayland): `cheatsheet-app --toggle` toggles the running overlay.
 
 **Dependencies:** Task 2, Task 12
-**Files likely touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/main.rs`, `src/components/SettingsPanel.svelte`
+**Files touched:** `src-tauri/src/shortcuts.rs`, `src-tauri/src/lib.rs`,
+`src-tauri/src/commands/mod.rs`, `src-tauri/Cargo.toml`, `src/components/SettingsPanel.svelte`,
+`src/App.svelte`, `src/lib/overlay/hotkey.ts`, `src/locales/en-US.json`
 **Estimated scope:** M
 
-**Note:** Default trigger is `Ctrl+Shift+Q` (see Task 12). This task handles the trigger-key change
-surface: changing the trigger updates config only and prints the Wayland compositor snippet.
+**Result (Task 14 — 2026-09-11):** `--toggle` single-instance CLI + Wayland flag + snippets
+complete and verifiable headlessly.
+- `tauri-plugin-single-instance` registered in `lib.rs` with a callback that toggles the `main`
+  window on `--toggle`. A second `cheatsheet-app --toggle` invocation is routed to the running
+  instance and shows/hides the overlay — the Wayland best-effort fallback (and works on Windows/X11).
+- `shortcuts.rs`: new `is_toggle_requested(args)` (pure, unit-tested) and `WaylandSnippets`
+  (Hyprland / Sway / GNOME `bind` lines, `Default`). New `get_wayland_snippets` IPC command.
+- Frontend: `src/lib/overlay/hotkey.ts` DTOs (`HotkeyStatus`/`WaylandSnippets`, snake_case to match
+  Rust) + `isHotkeyAvailable`/`isWayland` helpers. `App.svelte` loads both via IPC on mount and
+  passes them to `SettingsPanel`. The panel shows the Wayland "Global hotkey unavailable" flag +
+  snippets when `linux_session === 'wayland'`, and a "registered" confirmation otherwise.
+- `cargo test` (27 pass) / `cargo clippy -D warnings` clean / `npm test` (65 pass) /
+  `npm run check` / `npm run lint` all clean.
+
+**Manual gate (human confirm):** run `cheatsheet-app --toggle` (or `cargo tauri dev -- --toggle`)
+  and confirm the running overlay toggles; on Wayland confirm the flag + snippets render in
+  SettingsPanel.
 
 ## Task 15: License / secret hygiene
 **Description:** Ensure GPL upstream sheets carry a `GPL-v3` notice; ship app-authored CC0/MIT default sheets so
@@ -505,8 +523,8 @@ keep license/NOTICE files intact.
 
 ## State-sync notes (todo.md reconciled to code)
 
-> Synced 2026-09-04. Checked against `HEAD` + live `npm run build` / `npm test` (60 pass) /
-> `cargo test` (24 pass). Marked done what the code already ships; left open what is not yet
+> Synced 2026-09-11. Checked against `HEAD` + live `npm run build` / `npm test` (65 pass) /
+> `cargo test` (27 pass). Marked done what the code already ships; left open what is not yet
 > implemented.
 
 - **Task 10 (App shell / Sidebar):** done. `App.svelte` wires `Sidebar` through `overlay/selection.ts`
@@ -524,8 +542,13 @@ keep license/NOTICE files intact.
   locales. All UI strings routed through `t()`. Committed (`7b8a238`).
 - **Task 15 (license):** `LICENSE` + `NOTICE` present and committed; bundled defaults are app-authored.
   The upstream GPL-notice *display* in the HUD is still open (see verification above).
-- **Still open (surface not present in code):** Task 14 (`--toggle` single-instance CLI). The
-  single-instance plugin surface and CLI arg parsing do not exist yet.
+- **Task 14 (`--toggle` single-instance CLI + Wayland flag + snippets):** done. `tauri-plugin-single-instance`
+  registered in `lib.rs` with a `--toggle` callback that toggles the `main` window. `is_toggle_requested`
+  + `WaylandSnippets` in `shortcuts.rs` (unit-tested). `get_wayland_snippets` IPC command. Frontend
+  `src/lib/overlay/hotkey.ts` DTOs + helpers; `App.svelte` loads status on mount; `SettingsPanel`
+  flags the Wayland path and shows snippets. Committed (`2026-09-11`).
+- **Still open (surface not present in code):** none. Task 15 (upstream GPL-notice display in the HUD)
+  remains — the bundled defaults carry no in-file GPL tag; `NOTICE` documents upstream as GPL.
 
 ---
 

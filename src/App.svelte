@@ -20,6 +20,7 @@
   import SettingsPanel from './components/SettingsPanel.svelte';
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
+  import { type HotkeyStatus, type WaylandSnippets } from './lib/overlay/hotkey';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
@@ -74,6 +75,11 @@
   // Whether the current sheet is the pinned one (drives the header button label).
   let isPinned = $derived(!!(settings && settings.pinned_slug === selection.slug));
 
+  // Overlay hotkey status (Task 14). Loaded once on mount so the SettingsPanel can flag the
+  // Wayland best-effort path and show the `--toggle` snippets.
+  let hotkeyStatus = $state<HotkeyStatus | null>(null);
+  let waylandSnippets = $state<WaylandSnippets | null>(null);
+
   // Raw body of the current sheet (for the SearchBox match count).
   let body = $state('');
 
@@ -88,6 +94,17 @@
         settings = await loadSettings();
       } catch {
         settings = { ...DEFAULT_SETTINGS };
+      }
+      // Overlay hotkey status (Task 14): drives the Wayland flag + snippets in the SettingsPanel.
+      try {
+        hotkeyStatus = await invoke<HotkeyStatus>('get_hotkey_status', {});
+      } catch {
+        hotkeyStatus = null;
+      }
+      try {
+        waylandSnippets = await invoke<WaylandSnippets>('get_wayland_snippets', {});
+      } catch {
+        waylandSnippets = null;
       }
       // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
       const initial = resolveInitialSlug(settings?.pinned_slug ?? '', slugs);
@@ -142,6 +159,8 @@
     <SettingsPanel
       settings={settings ?? DEFAULT_SETTINGS}
       onSave={(s: SettingsModel) => void persist(s)}
+      {hotkeyStatus}
+      {waylandSnippets}
     />
   </div>
 
