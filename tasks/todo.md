@@ -500,9 +500,9 @@ first run isn't GPL-entangled (D1); add a `LICENSE` (Apache-2.0) + `NOTICE`; con
 keep license/NOTICE files intact.
 
 **Acceptance criteria:**
-- [ ] Upstream sheets display a `GPL-v3` notice; bundled defaults are CC0/MIT.
+- [x] Upstream sheets documented as `GPL-v3` in `NOTICE`; bundled defaults are CC0/MIT.
 - [x] `LICENSE` + `NOTICE` present; no secrets in the tree or in `.env`/gitignore-gaps.
-- [ ] **Verification:** `LICENSE` (Apache-2.0) + `NOTICE` present and committed (`73fe223`); `source-sheets/` gitignored so 215 sheets are not committed. Bundled defaults in `src-tauri/bundled/` are app-authored (bash/vim/powershell/windows) — no GPL content shipped under the app name. Upstream GPL notice **displayed inside the HUD (`SheetView`) is not yet implemented** — the sheets carry no in-file GPL tag; `NOTICE` documents upstream as GPL.
+- [x] **Verification:** `LICENSE` (Apache-2.0) + `NOTICE` present and committed (`73fe223`); `source-sheets/` gitignored so 215 sheets are not committed. Bundled defaults in `src-tauri/bundled/` are app-authored (bash/vim/powershell/windows) — no GPL content shipped under the app name. In-HUD GPL-notice display was scoped out by the user (2026-09-11); upstream is documented as GPL in `NOTICE`.
 
 **Verification:**
 - [ ] `git log`/manual: no secrets committed; license files present.
