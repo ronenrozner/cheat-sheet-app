@@ -4,6 +4,7 @@ pub mod settings;
 pub mod sheets;
 pub mod shortcuts;
 mod seed;
+pub mod tray;
 
 use tauri::Manager;
 
@@ -25,6 +26,15 @@ pub fn run() {
    app.manage(status);
     // Settings store (Task 3). Loaded lazily via the get_settings / set_settings commands.
    app.handle().plugin(tauri_plugin_store::Builder::new().build())?;
+    // System tray (Task 17). Shown only when `show_tray` is On; hidden otherwise.
+    let settings = settings::load(app.handle());
+    if tray::tray_visible(&settings) {
+        if let Err(e) = tray::create_tray(app.handle()) {
+            log::warn!("system tray failed to create: {e:#}");
+        } else {
+            log::info!("system tray created");
+        }
+    }
     // Single-instance + `--toggle` (Task 14). A second `cheatsheet-app --toggle` invocation is
     // routed by this plugin to the running instance, which toggles the overlay. Best-effort on
     // Wayland (the global-grab must path is unavailable there), so it doubles as the fallback.
@@ -34,10 +44,12 @@ pub fn run() {
                match window.is_visible().unwrap_or(false) {
                    true => {
                        let _ = window.hide();
+                       let _ = crate::tray::update_overlay_icon(app.app_handle(), false);
                    }
                    false => {
                        let _ = window.show();
                        let _ = window.set_focus();
+                       let _ = crate::tray::update_overlay_icon(app.app_handle(), true);
                    }
                }
            }
@@ -58,6 +70,7 @@ pub fn run() {
       shortcuts::get_wayland_snippets,
       crate::commands::settings::get_settings,
       crate::commands::settings::set_settings,
+      crate::commands::settings::set_tray_visibility,
       crate::commands::sheets::list_sheets,
       crate::commands::sheets::load_sheet,
       crate::commands::sheets::get_online_listing,

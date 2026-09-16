@@ -55,6 +55,17 @@ pub enum Language {
     EnUs,
 }
 
+/// Whether to show a persistent system tray icon (Task 17). Default off so a new install keeps the
+/// original hidden-window-only behavior until the user opts in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum ShowTray {
+    /// No tray icon; the app runs as a hidden window only.
+    #[default]
+    Off,
+    /// Show a persistent tray icon that toggles the overlay.
+    On,
+}
+
 /// Full persisted settings snapshot.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
@@ -64,6 +75,7 @@ pub struct Settings {
     pub source_mode: SourceMode,
     pub language: Language,
     pub pinned_slug: String,
+    pub show_tray: ShowTray,
 }
 
 impl Default for Settings {
@@ -80,6 +92,7 @@ impl Default for Settings {
             source_mode: SourceMode::Both,
             language: Language::EnUs,
             pinned_slug: String::new(),
+            show_tray: ShowTray::Off,
         }
     }
 }
@@ -125,6 +138,9 @@ pub fn load(app: &AppHandle) -> Settings {
             s.pinned_slug = p.to_string();
         }
     }
+    if let Some(v) = store.get("show_tray") {
+        s.show_tray = serde_json::from_value(v.clone()).unwrap_or_default();
+    }
     s
 }
 
@@ -144,6 +160,7 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set("source_mode", serde_json::to_value(settings.source_mode).unwrap_or_default());
     store.set("language", serde_json::to_value(settings.language).unwrap_or_default());
     store.set("pinned_slug", serde_json::to_value(&settings.pinned_slug).unwrap_or_default());
+    store.set("show_tray", serde_json::to_value(settings.show_tray).unwrap_or_default());
 
     let bytes = settings_to_json(settings);
     let path = settings_path(app);
@@ -189,6 +206,7 @@ mod tests {
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
         assert!(s.pinned_slug.is_empty());
+        assert_eq!(s.show_tray, ShowTray::Off);
     }
 
     #[test]
@@ -208,6 +226,7 @@ mod tests {
             source_mode: SourceMode::Local,
             language: Language::EnUs,
             pinned_slug: "1password".to_string(),
+            show_tray: ShowTray::On,
         };
         let bytes = settings_to_json(&original);
         let parsed = settings_from_json(&bytes);

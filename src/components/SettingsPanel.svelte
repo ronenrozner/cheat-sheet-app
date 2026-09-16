@@ -13,7 +13,7 @@
   a change updates the prop and the parent persists it.
 -->
 <script lang="ts">
-  import type { Settings, Theme, SourceMode, Language } from '../lib/settings/types';
+  import type { Settings, Theme, SourceMode, Language, ShowTray } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
@@ -80,6 +80,15 @@
   function onLanguage(e: Event) {
     const v = (e.target as HTMLSelectElement).value;
     settings = { ...settings, language: v as Language };
+    onSave(settings);
+  }
+
+  // System tray toggle (Task 17). Off = hidden window only; On = persistent tray icon.
+  function onTray(e: Event, checked: boolean) {
+    settings = {
+      ...settings,
+      show_tray: checked ? 'On' : 'Off',
+    };
     onSave(settings);
   }
 
@@ -175,6 +184,16 @@
       placeholder={t('settings.nonePlaceholder')}
       bind:value={settings.pinned_slug}
       onchange={onPinned}
+    />
+  </label>
+
+  <label class="row">
+    <span>{t('settings.trayToggle')}</span>
+    <input
+      class="ctrl"
+      type="checkbox"
+      checked={settings.show_tray === 'On'}
+      onchange={(e) => onTray(e, (e.target as HTMLInputElement).checked)}
     />
   </label>
 

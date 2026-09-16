@@ -30,6 +30,9 @@ export type SourceMode = 'Online' | 'Local' | 'Both';
 /** UI locale. v1 ships only `en-US`; any other value is a graceful no-op (Task 13). */
 export type Language = 'EnUs';
 
+/** Whether to show a persistent system tray icon (Task 17). Default off. */
+export type ShowTray = 'Off' | 'On';
+
 /** Full persisted settings snapshot. */
 export interface Settings {
   theme: Theme;
@@ -38,11 +41,13 @@ export interface Settings {
   source_mode: SourceMode;
   language: Language;
   pinned_slug: string;
+  show_tray: ShowTray;
 }
 
 /**
  * Default snapshot. Default trigger is `Ctrl+Shift+Q` (`ctrl=true, alt=false, shift=true,
- * key="q"`), set in `Settings::default()` in Rust. The UI defaults to this.
+ * key="q"`), set in `Settings::default()` in Rust. The UI defaults to this. Default `show_tray`
+ * is `Off` so a new install keeps the original hidden-window-only behavior.
  */
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'Follow',
@@ -51,4 +56,5 @@ export const DEFAULT_SETTINGS: Settings = {
   source_mode: 'Both',
   language: 'EnUs',
   pinned_slug: '',
+  show_tray: 'Off',
 };

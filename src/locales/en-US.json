@@ -42,6 +42,7 @@
     "waylandManualBind": "Bind the compositor key to run the toggle:",
     "waylandHint": "On Wayland, re-bind a compositor key to run this command.",
     "waylandX11Ok": "Global hotkey is registered.",
-    "waylandOtherOk": "Global hotkey is registered."
+    "waylandOtherOk": "Global hotkey is registered.",
+    "trayToggle": "Show system tray icon"
   }
 }

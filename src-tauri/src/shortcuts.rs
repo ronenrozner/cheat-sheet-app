@@ -174,20 +174,22 @@ fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(window) = app.get_webview_window("main") {
                     if window.is_visible().unwrap_or(false) {
                         let _ = window.hide();
+                        let _ = crate::tray::update_overlay_icon(app, false);
                     } else {
                         let _ = window.show();
                         let _ = window.set_focus();
+                        let _ = crate::tray::update_overlay_icon(app, true);
                     }
                 }
             }
         })?;
-    // ESC hides the overlay. Kept as its own handler on the same reliable OS-level path
-    // as the toggle so it works without the WebView holding keyboard focus.
+    // ESC hides the overlay.
     app.global_shortcut()
         .on_shortcut("esc", |app, _shortcut, event| {
             if event.state == ShortcutState::Pressed {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.hide();
+                    let _ = crate::tray::update_overlay_icon(app, false);
                 }
             }
         })?;

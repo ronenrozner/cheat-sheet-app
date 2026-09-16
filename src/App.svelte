@@ -70,6 +70,15 @@
     } catch {
       // Persist failed (e.g. store unavailable). The in-memory settings still reflect the edit.
     }
+    // System tray (Task 17): when the tray toggle changes, apply it to the running instance.
+    const trayChanged = settings && settings.show_tray !== s.show_tray;
+    if (trayChanged) {
+      try {
+        await invoke('set_tray_visibility', { show: s.show_tray === 'On' });
+      } catch {
+        // tray command failed (e.g. tray not built); ignore.
+      }
+    }
   }
 
   // Whether the current sheet is the pinned one (drives the header button label).
