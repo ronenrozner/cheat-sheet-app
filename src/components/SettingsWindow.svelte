@@ -63,6 +63,12 @@
       class="close"
       type="button"
       aria-label={t('settings.close')}
+      // Stop the mousedown from bubbling to the .window drag handle, otherwise clicking the X
+      // starts a window drag instead of calling onClose().
+      onmousedown={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
       onclick={(e) => {
         e.stopPropagation();
         onClose();
