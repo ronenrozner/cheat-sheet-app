@@ -92,6 +92,15 @@
     onSave(settings);
   }
 
+  // Always-on-top toggle (Task 18). On = window stays above others; Off = window goes behind.
+  function onAlwaysOnTop(e: Event, checked: boolean) {
+    settings = {
+      ...settings,
+      always_on_top: checked ? 'On' : 'Off',
+    };
+    onSave(settings);
+  }
+
   // Pinned sheet slug.
   function onPinned(e: Event) {
     const el = e.target as HTMLInputElement;
@@ -194,6 +203,16 @@
       type="checkbox"
       checked={settings.show_tray === 'On'}
       onchange={(e) => onTray(e, (e.target as HTMLInputElement).checked)}
+    />
+  </label>
+
+  <label class="row">
+    <span>{t('settings.alwaysOnTop')}</span>
+    <input
+      class="ctrl"
+      type="checkbox"
+      checked={settings.always_on_top === 'On'}
+      onchange={(e) => onAlwaysOnTop(e, (e.target as HTMLInputElement).checked)}
     />
   </label>
 

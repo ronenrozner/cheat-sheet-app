@@ -28,6 +28,10 @@ export function coerceSettings(raw: unknown): Settings {
     pinned_slug: typeof s.pinned_slug === 'string' ? s.pinned_slug : DEFAULT_SETTINGS.pinned_slug,
     show_tray:
       s.show_tray === 'On' || s.show_tray === 'Off' ? s.show_tray : DEFAULT_SETTINGS.show_tray,
+    always_on_top:
+      s.always_on_top === 'On' || s.always_on_top === 'Off'
+        ? s.always_on_top
+        : DEFAULT_SETTINGS.always_on_top,
   };
 }
 
@@ -67,11 +71,13 @@ async function validate(s: Settings): Promise<boolean> {
   const modes = new Set(['Online', 'Local', 'Both']);
   const langs = new Set(['EnUs']);
   const trays = new Set(['Off', 'On']);
+  const tops = new Set(['On', 'Off']);
   return (
     themes.has(s.theme) &&
     modes.has(s.source_mode) &&
     langs.has(s.language) &&
     trays.has(s.show_tray) &&
+    tops.has(s.always_on_top) &&
     isWinSize(s.win_size) &&
     isTriggerKey(s.trigger) &&
     typeof s.pinned_slug === 'string'

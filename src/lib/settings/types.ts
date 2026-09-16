@@ -33,6 +33,9 @@ export type Language = 'EnUs';
 /** Whether to show a persistent system tray icon (Task 17). Default off. */
 export type ShowTray = 'Off' | 'On';
 
+/** Whether the overlay stays above other windows (Task 18). Default on. */
+export type AlwaysOnTop = 'On' | 'Off';
+
 /** Full persisted settings snapshot. */
 export interface Settings {
   theme: Theme;
@@ -42,12 +45,14 @@ export interface Settings {
   language: Language;
   pinned_slug: string;
   show_tray: ShowTray;
+  always_on_top: AlwaysOnTop;
 }
 
 /**
  * Default snapshot. Default trigger is `Ctrl+Shift+Q` (`ctrl=true, alt=false, shift=true,
  * key="q"`), set in `Settings::default()` in Rust. The UI defaults to this. Default `show_tray`
- * is `Off` so a new install keeps the original hidden-window-only behavior.
+ * is `Off` so a new install keeps the original hidden-window-only behavior. Default `always_on_top`
+ * is `On` so a new install keeps the overlay above other windows.
  */
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'Follow',
@@ -57,4 +62,5 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'EnUs',
   pinned_slug: '',
   show_tray: 'Off',
+  always_on_top: 'On',
 };

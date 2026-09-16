@@ -71,6 +71,7 @@ pub fn run() {
       crate::commands::settings::get_settings,
       crate::commands::settings::set_settings,
       crate::commands::settings::set_tray_visibility,
+      crate::commands::settings::set_always_on_top,
       crate::commands::sheets::list_sheets,
       crate::commands::sheets::load_sheet,
       crate::commands::sheets::get_online_listing,

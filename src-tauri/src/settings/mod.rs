@@ -76,6 +76,7 @@ pub struct Settings {
     pub language: Language,
     pub pinned_slug: String,
     pub show_tray: ShowTray,
+    pub always_on_top: bool,
 }
 
 impl Default for Settings {
@@ -93,6 +94,7 @@ impl Default for Settings {
             language: Language::EnUs,
             pinned_slug: String::new(),
             show_tray: ShowTray::Off,
+            always_on_top: true,
         }
     }
 }
@@ -141,6 +143,9 @@ pub fn load(app: &AppHandle) -> Settings {
     if let Some(v) = store.get("show_tray") {
         s.show_tray = serde_json::from_value(v.clone()).unwrap_or_default();
     }
+    if let Some(v) = store.get("always_on_top") {
+        s.always_on_top = v.as_bool().unwrap_or(true);
+    }
     s
 }
 
@@ -161,6 +166,10 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set("language", serde_json::to_value(settings.language).unwrap_or_default());
     store.set("pinned_slug", serde_json::to_value(&settings.pinned_slug).unwrap_or_default());
     store.set("show_tray", serde_json::to_value(settings.show_tray).unwrap_or_default());
+    store.set(
+        "always_on_top",
+        serde_json::to_value(settings.always_on_top).unwrap_or_default(),
+    );
 
     let bytes = settings_to_json(settings);
     let path = settings_path(app);
@@ -207,6 +216,7 @@ mod tests {
         assert_eq!(s.language, Language::EnUs);
         assert!(s.pinned_slug.is_empty());
         assert_eq!(s.show_tray, ShowTray::Off);
+        assert!(s.always_on_top);
     }
 
     #[test]
@@ -227,6 +237,7 @@ mod tests {
             language: Language::EnUs,
             pinned_slug: "1password".to_string(),
             show_tray: ShowTray::On,
+            always_on_top: false,
         };
         let bytes = settings_to_json(&original);
         let parsed = settings_from_json(&bytes);

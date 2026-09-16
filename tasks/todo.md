@@ -607,6 +607,34 @@ keep license/NOTICE files intact.
 
 ---
 
+## Task 18: Always-on-top toggle — persistent setting + live switch *(new, beyond spec)*
+**Description:** Add a setting `always_on_top` (default **on**). When on, the overlay stays above other windows. When off, it sits behind them. Toggling applies live via `Window::set_always_on_top` (no window rebuild). Backend: `always_on_top: bool` field in `Settings`, IPC command `set_always_on_top`, applied on change. Frontend: `always_on_top` in `Settings`/`DEFAULT_SETTINGS`, `bridge.ts` validate/coerce, `SettingsPanel.svelte` checkbox, `App.svelte` calls `set_always_on_top` on change.
+
+**Acceptance criteria:**
+- [ ] Default `always_on_top` is **on**; a new install keeps the overlay always on top.
+- [ ] `SettingsPanel` checkbox toggles it: ON = window stays above others, OFF = window goes behind.
+- [ ] The change applies live (no rebuild).
+- [ ] Restart keeps the setting.
+
+**Verification:**
+- [ ] `cargo test`: `always_on_top` load/save (default true, round-trip).
+- [ ] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
+- [ ] `npm run build`, `npm run check` (0 errors/warnings), `npm run lint`, prettier all clean.
+- [ ] **Manual (human confirm):** toggle off → window goes behind another window; toggle on → window returns to top; restart keeps the setting.
+
+**Result (Task 18 — 2026-09-15):** Always-on-top toggle complete and verifiable headlessly.
+- `always_on_top: bool` added to `Settings` (default `true`); load/save handles it (default true, round-trip, malformed → true). `cargo test`: 29 pass (added `always_on_top` to defaults + round-trip tests).
+- `commands/settings.rs`: new IPC command `set_always_on_top` — applies live via `Window::set_always_on_top`, no window rebuild; returns `Ok(())` if the window is absent.
+- `lib.rs`: registers `set_always_on_top`.
+- Frontend: `AlwaysOnTop` in `Settings`/`DEFAULT_SETTINGS` (default On), `bridge.ts` validate/coerce, `SettingsPanel.svelte` checkbox "Always on top", `App.svelte` calls `set_always_on_top` when `always_on_top` changes.
+- `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean; `npm test` 65 pass; `npm run check` 0 errors/warnings; `npm run lint` clean; `npm run build` clean.
+
+**Dependencies:** Task 3 (settings)
+**Files likely touched:** `src-tauri/src/settings/mod.rs`, `src-tauri/src/commands/settings.rs`, `src-tauri/src/lib.rs`, `src/lib/settings/types.ts`, `src/lib/settings/bridge.ts`, `src/components/SettingsPanel.svelte`, `src/App.svelte`, `src/locales/en-US.json`
+**Estimated scope:** S
+
+---
+
 ## Done when
 - All Phase 0–4 tasks complete and every Checkpoint box is ticked.
 - Open questions O2–O5 confirmed by the human.

@@ -79,6 +79,15 @@
         // tray command failed (e.g. tray not built); ignore.
       }
     }
+    // Always-on-top (Task 18): when the toggle changes, apply it to the running instance.
+    const topChanged = settings && settings.always_on_top !== s.always_on_top;
+    if (topChanged) {
+      try {
+        await invoke('set_always_on_top', { always_on_top: s.always_on_top === 'On' });
+      } catch {
+        // command failed; ignore.
+      }
+    }
   }
 
   // Whether the current sheet is the pinned one (drives the header button label).
