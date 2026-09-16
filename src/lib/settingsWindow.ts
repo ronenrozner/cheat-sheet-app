@@ -18,17 +18,23 @@ export async function isSettingsOpen(): Promise<boolean> {
 }
 
 /**
- * Open the settings window: show and focus it.
+ * Open the settings window: create it if needed, then show and focus it.
  *
- * The window is declared in `tauri.conf.json` (label `settings`), so it always exists. Show and
- * focus it. Returns true.
+ * Tauri does not always create config-declared windows in dev/debug builds, so we cannot assume
+ * the `settings` window already exists. Fall back to creating it with the same geometry as the
+ * config entry, then show and focus it.
  */
 export async function openSettings(): Promise<boolean> {
-  const window = await Window.getByLabel(SETTINGS_WINDOW_LABEL);
-  if (window !== null && window !== undefined) {
-    await window.show();
-    await window.setFocus();
+  let window = await Window.getByLabel(SETTINGS_WINDOW_LABEL);
+  if (!window) {
+    window = new Window(SETTINGS_WINDOW_LABEL, {
+      title: 'Settings',
+      width: 720,
+      height: 640,
+    });
   }
+  await window.show();
+  await window.setFocus();
   return true;
 }
 
