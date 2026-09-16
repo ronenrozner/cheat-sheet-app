@@ -20,7 +20,6 @@
     setSettings as persistSettings,
   } from './lib/settings/bridge';
   import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
-  import SettingsPanel from './components/SettingsPanel.svelte';
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { type HotkeyStatus, type WaylandSnippets } from './lib/overlay/hotkey';
@@ -215,15 +214,6 @@
 
   <SearchBox {query} {matchCount} />
 
-  <div class="panel-row">
-    <SettingsPanel
-      settings={settings ?? DEFAULT_SETTINGS}
-      onSave={(s: SettingsModel) => void persist(s)}
-      {hotkeyStatus}
-      {waylandSnippets}
-    />
-  </div>
-
   <div class="pane">
     <div class="pane-body">
       <Sidebar {selection} onselect={onSelect} />
@@ -275,11 +265,6 @@
   .sheet {
     flex: 1;
     min-height: 0;
-  }
-  .panel-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
   }
   .pin {
     padding: 0.35rem 0.6rem;
