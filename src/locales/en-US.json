@@ -44,6 +44,21 @@
     "waylandX11Ok": "Global hotkey is registered.",
     "waylandOtherOk": "Global hotkey is registered.",
     "trayToggle": "Show system tray icon",
-    "alwaysOnTop": "Always on top"
+    "alwaysOnTop": "Always on top",
+    "settingsTitle": "SETTINGS",
+    "settingsClose": "Close settings",
+    "settingsTabsLabel": "Settings tabs",
+    "settingsAbout": "About",
+    "settingsVersion": "Version",
+    "settingsAboutNote": "This space is reserved for future content.",
+    "settingsOpen": "Open settings",
+    "settingsTab": "Settings",
+    "aboutTab": "About",
+    "title": "SETTINGS",
+    "tabsLabel": "Settings tabs",
+    "close": "Close settings",
+    "about": "About",
+    "version": "Version",
+    "aboutNote": "This space is reserved for future content."
   }
 }

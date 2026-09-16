@@ -17,6 +17,19 @@ import App from '../../src/App.svelte';
 const invoke = vi.fn();
 vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(...args) }));
 
+// Mock the Tauri window layer so `getCurrentWindow()` doesn't read the real `__TAURI_INTERNALS__`
+// global (absent in the jsdom test environment). Default label is `main` (the overlay), so the
+// component renders the overlay shell, not the settings window.
+vi.mock('@tauri-apps/api/window', () => ({
+  getCurrentWindow: () => ({ label: 'main' }),
+}));
+
+// Mock the Tauri event layer so the live-sync effect (`listen('settings-changed', ...)`) doesn't
+// hit the real backend. `listen` returns a no-op unlisten.
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: async () => () => {},
+}));
+
 // Fake loader keyed by slug. Swapped per test via the `load` prop.
 let fakeLoad: (slug: string) => Promise<string | null>;
 

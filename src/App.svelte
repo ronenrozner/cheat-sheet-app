@@ -7,9 +7,12 @@
 -->
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
+  import { getCurrentWindow } from '@tauri-apps/api/window';
+  import { listen, emit } from '@tauri-apps/api/event';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
+  import SettingsWindow from './components/SettingsWindow.svelte';
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { resolveInitialSlug } from './lib/overlay/initialSlug';
   import {
@@ -21,6 +24,8 @@
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { type HotkeyStatus, type WaylandSnippets } from './lib/overlay/hotkey';
+  import { openSettings } from './lib/settingsWindow';
+  import { APP_VERSION } from './lib/version';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
@@ -70,6 +75,12 @@
     } catch {
       // Persist failed (e.g. store unavailable). The in-memory settings still reflect the edit.
     }
+    // Live sync (Task 19): notify the main overlay (if open) so it reflects the edit.
+    try {
+      await emit('settings-changed', s);
+    } catch {
+      // window destroyed; ignore.
+    }
     // System tray (Task 17): when the tray toggle changes, apply it to the running instance.
     const trayChanged = settings && settings.show_tray !== s.show_tray;
     if (trayChanged) {
@@ -88,6 +99,11 @@
         // command failed; ignore.
       }
     }
+  }
+
+  // Open the settings window (Task 19). Triggered by the gear icon in the overlay header.
+  function onOpenSettings() {
+    void openSettings();
   }
 
   // Whether the current sheet is the pinned one (drives the header button label).
@@ -160,6 +176,28 @@
   $effect(() => {
     void loadSheets();
   });
+
+  // Live sync (Task 19): when the settings window persists a change, it emits `settings-changed`.
+  // Reload settings so the overlay reflects the edit without a rebuild. Run once on mount.
+  $effect(() => {
+    let unlisten: (() => void) | undefined;
+    (async () => {
+      unlisten = await listen<SettingsModel>('settings-changed', async ({ payload }) => {
+        try {
+          settings = await loadSettings();
+        } catch {
+          settings = { ...DEFAULT_SETTINGS };
+        }
+      });
+    })();
+    return () => {
+      unlisten?.();
+    };
+  });
+
+  // Whether this webview is running inside the settings window. The same `App.svelte` renders
+  // either the overlay or the settings UI, depending on the current window label.
+  let isSettingsWindow = $derived(getCurrentWindow().label === 'settings');
 </script>
 
 <main class="overlay">
@@ -168,6 +206,9 @@
     <span class="hint">{t('app.hotkey')}</span>
     <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
       {isPinned ? t('app.unpin') : t('app.pin')}
+    </button>
+    <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
+      ⚙
     </button>
   </header>
 
@@ -191,6 +232,16 @@
     </div>
   </div>
 </main>
+
+{#if isSettingsWindow}
+  <SettingsWindow
+    settings={settings ?? DEFAULT_SETTINGS}
+    onSave={(s: SettingsModel) => void persist(s)}
+    version={APP_VERSION}
+    {hotkeyStatus}
+    {waylandSnippets}
+  />
+{/if}
 
 <style>
   .overlay {
@@ -243,5 +294,21 @@
   .pin[aria-pressed='true'] {
     background: var(--cs-selected-bg, #7d9ad4);
     color: #1e1e2e;
+  }
+  .gear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    border: 1px solid var(--cs-border, #44475a);
+    background: transparent;
+    color: var(--cs-fg, #cdd6f4);
+    cursor: pointer;
+  }
+  .gear:hover {
+    background: var(--cs-hover-bg, #282c3f);
   }
 </style>

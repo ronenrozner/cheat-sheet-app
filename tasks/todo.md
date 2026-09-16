@@ -635,6 +635,42 @@ keep license/NOTICE files intact.
 
 ---
 
+## Task 19: Settings window — separate always-on-top window with gear-open + live sync *(new, beyond spec)*
+**Description:** Add a separate always-on-top settings window (label `settings`, 720x640, `decorations: false`, resizable, centered, covering the main overlay). Open it via a gear icon in the main overlay header. Custom title bar with "SETTINGS" text + close (X) button; title bar supports window dragging (mousedown + `startDragging`). Left tab sidebar (Settings / About); About is a placeholder. The settings window renders the settings controls; the main overlay renders the sheet HUD. Both windows share the same webview — detect the current window by `Window.getCurrent().label`. Live sync: after `setSettings` succeeds, emit a `settings-changed` window event; the main overlay listens for it and reloads settings, so the overlay reflects changes live while settings is open.
+
+**Acceptance criteria:**
+- [ ] A `settings` window exists (720x640, decorations false, always on top).
+- [ ] A gear icon in the main overlay header opens the settings window.
+- [ ] The settings window shows a custom title bar ("SETTINGS" + close) that supports window dragging.
+- [ ] Left tab sidebar (Settings / About); About is a placeholder.
+- [ ] The close (X) button hides the settings window and keeps the main overlay open.
+- [ ] Changes made in settings apply live to the main overlay (via the `settings-changed` event).
+
+**Verification:**
+- [x] `cargo test`: 29 pass (no backend change).
+- [x] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
+- [x] `npm test`: existing tests still pass (65 pass). The App test now mocks `@tauri-apps/api/window` (label `main`) and `@tauri-apps/api/event` (live-sync `listen`).
+- [x] `npm run build`, `npm run check` (0 errors/warnings), `npm run lint`, prettier all clean.
+- [ ] **Manual (human confirm):** click gear → settings opens; drag title bar → window moves; close → settings hides, main overlay stays; change a setting → overlay reflects it live; restart keeps the setting.
+
+**Result (Task 19 — 2026-09-15):** Settings window complete and verifiable headlessly.
+- `tauri.conf.json`: added a `settings` window (720x640, decorations false, always on top, resizable, centered, visible false). No new Rust commands — `get_settings`/`set_settings` already exist.
+- `lib/settingsWindow.ts` (new): `openSettings()` (show + focus the `settings` window), `closeSettings()` (hide), `isSettingsOpen()`.
+- `components/SettingsWindow.svelte` (new): custom title bar ("SETTINGS" + close ×), left tab sidebar (Settings / About), `role="dialog"` + `tabindex="-1"` for a11y, drag from title bar via `getCurrentWindow().startDragging()`, close via `getCurrentWindow().hide()`.
+- `components/AboutTab.svelte` (new): placeholder About tab (future content).
+- `App.svelte`: detects current window label — renders `<SettingsWindow>` in the `settings` window, else the overlay shell; adds a gear icon in the overlay header (`onOpenSettings`); live sync — emits `settings-changed` after `setSettings`, and listens for it to reload settings so the overlay reflects edits live.
+- `locales/en-US.json`: added `settings.title`, `settings.close`, `settings.tabsLabel`, `settings.settingsTab`, `settings.aboutTab`, `settings.about`, `settings.version`, `settings.aboutNote`, `settingsOpen`.
+- Tests: App.svelte test now mocks `@tauri-apps/api/window` (default label `main`) and `@tauri-apps/api/event` (no-op `listen`) so the live-sync effect doesn't hit the real backend. 65 pass.
+- `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean; `npm run check` 0 errors/warnings; `npm run lint` clean; `npm run build` clean.
+
+**Manual gate (human confirm):** click gear → settings opens; drag title bar → window moves; close → settings hides, main overlay stays; change a setting → overlay reflects it live; restart keeps the setting.
+
+**Dependencies:** Task 3 (settings), Task 12 (settings UI)
+**Files likely touched:** `src-tauri/tauri.conf.json` (add `settings` window), `src/lib/settingsWindow.ts` (new), `src/settingsWindow.ts` (new), `src/components/SettingsWindow.svelte` (new), `src/components/AboutTab.svelte` (new), `src/App.svelte`, `src/locales/en-US.json`
+**Estimated scope:** M
+
+---
+
 ## Done when
 - All Phase 0–4 tasks complete and every Checkpoint box is ticked.
 - Open questions O2–O5 confirmed by the human.

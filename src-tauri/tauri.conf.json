@@ -23,6 +23,19 @@
         "center": true,
         "transparent": false,
         "visible": false
+      },
+      {
+        "label": "settings",
+        "title": "Settings",
+        "width": 720,
+        "height": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "center": true,
+        "transparent": false,
+        "visible": false
       }
     ],
     "security": {
