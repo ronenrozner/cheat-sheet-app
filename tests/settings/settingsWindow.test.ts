@@ -31,7 +31,11 @@ const h = vi.hoisted(() => {
       },
     };
   });
-  WindowMock.getByLabel = vi.fn(async () => (getByStub ? getByStub() : null));
+
+  // Attach the static getByLabel method to the constructor for correct typing.
+  (WindowMock as unknown as { getByLabel: ReturnType<typeof vi.fn> }).getByLabel = vi.fn(
+    async () => (getByStub ? getByStub() : null)
+  );
 
   return {
     WindowMock,

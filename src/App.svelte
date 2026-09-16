@@ -200,6 +200,7 @@
   let isSettingsWindow = $derived(getCurrentWindow().label === 'settings');
 </script>
 
+{#if !isSettingsWindow}
 <main class="overlay">
   <header class="title">
     <h1>{t('app.title')}</h1>
@@ -232,6 +233,7 @@
     </div>
   </div>
 </main>
+{/if}
 
 {#if isSettingsWindow}
   <SettingsWindow
