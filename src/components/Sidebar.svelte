@@ -26,8 +26,7 @@
     {#each selection.slugs as slug (slug)}
       <li>
         <button
-          class="sheet-item"
-          class:selected={slug === selection.slug}
+          class={`sheet-item ${slug === selection.slug ? 'sheet-item-selected' : ''}`}
           type="button"
           aria-current={slug === selection.slug ? 'true' : undefined}
           onclick={() => onClick(slug)}
