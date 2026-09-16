@@ -8,6 +8,12 @@ const host = process.env['TAURI_DEV_HOST'];
 
 // https://vite.dev/config/
 export default defineConfig({
+  // The main bundle (~1 MB) exceeds the default 500 kB warning because of marked, highlight.js,
+  // and dompurify. This is a Tauri desktop app, not a web app, so bundle size does not affect
+  // load time. Raise the threshold to silence the warning.
+  build: {
+    chunkSizeWarningLimit: 2000,
+  },
   // Force the browser export conditions so Svelte 5 resolves the client build
   // (import { mount } from 'svelte') for component tests. Without this, Vitest
   // uses the Node conditions and mount resolves to the server build.
