@@ -183,11 +183,19 @@ fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         })?;
-    // ESC hides the overlay.
+    // ESC closes the settings window when it is open; otherwise it hides the overlay.
+    // Both are OS-level global shortcuts so they work even when the windows lack keyboard focus.
     app.global_shortcut()
         .on_shortcut("esc", |app, _shortcut, event| {
             if event.state == ShortcutState::Pressed {
-                if let Some(window) = app.get_webview_window("main") {
+                // The settings window is always-on-top, so when it is visible it is the focused
+                // one and ESC should close it. Otherwise ESC hides the overlay.
+                let settings_visible = app
+                    .get_webview_window("settings")
+                    .map(|w| w.is_visible().unwrap_or(false))
+                    .unwrap_or(false);
+                let target_label = if settings_visible { "settings" } else { "main" };
+                if let Some(window) = app.get_webview_window(target_label) {
                     let _ = window.hide();
                     let _ = crate::tray::update_overlay_icon(app, false);
                 }
