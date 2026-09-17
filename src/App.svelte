@@ -266,6 +266,15 @@
     flex: 1;
     min-height: 0;
   }
+  .pane-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+  .pane {
+    display: flex;
+    flex: 1;
+  }
   .pin {
     padding: 0.35rem 0.6rem;
     font-size: 0.8rem;
