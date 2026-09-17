@@ -65,6 +65,7 @@
     font-size: 0.9rem;
     text-align: left;
     border-radius: 4px;
+    border: none;
     background: transparent;
     color: var(--cs-fg, #cdd6f4);
     cursor: pointer;
