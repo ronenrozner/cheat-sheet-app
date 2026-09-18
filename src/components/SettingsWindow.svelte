@@ -28,19 +28,32 @@
     version = '',
     hotkeyStatus = null,
     waylandSnippets = null,
+    sheetsBySlug = {},
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
     version?: string;
     hotkeyStatus?: HotkeyStatus | null;
     waylandSnippets?: WaylandSnippets | null;
+    sheetsBySlug?: Record<string, string>;
   }>();
 
   // Active tab: 'settings' | 'about'.
   let tab = $state<'settings' | 'about'>('settings');
 
-  // Drag the window from the title bar (decorations: false, so there is no native drag handle).
+  // Drag the window from anywhere except form controls (decorations: false, so there is no
+  // native drag handle). Without the guard below, starting a drag on a mousedown swallows the
+  // following click, so checkboxes, text inputs, and selects never register a change.
   function onStartDrag(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    // A control (or the text of a label wrapping one) must not start a drag: the native drag
+    // gesture would steal the click and the control would not update.
+    if (
+      target.closest('select, input, textarea, button') ||
+      target.closest('label')
+    ) {
+      return;
+    }
     void getCurrentWindow().startDragging();
   }
 
@@ -104,7 +117,7 @@
 
     <div class="content">
       {#if tab === 'settings'}
-        <SettingsPanel {settings} {onSave} {hotkeyStatus} {waylandSnippets} />
+        <SettingsPanel {settings} {onSave} {hotkeyStatus} {waylandSnippets} {sheetsBySlug} />
       {:else}
         <AboutTab {version} />
       {/if}

@@ -49,6 +49,10 @@
   // open-sheet decision and persist new pins. Loaded defensively (falls back to defaults).
   let settings = $state<SettingsModel | null>(null);
 
+  // All available sheets, keyed by slug for display title. Drives the pinned-sheet dropdown in the
+  // settings window. Populated once from `list_sheets` (same list the overlay can pin), so the
+  // dropdown never offers a sheet the overlay cannot open.
+
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
   function onSelect(slug: string) {
     const next = selectSheet(selection, slug);
@@ -120,8 +124,12 @@
   // sheet wins, first run falls back to a bundled default, then the first available sheet).
   async function loadSheets(): Promise<void> {
     try {
-      const sheets = await invoke<[{ slug: string }]>('list_sheets', {});
+      const sheets = await invoke<[{ slug: string; title: string }]>('list_sheets', {});
       const slugs = sheets.map((s: { slug: string }) => s.slug);
+      // Full sheet list (slug + title) for the pinned-sheet dropdown in the settings window.
+      sheetsBySlug = Object.fromEntries(
+        sheets.map((s: { slug: string; title: string }) => [s.slug, s.title])
+      );
       // Load persisted settings once (Task 11/12): read the pinned slug for the open-sheet decision.
       try {
         settings = await loadSettings();
@@ -197,6 +205,10 @@
   // Whether this webview is running inside the settings window. The same `App.svelte` renders
   // either the overlay or the settings UI, depending on the current window label.
   let isSettingsWindow = $derived(getCurrentWindow().label === 'settings');
+
+  // Sheet slug -> display title, for the pinned-sheet dropdown header. Populated in `loadSheets`.
+  let sheetsBySlug: Record<string, string> = $state({});
+
 </script>
 
 {#if !isSettingsWindow}
@@ -232,6 +244,7 @@
     version={APP_VERSION}
     {hotkeyStatus}
     {waylandSnippets}
+    sheetsBySlug={sheetsBySlug}
   />
 {/if}
 

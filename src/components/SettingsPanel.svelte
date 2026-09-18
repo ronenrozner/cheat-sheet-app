@@ -23,11 +23,13 @@
     onSave,
     hotkeyStatus = null,
     waylandSnippets = null,
+    sheetsBySlug = {},
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
     hotkeyStatus?: HotkeyStatus | null;
     waylandSnippets?: WaylandSnippets | null;
+    sheetsBySlug?: Record<string, string>;
   }>();
 
   // Theme (Follow / Light / Dark).
@@ -101,9 +103,11 @@
     onSave(settings);
   }
 
-  // Pinned sheet slug.
+  // Pinned sheet: dropdown of every available sheet. The header shows the current title, or the
+  // placeholder when nothing is pinned. Selecting a sheet sets `pinned_slug` (the value the overlay
+  // uses to open the sheet). Clearing it sets an empty slug (no pin).
   function onPinned(e: Event) {
-    const el = e.target as HTMLInputElement;
+    const el = e.target as HTMLSelectElement;
     settings = { ...settings, pinned_slug: el.value };
     onSave(settings);
   }
@@ -187,13 +191,17 @@
 
   <label class="row">
     <span>{t('settings.pinnedSheet')}</span>
-    <input
+    <select
       class="ctrl"
-      type="text"
-      placeholder={t('settings.nonePlaceholder')}
       bind:value={settings.pinned_slug}
       onchange={onPinned}
-    />
+      aria-label={t('settings.pinnedSheet')}
+    >
+      <option value="">{t('settings.nonePlaceholder')}</option>
+      {#each Object.keys(sheetsBySlug).sort((a, b) => a.localeCompare(b)) as slug (slug)}
+        <option value={slug}>{sheetsBySlug[slug]}</option>
+      {/each}
+    </select>
   </label>
 
   <label class="row">
