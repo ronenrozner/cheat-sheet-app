@@ -1,7 +1,8 @@
 //! System tray icon (Task 17).
 //!
 //! When `show_tray` is `On`, a persistent tray icon appears. Clicking it toggles the overlay. The
-//! icon swaps appearance when the overlay opens/closes. There is no right-click menu.
+//! icon swaps appearance when the overlay opens/closes. The tray menu has a Quit item so the
+//! resident app has an explicit shutdown path.
 //!
 //! macOS renders tray icons as grayscale templates, so both icons are marked `icon_as_template`.
 //! The open-state variant is `icons/icon-open.png` (the base icon with a small checkmark badge).
@@ -11,11 +12,11 @@ use std::sync::Mutex;
 use std::io::Error as IoError;
 
 use include_dir::{include_dir, Dir};
-use tauri::{AppHandle, Manager};
 use tauri::image::Image;
-use tauri::menu::Menu;
+use tauri::menu::{Menu, MenuItem};
 use tauri::tray::MouseButton;
 use tauri::tray::TrayIconEvent;
+use tauri::{AppHandle, Manager};
 
 /// The tray icon id. Shared by the base and open variants so we only have one tray instance.
 pub const TRAY_ID: &str = "cheat-sheet-tray";
@@ -24,6 +25,9 @@ pub const TRAY_ID: &str = "cheat-sheet-tray";
 const ICON_BASE: &str = "icon.png";
 /// The overlay-open tray icon path in the embedded set.
 const ICON_OPEN: &str = "icon-open.png";
+
+/// Tray menu item id for graceful app shutdown.
+pub const QUIT_MENU_ID: &str = "quit";
 
 /// The embedded tray icons. Relative to the crate root (`src-tauri/`).
 const ICONS: Dir<'_> = include_dir!("icons");
@@ -44,8 +48,7 @@ fn embedded_icon(path: &str) -> Option<&[u8]> {
 
 /// Load an embedded icon as a Tauri `Image`, or `None` when it is missing.
 fn load_icon(path: &str) -> Option<Image<'static>> {
-    embedded_icon(path)
-        .and_then(|bytes| Image::from_bytes(bytes).ok())
+    embedded_icon(path).and_then(|bytes| Image::from_bytes(bytes).ok())
 }
 
 /// Create the persistent tray icon. Registered only when `show_tray` is `On`.
@@ -53,14 +56,18 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let Some(base) = load_icon(ICON_BASE) else {
         return Err(tauri::Error::from(IoError::other("tray icon not embedded")));
     };
-    // Linux: a tray icon with no menu is invisible. An empty menu makes the icon show and suppress
-    // the right-click context menu.
-    let menu = Menu::new(app)?;
+    let quit = MenuItem::with_id(app, QUIT_MENU_ID, "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&quit])?;
 
     let tray = tauri::tray::TrayIconBuilder::with_id(TRAY_ID)
         .icon(base)
         .menu(&menu)
         .tooltip("Cheat-Sheet HUD")
+        .on_menu_event(|app, event| {
+            if is_quit_menu_id(event.id().as_ref()) {
+                request_exit(app);
+            }
+        })
         .build(app)?;
 
     // macOS: render the icon as a grayscale template.
@@ -111,6 +118,29 @@ pub fn overlay_open() -> bool {
     *OVERLAY_OPEN.lock().unwrap()
 }
 
+/// Request graceful app shutdown.
+///
+/// Run on the main thread and close webview windows before exiting. This reduces WebView2 teardown
+/// warnings during `cargo tauri dev` on Windows.
+pub fn request_exit(app: &AppHandle) {
+    let app = app.clone();
+    let app_for_main = app.clone();
+    if let Err(e) = app.run_on_main_thread(move || {
+        for (_label, window) in app_for_main.webview_windows() {
+            let _ = window.close();
+        }
+        app_for_main.exit(0);
+    }) {
+        log::warn!("graceful app exit dispatch failed: {e:#}");
+        app.exit(0);
+    }
+}
+
+/// Whether a tray menu item id requests app shutdown.
+fn is_quit_menu_id(id: &str) -> bool {
+    id == QUIT_MENU_ID
+}
+
 /// Toggle the overlay: show/hide the `main` window and update the tray icon.
 fn toggle_overlay(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
@@ -148,5 +178,11 @@ mod tests {
     fn both_tray_icons_are_embedded() {
         assert!(embedded_icon(ICON_BASE).is_some());
         assert!(embedded_icon(ICON_OPEN).is_some());
+    }
+
+    #[test]
+    fn quit_menu_id_is_recognized() {
+        assert!(is_quit_menu_id(QUIT_MENU_ID));
+        assert!(!is_quit_menu_id("open"));
     }
 }

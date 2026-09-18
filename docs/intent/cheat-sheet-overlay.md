@@ -126,3 +126,11 @@ implementation) consumes this.
    `App.svelte`.
 - **Implementation note:** the Tauri window label remains `settings`, but the window opens the
    `/settings` route via `WebviewWindow`. Live settings sync still uses the `settings-changed` event.
+
+## Revision — Explicit quit paths for the resident app (2026-09-18)
+
+- **What changed:** the app now has explicit graceful shutdown paths. The tray menu includes **Quit**.
+   Debug builds also register `Ctrl+Shift+Alt+Q` to quit during `cargo tauri dev`.
+- **Why:** hide/toggle behavior is correct for the HUD, but development needed a clear way to stop
+   the resident Tauri process without relying only on terminal `Ctrl-C`.
+- **Implementation note:** quit closes webview windows on the main thread before calling `app.exit(0)`.

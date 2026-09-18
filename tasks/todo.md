@@ -576,14 +576,14 @@ keep license/NOTICE files intact.
 ## Phase 5 — Optional / Non-blocking
 
 ## Task 17: System tray toggle — persistent icon + settings switch *(new, beyond spec)*
-**Description:** Add a persistent system tray icon controlled by a new setting `show_tray` (default **off**). When off, behavior is unchanged (hidden window only). When on, a persistent tray icon appears. Left-click toggles the overlay. The icon swaps appearance when the overlay opens/closes (open state = `icons/icon-open.png`, the base icon with a small checkmark badge). No right-click menu. macOS renders both icons as grayscale templates. Backend: `settings::ShowTray` enum + `tray` module (create/show/hide/swap-icon), IPC command `set_tray_visibility`, tray icon updates wired into the hotkey toggle path and the `--toggle` single-instance callback. Frontend: `show_tray` in `Settings`/`DEFAULT_SETTINGS`, `bridge.ts` validate/coerce, `SettingsPanel.svelte` checkbox, `App.svelte` calls `set_tray_visibility` on change.
+**Description:** Add a persistent system tray icon controlled by a new setting `show_tray` (default **off**). When off, behavior is unchanged (hidden window only). When on, a persistent tray icon appears. Left-click toggles the overlay. The icon swaps appearance when the overlay opens/closes (open state = `icons/icon-open.png`, the base icon with a small checkmark badge). A tray menu includes **Quit** for graceful shutdown (added by Task 22). macOS renders both icons as grayscale templates. Backend: `settings::ShowTray` enum + `tray` module (create/show/hide/swap-icon), IPC command `set_tray_visibility`, tray icon updates wired into the hotkey toggle path and the `--toggle` single-instance callback. Frontend: `show_tray` in `Settings`/`DEFAULT_SETTINGS`, `bridge.ts` validate/coerce, `SettingsPanel.svelte` checkbox, `App.svelte` calls `set_tray_visibility` on change.
 
 **Acceptance criteria:**
 - [ ] Default `show_tray` is **off**; a new install keeps the original hidden-window-only behavior.
 - [ ] `SettingsPanel` checkbox toggles the tray: ON shows a persistent icon, OFF hides it.
 - [ ] Left-click on the tray icon toggles the overlay (show/hide + focus).
 - [ ] The icon swaps appearance when the overlay opens/closes (tray click, hotkey, or `--toggle`).
-- [ ] No right-click context menu.
+- [x] Tray menu has a **Quit** item for graceful app shutdown.
 - [ ] Restart keeps the setting.
 
 **Verification:**
@@ -598,7 +598,7 @@ keep license/NOTICE files intact.
 
 **Result (Task 17 — 2026-09-15):** System tray toggle complete and verifiable headlessly.
 - `settings::ShowTray` enum (Off/On, default Off) added to `Settings`; load/save handles it (default off, round-trip, malformed → off). `cargo test`: 29 pass (26 backend + 3 new: `ShowTray` load/save default-off + round-trip, `tray_visible` matches setting, both icons embedded).
-- `tray.rs` module (new): `create_tray` (build tray, empty menu to suppress right-click on Linux, tooltip, macOS template, left-click toggles), `tray_visible`, `set_tray_visible`, `update_overlay_icon` (swaps base/open icon), `overlay_open`, `toggle_overlay`.
+- `tray.rs` module (new): `create_tray` (build tray menu with Quit, tooltip, macOS template, left-click toggles), `tray_visible`, `set_tray_visible`, `update_overlay_icon` (swaps base/open icon), `overlay_open`, `toggle_overlay`, `request_exit`.
 - `commands/settings.rs`: `set_tray_visibility` IPC command. `lib.rs`: registers it; creates tray in `setup` only when `show_tray` is On; the `--toggle` single-instance callback updates the tray icon.
 - `shortcuts.rs`: hotkey toggle + ESC paths update the tray icon.
 - `Cargo.toml`: enabled `tray-icon` + `image-png` features.
@@ -736,6 +736,39 @@ label. `openSettings()` still targets the Tauri label `settings`, but the create
 **Dependencies:** Task 20 (SvelteKit shell), Task 19 (settings window)
 **Files touched:** `src/routes/settings/+page.svelte`, `src/App.svelte`, `src/lib/settingsWindow.ts`,
 `src-tauri/tauri.conf.json`, `src/components/SettingsWindow.svelte`, settings tests
+**Estimated scope:** S
+
+---
+
+## Task 22: Explicit graceful quit paths for dev and tray
+**Description:** Add explicit app shutdown paths. Hiding the HUD is still the normal overlay behavior, but a
+resident desktop app also needs a real quit path. Add a tray **Quit** item and a debug-only keyboard shortcut for
+`cargo tauri dev`.
+
+**Acceptance criteria:**
+- [x] Tray menu includes **Quit**.
+- [x] Tray Quit calls a graceful shutdown path.
+- [x] Debug builds register `Ctrl+Shift+Alt+Q` as a dev-only quit shortcut.
+- [x] Graceful shutdown closes webview windows on the main thread before calling `app.exit(0)`.
+- [x] `Esc` still hides windows and does not quit.
+- [x] `Ctrl+Shift+Q` still toggles the overlay and does not quit.
+
+**Verification:**
+- [x] `cargo test`: 30 pass.
+- [x] `cargo clippy --all-targets -- -D warnings` clean.
+- [x] `cargo check` clean.
+- [x] `npm test`: 18 files pass, 87 tests pass.
+- [x] `npm run check` clean.
+- [x] `npm run lint` clean.
+- [x] `npm run build` clean.
+- [ ] **Manual (human confirm):** in `cargo tauri dev`, press `Ctrl+Shift+Alt+Q` → app exits; with tray enabled,
+  choose Quit → app exits. A WebView2 `Chrome_WidgetWin_0` unregister warning may be benign if the process exits.
+
+**Result (Task 22 — 2026-09-18):** Added `tray::request_exit`, which dispatches shutdown to the main thread,
+closes all webview windows, then calls `app.exit(0)`. Tray Quit and the debug-only shortcut both use this path.
+
+**Dependencies:** Task 17 (tray), Task 2 (global shortcuts)
+**Files touched:** `src-tauri/src/tray.rs`, `src-tauri/src/shortcuts.rs`
 **Estimated scope:** S
 
 ---

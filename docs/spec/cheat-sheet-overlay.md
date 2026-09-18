@@ -68,6 +68,7 @@ Backend test:     cargo test
 Lint frontend:    npm run lint            # eslint + prettier
 Lint backend:     cargo clippy -- -D warnings
 CLI toggle:       cargo tauri dev -- --toggle       # or the built binary: cheatsheet-app --toggle
+Dev quit:         Ctrl+Shift+Alt+Q                   # debug builds only; graceful shutdown path
 ```
 
 > Build/test commands assume the scaffold created in Phase 2. The SvelteKit/Vite dev port defaults to Tauri's `1420`.
@@ -205,6 +206,8 @@ Tauri's `global-shortcut` plugin uses the `global-hotkey` crate, which is **X11-
    - **GNOME:** *Settings → Keyboard → Custom Shortcuts* → run `cheatsheet-app --toggle`
 
 Neither path fails silently: if the active path is unavailable, the UI says so. See Open Question **O1** *(resolved)*.
+
+**Shutdown paths:** `Esc` and the overlay hotkey hide/toggle windows; they do not quit the resident app. A tray **Quit** menu item calls the graceful shutdown path. Debug builds also register `Ctrl+Shift+Alt+Q` as a development-only graceful quit shortcut for `cargo tauri dev`.
 
 ---
 

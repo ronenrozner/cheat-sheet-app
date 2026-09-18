@@ -76,8 +76,7 @@ impl Default for WaylandSnippets {
         Self {
             hyprland: "bind = SUPER, SHIFT, Q, exec, cheatsheet-app --toggle".to_string(),
             sway: "bindsym $mod+Shift+q exec cheatsheet-app --toggle".to_string(),
-            gnome: "Settings \u{2013} Keyboard \u{2013} Custom Shortcuts \u{2013} run "
-                .to_string()
+            gnome: "Settings \u{2013} Keyboard \u{2013} Custom Shortcuts \u{2013} run ".to_string()
                 + "`cheatsheet-app --toggle`",
         }
     }
@@ -121,9 +120,10 @@ pub struct HotkeyStatus {
 /// Register the overlay hotkeys, returning a [`HotkeyStatus`] snapshot.
 ///
 /// `Ctrl-Shift-Q` toggles the `main` window: if it is visible, hide it; otherwise show and focus
-/// it. `Esc` only hides the window (it never re-shows it). Both are OS-level global shortcuts so
-/// they work even when the undecorated overlay window lacks keyboard focus (the frontend
-/// `keydown` path could not rely on this).
+/// it. `Esc` only hides the window (it never re-shows it). In debug builds, `Ctrl-Shift-Alt-Q`
+/// exits the app so `cargo tauri dev` has a graceful keyboard shutdown path. These are OS-level
+/// global shortcuts so they work even when the undecorated overlay window lacks keyboard focus
+/// (the frontend `keydown` path could not rely on this).
 ///
 /// Registration errors are **not** fatal: a non-binding session (Wayland) is reported via the
 /// returned status so the UI can flag it, instead of aborting `setup` and failing silently.
@@ -201,8 +201,26 @@ fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         })?;
+    register_dev_quit_shortcut(app);
     Ok(())
 }
+
+#[cfg(debug_assertions)]
+fn register_dev_quit_shortcut(app: &AppHandle) {
+    if let Err(e) =
+        app.global_shortcut()
+            .on_shortcut("ctrl+shift+alt+q", |app, _shortcut, event| {
+                if event.state == ShortcutState::Pressed {
+                    crate::tray::request_exit(app);
+                }
+            })
+    {
+        log::warn!("dev quit shortcut registration failed: {e:#}");
+    }
+}
+
+#[cfg(not(debug_assertions))]
+fn register_dev_quit_shortcut(_app: &AppHandle) {}
 
 /// IPC command: report the current overlay hotkey status to the frontend.
 #[tauri::command]
@@ -231,7 +249,10 @@ mod tests {
     #[test]
     fn detects_wayland() {
         assert!(matches!(
-            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "wayland".to_string())]),
+            detect_session_type(vec![(
+                "XDG_SESSION_TYPE".to_string(),
+                "wayland".to_string()
+            )]),
             Some(LinuxSession::Wayland)
         ));
     }
@@ -239,7 +260,10 @@ mod tests {
     #[test]
     fn normalizes_case() {
         assert!(matches!(
-            detect_session_type(vec![("XDG_SESSION_TYPE".to_string(), "WAYLAND".to_string())]),
+            detect_session_type(vec![(
+                "XDG_SESSION_TYPE".to_string(),
+                "WAYLAND".to_string()
+            )]),
             Some(LinuxSession::Wayland)
         ));
     }
