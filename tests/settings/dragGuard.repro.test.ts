@@ -15,7 +15,7 @@ import { DEFAULT_SETTINGS, type Settings } from '../../src/lib/settings/types';
 const startDragging = vi.fn();
 const hide = vi.fn();
 vi.mock('@tauri-apps/api/window', () => ({
-  getCurrentWindow: () => ({ label: 'settings', startDragging, hide }),
+  getCurrentWindow: () => ({ startDragging, hide }),
 }));
 vi.mock('@tauri-apps/api/event', () => ({
   listen: async () => () => {},

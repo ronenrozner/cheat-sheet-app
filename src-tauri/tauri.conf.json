@@ -26,6 +26,7 @@
       },
       {
         "label": "settings",
+        "url": "/settings",
         "title": "Settings",
         "width": 720,
         "height": 640,

@@ -639,7 +639,7 @@ keep license/NOTICE files intact.
 ---
 
 ## Task 19: Settings window — separate always-on-top window with gear-open + live sync *(new, beyond spec)*
-**Description:** Add a separate always-on-top settings window (label `settings`, 720x640, `decorations: false`, resizable, centered, covering the main overlay). Open it via a gear icon in the main overlay header. Custom title bar with "SETTINGS" text + close (X) button; title bar supports window dragging (mousedown + `startDragging`). Left tab sidebar (Settings / About); About is a placeholder. The settings window renders the settings controls; the main overlay renders the sheet HUD. Both windows share the same webview — detect the current window by `Window.getCurrent().label`. Live sync: after `setSettings` succeeds, emit a `settings-changed` window event; the main overlay listens for it and reloads settings, so the overlay reflects changes live while settings is open.
+**Description:** Add a separate always-on-top settings window (label `settings`, 720x640, `decorations: false`, resizable, centered, covering the main overlay). Open it via a gear icon in the main overlay header. Custom title bar with "SETTINGS" text + close (X) button; title bar supports window dragging (mousedown + `startDragging`). Left tab sidebar (Settings / About); About is a placeholder. The settings window renders the settings controls; the main overlay renders the sheet HUD. Original implementation detected the current window by `Window.getCurrent().label`; Task 21 later moved settings to the route-owned `/settings` page. Live sync uses a `settings-changed` window event so the overlay reflects changes live while settings is open.
 
 **Acceptance criteria:**
 - [ ] A `settings` window exists (720x640, decorations false, always on top).
@@ -661,7 +661,7 @@ keep license/NOTICE files intact.
 - `lib/settingsWindow.ts` (new): `openSettings()` (show + focus the `settings` window), `closeSettings()` (hide), `isSettingsOpen()`.
 - `components/SettingsWindow.svelte` (new): custom title bar ("SETTINGS" + close ×), left tab sidebar (Settings / About), `role="dialog"` + `tabindex="-1"` for a11y, drag from title bar via `getCurrentWindow().startDragging()`, close via `getCurrentWindow().hide()`.
 - `components/AboutTab.svelte` (new): placeholder About tab (future content).
-- `App.svelte`: detects current window label — renders `<SettingsWindow>` in the `settings` window, else the overlay shell; adds a gear icon in the overlay header (`onOpenSettings`); live sync — emits `settings-changed` after `setSettings`, and listens for it to reload settings so the overlay reflects edits live.
+- `App.svelte`: initially detected current window label — rendered `<SettingsWindow>` in the `settings` window, else the overlay shell; added a gear icon in the overlay header (`onOpenSettings`); live sync — emitted `settings-changed` after `setSettings`, and listened for it to reload settings so the overlay reflected edits live. Superseded by Task 21: settings now lives in `src/routes/settings/+page.svelte`, and `App.svelte` is overlay-only.
 - `locales/en-US.json`: added `settings.title`, `settings.close`, `settings.tabsLabel`, `settings.settingsTab`, `settings.aboutTab`, `settings.about`, `settings.version`, `settings.aboutNote`, `settingsOpen`.
 - Tests: App.svelte test now mocks `@tauri-apps/api/window` (default label `main`) and `@tauri-apps/api/event` (no-op `listen`) so the live-sync effect doesn't hit the real backend. 65 pass.
 - `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean; `npm run check` 0 errors/warnings; `npm run lint` clean; `npm run build` clean.
@@ -696,16 +696,47 @@ The app stays client-only in the Tauri webview.
 - [x] `npm test`: 17 files pass, 86 tests pass.
 - [x] `npm run lint` clean.
 
-**Result (Task 20 — 2026-09-18):** SvelteKit migration complete. Existing `App.svelte` remains the app shell
+**Result (Task 20 — 2026-09-18):** SvelteKit migration complete. Existing `App.svelte` remains the overlay shell
 and is rendered from `src/routes/+page.svelte`. Tauri continues to load `dist/` in production and the dev server
 on port 1420 in development. The CSP console error caused by SvelteKit's inline boot script was fixed by moving
-CSP generation into SvelteKit config and aligning the Tauri CSP.
+CSP generation into SvelteKit config and aligning the Tauri CSP. Task 21 later added the route-owned settings page.
 
 **Dependencies:** Task 1 scaffold
 **Files touched:** `package.json`, `package-lock.json`, `vite.config.ts`, `svelte.config.js`, `tsconfig.json`,
 `.gitignore`, `.prettierignore`, `eslint.config.js`, `src/app.html`, `src/routes/+layout.ts`,
 `src/routes/+page.svelte`, `src-tauri/tauri.conf.json`, removed `index.html`, removed `src/main.ts`
 **Estimated scope:** M
+
+---
+
+## Task 21: Move settings UI to SvelteKit `/settings` route
+**Description:** Split the SvelteKit routes by responsibility. The root route `/` renders the HUD overlay only.
+The settings route `/settings` renders the settings window UI. Keep the Tauri window label `settings`, but open
+that window at `/settings` via `WebviewWindow` instead of rendering different UI from `App.svelte` based on the
+current window label.
+
+**Acceptance criteria:**
+- [x] `src/routes/settings/+page.svelte` exists and renders `<SettingsWindow>`.
+- [x] `src/App.svelte` is overlay-only and no longer checks `getCurrentWindow().label`.
+- [x] `src/lib/settingsWindow.ts` creates a `WebviewWindow` with `url: '/settings'` when needed.
+- [x] `src-tauri/tauri.conf.json` sets the `settings` window URL to `/settings`.
+- [x] Settings live sync still uses `settings-changed` so overlay updates after settings edits.
+- [x] Settings tests mount the settings route instead of mounting `App.svelte` in a mocked settings-window mode.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] `npm test`: 17 files pass, 86 tests pass.
+- [x] `npm run build` clean; SvelteKit builds both `/` and `/settings`.
+- [x] `npm run lint` clean.
+
+**Result (Task 21 — 2026-09-18):** Settings routing now matches SvelteKit conventions. `/` renders the overlay.
+`/settings` renders the settings window. `App.svelte` is simpler and no longer branches on the Tauri window
+label. `openSettings()` still targets the Tauri label `settings`, but the created webview loads `/settings`.
+
+**Dependencies:** Task 20 (SvelteKit shell), Task 19 (settings window)
+**Files touched:** `src/routes/settings/+page.svelte`, `src/App.svelte`, `src/lib/settingsWindow.ts`,
+`src-tauri/tauri.conf.json`, `src/components/SettingsWindow.svelte`, settings tests
+**Estimated scope:** S
 
 ---
 

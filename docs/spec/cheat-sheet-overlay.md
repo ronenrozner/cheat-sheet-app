@@ -9,6 +9,7 @@
   * **Search scope revised (Task 8, 2026-09-06).** Original Task 8 was cross-sheet two-way search (minisearch, NL + combo, golden fixtures). **Redirected to find-in-current-sheet**: NL-only, highlight matches in the sheet currently open in the HUD, no combo matching, no cross-sheet index. The original minisearch two-way search is **deferred**, not deleted from the spec — the spec describes the intended design; Task 8 implements a narrower v1 scope. See `tasks/todo.md` Task 8 for the implementation note. The search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
   * **Sheet storage folder resolved to `<home>/cheatsheets/` (2026-09-09).** Storage path fixed from the previous `app_data_dir/cheatsheets` to `BaseDirectory::Home/cheatsheets` — a flat, visible folder in the user's home directory, per spec. `src-tauri/src/sheets/mod.rs::sheet_dir` resolves it; `src-tauri/src/seed.rs` seeds it on first run by embedding `src-tauri/bundled/` at compile time (`include_dir!`) and copying every `.md` file when the folder is empty/missing (never overwrites user sheets). New dependency: `include_dir` (Ask-first item per spec).
   * **Frontend shell moved to SvelteKit (2026-09-18).** The frontend is now SvelteKit + Svelte 5. Tauri still serves the built static frontend from `dist`. SvelteKit owns `src/app.html`, `src/routes`, generated types, and CSP hash generation for its boot script. The app runs client-only in the Tauri webview (`ssr = false`, `prerender = true`), uses `@sveltejs/adapter-static`, and no longer uses the old Vite-only root `index.html` or manual `src/main.ts` mount entry.
+  * **Settings moved to route-owned page (2026-09-18).** The main route `/` renders the HUD. The settings route `/settings` renders the settings window UI (`src/routes/settings/+page.svelte`). The Tauri window still uses label `settings`, but opens `/settings` via `WebviewWindow`, so `App.svelte` no longer branches on the current window label.
 
 ---
 
@@ -86,7 +87,10 @@ cheat-sheet-app/
 │   ├─ Cargo.toml, tauri.conf.json, build.rs, permissions
 ├─ src/                        → SvelteKit + Svelte 5 frontend (runes)
 │   ├─ app.html                → SvelteKit document shell; CSP is generated from SvelteKit config
-│   ├─ routes/                 → SvelteKit route entry (`+layout.ts`, `+page.svelte`)
+│   ├─ routes/                 → SvelteKit routes (`/` overlay, `/settings` settings window)
+│   │   ├─ +layout.ts          → client-only Tauri mode (`ssr=false`, `prerender=true`)
+│   │   ├─ +page.svelte        → renders the HUD overlay
+│   │   └─ settings/+page.svelte → renders the settings window UI
 │   ├─ App.svelte              → overlay shell + routing of panes
 │   ├─ components/             → Overlay, Sidebar, SheetView, SearchBox, SettingsPanel
 │   ├─ lib/
@@ -148,7 +152,7 @@ export function normalizeCombo(input: string): string[] {
 ## Boundaries
 
 **Always do:**
-- Treat **upstream + user Markdown as untrusted input** — sanitize before rendering into the JS webview (XSS surface). Keep SvelteKit CSP and Tauri CSP aligned; SvelteKit generates the hash for its inline boot script. Render Markdown→HTML via `marked`+sanitizer, **never** raw `dangerouslySetInnerHTML`; prefer an isolated render surface.
+- Treat **upstream + user Markdown as untrusted input** — sanitize before rendering into the JS webview (XSS surface). Keep SvelteKit CSP and Tauri CSP aligned; SvelteKit generates the hash for its inline boot script. Route-specific windows must use explicit SvelteKit routes (for example `/settings`) instead of branching UI by Tauri window label. Render Markdown→HTML via `marked`+sanitizer, **never** raw `dangerouslySetInnerHTML`; prefer an isolated render surface.
 - Validate/search-input escape before use; persist settings with an atomic write; run tests before commit; follow the naming above.
 
 **Ask first:**

@@ -7,12 +7,10 @@
 -->
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
-  import { getCurrentWindow } from '@tauri-apps/api/window';
   import { listen, emit } from '@tauri-apps/api/event';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
-  import SettingsWindow from './components/SettingsWindow.svelte';
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { resolveInitialSlug } from './lib/overlay/initialSlug';
   import {
@@ -23,9 +21,7 @@
   import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
-  import { type HotkeyStatus, type WaylandSnippets } from './lib/overlay/hotkey';
   import { openSettings } from './lib/settingsWindow';
-  import { APP_VERSION } from './lib/version';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
@@ -50,10 +46,6 @@
   // open-sheet decision and persist new pins. Loaded defensively (falls back to defaults).
   let settings = $state<SettingsModel>({ ...DEFAULT_SETTINGS });
   let appliedSettings: SettingsModel = { ...DEFAULT_SETTINGS };
-
-  // All available sheets, keyed by slug for display title. Drives the pinned-sheet dropdown in the
-  // settings window. Populated once from `list_sheets` (same list the overlay can pin), so the
-  // dropdown never offers a sheet the overlay cannot open.
 
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
   function onSelect(slug: string) {
@@ -116,11 +108,6 @@
   // Whether the current sheet is the pinned one (drives the header button label).
   let isPinned = $derived(settings.pinned_slug === selection.slug);
 
-  // Overlay hotkey status (Task 14). Loaded once on mount so the SettingsPanel can flag the
-  // Wayland best-effort path and show the `--toggle` snippets.
-  let hotkeyStatus = $state<HotkeyStatus | null>(null);
-  let waylandSnippets = $state<WaylandSnippets | null>(null);
-
   // Raw body of the current sheet (for the SearchBox match count).
   let body = $state('');
 
@@ -130,10 +117,6 @@
     try {
       const sheets = await invoke<[{ slug: string; title: string }]>('list_sheets', {});
       const slugs = sheets.map((s: { slug: string }) => s.slug);
-      // Full sheet list (slug + title) for the pinned-sheet dropdown in the settings window.
-      sheetsBySlug = Object.fromEntries(
-        sheets.map((s: { slug: string; title: string }) => [s.slug, s.title])
-      );
       // Load persisted settings once (Task 11/12): read the pinned slug for the open-sheet decision.
       try {
         settings = await loadSettings();
@@ -141,17 +124,6 @@
       } catch {
         settings = { ...DEFAULT_SETTINGS };
         appliedSettings = settings;
-      }
-      // Overlay hotkey status (Task 14): drives the Wayland flag + snippets in the SettingsPanel.
-      try {
-        hotkeyStatus = await invoke<HotkeyStatus>('get_hotkey_status', {});
-      } catch {
-        hotkeyStatus = null;
-      }
-      try {
-        waylandSnippets = await invoke<WaylandSnippets>('get_wayland_snippets', {});
-      } catch {
-        waylandSnippets = null;
       }
       // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
       const initial = resolveInitialSlug(settings.pinned_slug, slugs);
@@ -204,51 +176,31 @@
       unlisten?.();
     };
   });
-
-  // Whether this webview is running inside the settings window. The same `App.svelte` renders
-  // either the overlay or the settings UI, depending on the current window label.
-  let isSettingsWindow = $derived(getCurrentWindow().label === 'settings');
-
-  // Sheet slug -> display title, for the pinned-sheet dropdown header. Populated in `loadSheets`.
-  let sheetsBySlug: Record<string, string> = $state({});
 </script>
 
-{#if !isSettingsWindow}
-  <main class="overlay">
-    <header class="title">
-      <h1>{t('app.title')}</h1>
-      <span class="hint">{t('app.hotkey')}</span>
-      <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
-        {isPinned ? t('app.unpin') : t('app.pin')}
-      </button>
-      <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
-        ⚙
-      </button>
-    </header>
+<main class="overlay">
+  <header class="title">
+    <h1>{t('app.title')}</h1>
+    <span class="hint">{t('app.hotkey')}</span>
+    <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
+      {isPinned ? t('app.unpin') : t('app.pin')}
+    </button>
+    <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
+      ⚙
+    </button>
+  </header>
 
-    <SearchBox {query} {matchCount} />
+  <SearchBox {query} {matchCount} />
 
-    <div class="pane">
-      <div class="pane-body">
-        <Sidebar {selection} onselect={onSelect} />
-        <div class="sheet">
-          <SheetView slug={selection.slug} {load} {query} />
-        </div>
+  <div class="pane">
+    <div class="pane-body">
+      <Sidebar {selection} onselect={onSelect} />
+      <div class="sheet">
+        <SheetView slug={selection.slug} {load} {query} />
       </div>
     </div>
-  </main>
-{/if}
-
-{#if isSettingsWindow}
-  <SettingsWindow
-    bind:settings
-    onSave={(s: SettingsModel) => void persist(s)}
-    version={APP_VERSION}
-    {hotkeyStatus}
-    {waylandSnippets}
-    {sheetsBySlug}
-  />
-{/if}
+  </div>
+</main>
 
 <style>
   .overlay {

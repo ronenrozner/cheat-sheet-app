@@ -1,8 +1,8 @@
 <!--
   SettingsWindow: the settings window UI (Task 19).
 
-  Renders only inside the `settings` Tauri window (detected by the parent via
-  `Window.getCurrent().label`). Layout mirrors the reference screenshot:
+  Renders from the SvelteKit `/settings` route inside the `settings` Tauri window.
+  Layout mirrors the reference screenshot:
   - Left tab sidebar (Settings / About).
   - Custom title bar ("SETTINGS" text + close button) that supports window dragging.
 

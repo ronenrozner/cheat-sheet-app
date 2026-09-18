@@ -15,7 +15,7 @@ const h = vi.hoisted(() => {
   const focused: string[] = [];
   const hidden: string[] = [];
 
-  const WindowMock = vi.fn(function (label: string, options: Record<string, unknown>) {
+  const WebviewWindowMock = vi.fn(function (label: string, options: Record<string, unknown>) {
     createdCount += 1;
     created = { label, options };
     return {
@@ -33,12 +33,12 @@ const h = vi.hoisted(() => {
   });
 
   // Attach the static getByLabel method to the constructor for correct typing.
-  (WindowMock as unknown as { getByLabel: ReturnType<typeof vi.fn> }).getByLabel = vi.fn(
+  (WebviewWindowMock as unknown as { getByLabel: ReturnType<typeof vi.fn> }).getByLabel = vi.fn(
     async () => (getByStub ? getByStub() : null)
   );
 
   return {
-    WindowMock,
+    WebviewWindowMock,
     get state() {
       return {
         getByStub: () => getByStub,
@@ -63,7 +63,7 @@ const h = vi.hoisted(() => {
   };
 });
 
-vi.mock('@tauri-apps/api/window', () => ({ Window: h.WindowMock }));
+vi.mock('@tauri-apps/api/webviewWindow', () => ({ WebviewWindow: h.WebviewWindowMock }));
 
 import {
   openSettings,
@@ -102,7 +102,17 @@ describe('openSettings', () => {
     expect(s.createdCount()).toBe(1);
     expect(s.created()).toEqual({
       label: SETTINGS_WINDOW_LABEL,
-      options: { title: 'Settings', width: 720, height: 640 },
+      options: {
+        url: '/settings',
+        title: 'Settings',
+        width: 720,
+        height: 640,
+        resizable: true,
+        decorations: false,
+        alwaysOnTop: true,
+        center: true,
+        visible: false,
+      },
     });
     expect(s.shown).toEqual([SETTINGS_WINDOW_LABEL]);
     expect(s.focused).toEqual([SETTINGS_WINDOW_LABEL]);

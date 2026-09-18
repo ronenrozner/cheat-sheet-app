@@ -1,20 +1,20 @@
 // @vitest-environment jsdom
 // Integration test: pinned-sheet dropdown change persists to the backend (Task 11/12).
 //
-// Mounts App.svelte in settings-window mode (getCurrentWindow().label === 'settings'), so it
-// renders SettingsWindow → SettingsPanel. The dropdown options come from `list_sheets` (mocked
-// with titles). Selecting an option must call `set_settings` with the new pinned_slug.
+// Mounts the SvelteKit `/settings` page, which renders SettingsWindow → SettingsPanel. The
+// dropdown options come from `list_sheets` (mocked with titles). Selecting an option must call
+// `set_settings` with the new pinned_slug.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
-import App from '../../src/App.svelte';
+import SettingsPage from '../../src/routes/settings/+page.svelte';
 
 const invoke = vi.fn();
 vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(...args) }));
 
 // Settings window.
 vi.mock('@tauri-apps/api/window', () => ({
-  getCurrentWindow: () => ({ label: 'settings' }),
+  getCurrentWindow: () => ({ startDragging: vi.fn(), hide: vi.fn() }),
 }));
 
 vi.mock('@tauri-apps/api/event', () => ({
@@ -75,7 +75,7 @@ describe('Settings window: pinned-sheet dropdown', () => {
   });
 
   it('persists the chosen pinned slug when an option is selected', async () => {
-    inst = mount(App, { target: root, props: {} });
+    inst = mount(SettingsPage, { target: root, props: {} });
     await flush();
 
     const select = root.querySelector<HTMLSelectElement>('select[aria-label="Pinned sheet"]');

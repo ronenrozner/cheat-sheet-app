@@ -6,12 +6,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
-import App from '../../src/App.svelte';
+import SettingsPage from '../../src/routes/settings/+page.svelte';
 
 const invoke = vi.fn();
 vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(...args) }));
 vi.mock('@tauri-apps/api/window', () => ({
-  getCurrentWindow: () => ({ label: 'settings', startDragging: vi.fn(), hide: vi.fn() }),
+  getCurrentWindow: () => ({ startDragging: vi.fn(), hide: vi.fn() }),
 }));
 vi.mock('@tauri-apps/api/event', () => ({
   listen: async () => () => {},
@@ -60,7 +60,7 @@ describe('Full App: settings controls', () => {
   beforeEach(async () => {
     root = document.createElement('div');
     document.body.appendChild(root);
-    inst = mount(App, { target: root, props: {} });
+    inst = mount(SettingsPage, { target: root, props: {} });
     await flush();
   });
 

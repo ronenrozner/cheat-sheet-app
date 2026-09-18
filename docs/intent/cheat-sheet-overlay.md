@@ -117,3 +117,12 @@ implementation) consumes this.
 - **Implementation note:** the app is client-only for Tauri (`ssr = false`, `prerender = true`) and
    uses `@sveltejs/adapter-static` to write the frontend build to `dist/`. The old Vite-only
    `index.html` and manual `src/main.ts` mount entry are removed.
+
+## Revision — Settings moved to a route-owned page (2026-09-18)
+
+- **What changed:** settings now lives at the SvelteKit route `/settings`
+   (`src/routes/settings/+page.svelte`). The overlay route `/` renders only the HUD.
+- **Why:** this matches SvelteKit's routing model and removes the old window-label conditional from
+   `App.svelte`.
+- **Implementation note:** the Tauri window label remains `settings`, but the window opens the
+   `/settings` route via `WebviewWindow`. Live settings sync still uses the `settings-changed` event.
