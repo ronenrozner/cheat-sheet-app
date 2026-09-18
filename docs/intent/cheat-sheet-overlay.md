@@ -55,7 +55,7 @@ implementation) consumes this.
 - **Customization (v1):** window size, theme (light / dark / follow system), trigger key, and a
   **language setting** (see Internationalization below).
 - **Default trigger key:** `Ctrl-Shift-Q`.
-- **Stack:** Tauri — **Rust backend**, **Svelte frontend**.
+- **Stack:** Tauri — **Rust backend**, **SvelteKit / Svelte 5 frontend**.
 - **Platform sequencing:** **Linux first**, then **Windows**, then **macOS** last.
 - **Editing/authoring:** The user can create and edit their own cheat sheets **locally in
   Markdown**. Publishing back upstream is parked for later.
@@ -106,3 +106,14 @@ implementation) consumes this.
 - **Notes:** the search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
    See `tasks/todo.md` Task 8 for the implementation note and `docs/spec/cheat-sheet-overlay.md`
    §Search scope revision for the spec-level record.
+
+## Revision — Frontend shell moved to SvelteKit (2026-09-18)
+
+- **What changed:** the frontend is now a **SvelteKit** app using Svelte 5. Tauri still owns the
+   desktop shell and Rust backend. SvelteKit owns the webview document, route entry, generated types,
+   and frontend build pipeline.
+- **Why:** SvelteKit gives a stable app structure (`src/app.html`, `src/routes`) and future room for
+   route-level pages without changing the Tauri backend.
+- **Implementation note:** the app is client-only for Tauri (`ssr = false`, `prerender = true`) and
+   uses `@sveltejs/adapter-static` to write the frontend build to `dist/`. The old Vite-only
+   `index.html` and manual `src/main.ts` mount entry are removed.

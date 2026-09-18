@@ -1,6 +1,7 @@
 node_modules/
 build/
 dist/
+.svelte-kit/
 coverage/
 public/
 src-tauri/target/

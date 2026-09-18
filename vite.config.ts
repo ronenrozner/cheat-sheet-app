@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
 
 // Vite config (Vitest reuses `test` below).
 // Tauri expects the dev server on 1420 by default; configurable via TAURI_DEV_HOST.
@@ -20,7 +20,7 @@ export default defineConfig({
   resolve: {
     conditions: ['browser'],
   },
-  plugins: [svelte()],
+  plugins: [sveltekit()],
   server: {
     port: 1420,
     strictPort: true,

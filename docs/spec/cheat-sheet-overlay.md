@@ -8,6 +8,7 @@
 
   * **Search scope revised (Task 8, 2026-09-06).** Original Task 8 was cross-sheet two-way search (minisearch, NL + combo, golden fixtures). **Redirected to find-in-current-sheet**: NL-only, highlight matches in the sheet currently open in the HUD, no combo matching, no cross-sheet index. The original minisearch two-way search is **deferred**, not deleted from the spec — the spec describes the intended design; Task 8 implements a narrower v1 scope. See `tasks/todo.md` Task 8 for the implementation note. The search index dir (`lib/search`) keeps `comboNormalize.ts` (Task 7) for later use.
   * **Sheet storage folder resolved to `<home>/cheatsheets/` (2026-09-09).** Storage path fixed from the previous `app_data_dir/cheatsheets` to `BaseDirectory::Home/cheatsheets` — a flat, visible folder in the user's home directory, per spec. `src-tauri/src/sheets/mod.rs::sheet_dir` resolves it; `src-tauri/src/seed.rs` seeds it on first run by embedding `src-tauri/bundled/` at compile time (`include_dir!`) and copying every `.md` file when the folder is empty/missing (never overwrites user sheets). New dependency: `include_dir` (Ask-first item per spec).
+  * **Frontend shell moved to SvelteKit (2026-09-18).** The frontend is now SvelteKit + Svelte 5. Tauri still serves the built static frontend from `dist`. SvelteKit owns `src/app.html`, `src/routes`, generated types, and CSP hash generation for its boot script. The app runs client-only in the Tauri webview (`ssr = false`, `prerender = true`), uses `@sveltejs/adapter-static`, and no longer uses the old Vite-only root `index.html` or manual `src/main.ts` mount entry.
 
 ---
 
@@ -17,7 +18,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 
 - **User:** general-purpose; primary author is the developer themselves.
 - **Why now:** turn "I keep losing track of shortcuts / syntax" into "one key brings it up."
-- **Scope (v1):** **Linux first**, **static pinning**, **Markdown**, **Tauri v2 / Rust / Svelte 5**. One pinned sheet at a time. No cross-window auto-detection, no contribute-back, no Windows/macOS.
+- **Scope (v1):** **Linux first**, **static pinning**, **Markdown**, **Tauri v2 / Rust / SvelteKit (Svelte 5)**. One pinned sheet at a time. No cross-window auto-detection, no contribute-back, no Windows/macOS.
 
 ### Acceptance (reframed success criteria)
 1. **Toggle overlay (X11 — must).** Press `Ctrl-Shift-Q` → overlay opens **always-on-top**, centered; `Esc` closes it. On **Wayland** the global grab is **best-effort**; if unavailable the UI **flags** it and offers `cheatsheet-app --toggle` (see §Hotkey strategy).
@@ -41,7 +42,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 |---|---|---|
 | App shell | **Tauri v2** | Rust backend, system webview |
 | Backend | **Rust** (`src-tauri/`) | Commands, hotkey, window, FS, settings, download |
-| Frontend | **Svelte 5** + **Vite** | Runes; UI lives in the webview |
+| Frontend | **SvelteKit** + **Svelte 5** | Runes; client-only UI lives in the Tauri webview; static adapter writes to `dist` |
 | Global hotkey | `tauri-plugin-global-shortcut` | **X11 must**; X11-only on Linux; Wayland best-effort (see §Hotkey strategy) |
 | Cross-instance toggle | `tauri-plugin-single-instance` | `cheatsheet-app --toggle` routes to running app (Wayland best-effort + CLI) |
 | Settings | `tauri-plugin-store` → `config/settings.json` | atomic write |
@@ -59,8 +60,8 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 ```
 Dev (app):        cargo tauri dev
 Build (app):      cargo tauri build
-Frontend only:    npm run dev             # Vite dev server
-Build frontend:   npm run build
+Frontend only:    npm run dev             # SvelteKit/Vite dev server
+Build frontend:   npm run build           # SvelteKit static build to dist/
 Frontend test:    npm test -- --coverage
 Backend test:     cargo test
 Lint frontend:    npm run lint            # eslint + prettier
@@ -68,7 +69,7 @@ Lint backend:     cargo clippy -- -D warnings
 CLI toggle:       cargo tauri dev -- --toggle       # or the built binary: cheatsheet-app --toggle
 ```
 
-> Build/test commands assume the scaffold created in Phase 2. Vite dev port defaults to Tauri's `1420`.
+> Build/test commands assume the scaffold created in Phase 2. The SvelteKit/Vite dev port defaults to Tauri's `1420`.
 
 ---
 
@@ -83,7 +84,9 @@ cheat-sheet-app/
 │   ├─ src/sheets/             → dir scan, contents-API listing + cache, local-folder resolution
 │   ├─ src/shortcuts.rs        → X11 registration + session detect + Wayland CLI toggle wiring
 │   ├─ Cargo.toml, tauri.conf.json, build.rs, permissions
-├─ src/                        → Svelte 5 frontend (runes)
+├─ src/                        → SvelteKit + Svelte 5 frontend (runes)
+│   ├─ app.html                → SvelteKit document shell; CSP is generated from SvelteKit config
+│   ├─ routes/                 → SvelteKit route entry (`+layout.ts`, `+page.svelte`)
 │   ├─ App.svelte              → overlay shell + routing of panes
 │   ├─ components/             → Overlay, Sidebar, SheetView, SearchBox, SettingsPanel
 │   ├─ lib/
@@ -145,7 +148,7 @@ export function normalizeCombo(input: string): string[] {
 ## Boundaries
 
 **Always do:**
-- Treat **upstream + user Markdown as untrusted input** — sanitize before rendering into the JS webview (XSS surface). Keep Tauri's restrictive CSP; render Markdown→HTML via `marked`+sanitizer, **never** raw `dangerouslySetInnerHTML`; prefer an isolated render surface.
+- Treat **upstream + user Markdown as untrusted input** — sanitize before rendering into the JS webview (XSS surface). Keep SvelteKit CSP and Tauri CSP aligned; SvelteKit generates the hash for its inline boot script. Render Markdown→HTML via `marked`+sanitizer, **never** raw `dangerouslySetInnerHTML`; prefer an isolated render surface.
 - Validate/search-input escape before use; persist settings with an atomic write; run tests before commit; follow the naming above.
 
 **Ask first:**

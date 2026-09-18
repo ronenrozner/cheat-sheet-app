@@ -10,20 +10,20 @@
 
 ## Phase 0 — Spike & Scaffold (high-risk, fail fast)
 
-## Task 1: Repo scaffold — Tauri v2 / Svelte 5 / Vite + git init
-**Description:** Initialize the project as a Tauri v2 app with a Svelte 5 + Vite frontend and a Rust backend,
+## Task 1: Repo scaffold — Tauri v2 / SvelteKit / Svelte 5 + git init
+**Description:** Initialize the project as a Tauri v2 app with a SvelteKit + Svelte 5 frontend and a Rust backend,
 matching the spec's Project Structure (`src-tauri/`, `src/`). Install toolchain bits (Tauri CLI). Run `git init`
 and make the first commit. Get a blank overlay window opening in dev.
 
 **Acceptance criteria:**
-- [x] `src-tauri/` (Rust) + `src/` (Svelte 5, runes) + `tests/` skeleton exist per spec structure.
+- [x] `src-tauri/` (Rust) + `src/` (SvelteKit + Svelte 5, runes) + `tests/` skeleton exist per spec structure.
 - [~] `cargo tauri dev` opens a blank, undecorated window; `npm run build` succeeds.
       (`npm run build` PASS; the undecorated always-on-top window config is in `tauri.conf.json`. The
        visual window-open and the X11 global-hotkey are not confirmable headless — see Result below.)
 - [x] `git init` done with a first commit; `node_modules/`/`target/`/`gen/` gitignored.
 
 **Verification:**
-- [x] `npm run build` succeeds (Vite → `dist/`, HTTP 200 on :1420 via `npm run dev`).
+- [x] `npm run build` succeeds (SvelteKit static build → `dist/`, HTTP 200 on :1420 via `npm run dev`).
 - [~] `cargo tauri` builds + launches the app (visual render not confirmable headless): `cargo tauri build
       --no-bundle` → `src-tauri/target/release/cheat-sheet-app` (EXIT 0); binary runs 12s, no crash/errors.
 - [x] `git status` clean after first commit (no `node_modules`/`target`/`gen`/`dist` leak).
@@ -38,7 +38,8 @@ bind is Task 2's gate and needs an X11 session (this box is Wayland) or acceptan
 
 **Dependencies:** None
 **Files likely touched:** `src-tauri/Cargo.toml`, `src-tauri/src/main.rs`, `src-tauri/tauri.conf.json`,
-`src-tauri/src/lib.rs`, `package.json`, `vite.config.ts`, `src/App.svelte`, `.gitignore`
+`src-tauri/src/lib.rs`, `package.json`, `vite.config.ts`, `svelte.config.js`, `src/app.html`,
+`src/routes/+layout.ts`, `src/routes/+page.svelte`, `src/App.svelte`, `.gitignore`
 **Estimated scope:** M
 
 ## Task 2: Global-hotkey + always-on-top overlay spike (platform-aware)  ← RISK GATE
@@ -307,12 +308,14 @@ input binds `query`; the parent passes `query` and `matchCount` down.
 - [x] svelte-check: 0 errors, 0 warnings (fixed module-resolution import error by using explicit
   `.svelte` extension + default imports).
 - [x] `npm run lint` clean (prettier).
-- [x] `main.ts` updated: `mount(App, { target, props: {} })` to satisfy Svelte 5 `MountOptions`.
+- [x] `main.ts` updated at the time: `mount(App, { target, props: {} })` to satisfy Svelte 5 `MountOptions`.
+  Superseded by Task 20: SvelteKit now owns app boot and `src/main.ts` was removed.
 
 **Dependencies:** Task 8 (find-in-current-sheet logic)
 **Files touched:** `src/components/SearchBox.svelte` (new), `src/App.svelte` (wiring),
 `src/components/SheetView.svelte` (accepts `query`, highlights internally), `src/lib/markdown/render.ts`
-(allow `<mark>` in DOMPurify), `src/main.ts` (mount props)
+(allow `<mark>` in DOMPurify). Historical note: `src/main.ts` was touched for mount props, then removed by
+Task 20 when SvelteKit took over app boot.
 **Estimated scope:** M
 
 ### Checkpoint: Search
@@ -667,6 +670,41 @@ keep license/NOTICE files intact.
 
 **Dependencies:** Task 3 (settings), Task 12 (settings UI)
 **Files likely touched:** `src-tauri/tauri.conf.json` (add `settings` window), `src/lib/settingsWindow.ts` (new), `src/settingsWindow.ts` (new), `src/components/SettingsWindow.svelte` (new), `src/components/AboutTab.svelte` (new), `src/App.svelte`, `src/locales/en-US.json`
+**Estimated scope:** M
+
+---
+
+## Task 20: Add SvelteKit frontend shell
+**Description:** Move the frontend from a Vite-only Svelte entry to a SvelteKit shell while keeping Tauri as
+the desktop host. SvelteKit owns the document shell, route entry, generated types, and frontend CSP handling.
+The app stays client-only in the Tauri webview.
+
+**Acceptance criteria:**
+- [x] SvelteKit dependencies are installed: `@sveltejs/kit` and `@sveltejs/adapter-static`.
+- [x] `vite.config.ts` uses `sveltekit()` instead of the old Svelte-only Vite plugin.
+- [x] `svelte.config.js` uses `adapter-static` and writes the frontend build to `dist/` for Tauri.
+- [x] SvelteKit entry files exist: `src/app.html`, `src/routes/+layout.ts`, `src/routes/+page.svelte`.
+- [x] The app is client-only for Tauri: `ssr = false`, `prerender = true`.
+- [x] Old Vite-only boot files are removed: root `index.html` and `src/main.ts`.
+- [x] `.svelte-kit/` is ignored by git, ESLint, and Prettier.
+- [x] CSP is handled through SvelteKit config so the generated boot script gets a valid hash; Tauri CSP is
+  updated to allow the SvelteKit boot layer.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] `npm run build` clean; SvelteKit writes the static site to `dist/`.
+- [x] `npm test`: 17 files pass, 86 tests pass.
+- [x] `npm run lint` clean.
+
+**Result (Task 20 — 2026-09-18):** SvelteKit migration complete. Existing `App.svelte` remains the app shell
+and is rendered from `src/routes/+page.svelte`. Tauri continues to load `dist/` in production and the dev server
+on port 1420 in development. The CSP console error caused by SvelteKit's inline boot script was fixed by moving
+CSP generation into SvelteKit config and aligning the Tauri CSP.
+
+**Dependencies:** Task 1 scaffold
+**Files touched:** `package.json`, `package-lock.json`, `vite.config.ts`, `svelte.config.js`, `tsconfig.json`,
+`.gitignore`, `.prettierignore`, `eslint.config.js`, `src/app.html`, `src/routes/+layout.ts`,
+`src/routes/+page.svelte`, `src-tauri/tauri.conf.json`, removed `index.html`, removed `src/main.ts`
 **Estimated scope:** M
 
 ---

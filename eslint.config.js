@@ -10,6 +10,7 @@ export default [
       'node_modules/**',
       'build/**',
       'dist/**',
+      '.svelte-kit/**',
       'e2e/**',
       'src-tauri/**',
       'coverage/**',
