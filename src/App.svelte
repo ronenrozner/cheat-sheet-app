@@ -16,6 +16,7 @@
   import { createSelection, selectSheet, type Selection } from './lib/overlay/selection';
   import { resolveInitialSlug } from './lib/overlay/initialSlug';
   import {
+    coerceSettings,
     getSettings as loadSettings,
     setSettings as persistSettings,
   } from './lib/settings/bridge';
@@ -47,7 +48,8 @@
 
   // Persisted settings (Task 11/12). Loaded once on mount so we can read the pinned slug for the
   // open-sheet decision and persist new pins. Loaded defensively (falls back to defaults).
-  let settings = $state<SettingsModel | null>(null);
+  let settings = $state<SettingsModel>({ ...DEFAULT_SETTINGS });
+  let appliedSettings: SettingsModel = { ...DEFAULT_SETTINGS };
 
   // All available sheets, keyed by slug for display title. Drives the pinned-sheet dropdown in the
   // settings window. Populated once from `list_sheets` (same list the overlay can pin), so the
@@ -64,7 +66,7 @@
   // Pin the current sheet (Task 11). Persists the slug so the next open shows it front-and-center.
   async function onPin() {
     const slug = selection.slug;
-    if (!settings || !slug) return;
+    if (!slug) return;
     const next: SettingsModel = { ...settings, pinned_slug: slug };
     settings = next;
     await persist(next);
@@ -72,20 +74,23 @@
 
   // Persist an updated settings snapshot (Task 12). The panel calls this on every edit.
   async function persist(s: SettingsModel): Promise<void> {
+    const trayChanged = appliedSettings.show_tray !== s.show_tray;
+    const topChanged = appliedSettings.always_on_top !== s.always_on_top;
+
     settings = s;
+    appliedSettings = s;
     try {
       await persistSettings(s);
     } catch {
       // Persist failed (e.g. store unavailable). The in-memory settings still reflect the edit.
     }
-    // Live sync (Task 19): notify the main overlay (if open) so it reflects the edit.
+    // Live sync (Task 19): notify all open windows so they reflect the in-memory edit.
     try {
       await emit('settings-changed', s);
     } catch {
       // window destroyed; ignore.
     }
     // System tray (Task 17): when the tray toggle changes, apply it to the running instance.
-    const trayChanged = settings && settings.show_tray !== s.show_tray;
     if (trayChanged) {
       try {
         await invoke('set_tray_visibility', { show: s.show_tray === 'On' });
@@ -94,7 +99,6 @@
       }
     }
     // Always-on-top (Task 18): when the toggle changes, apply it to the running instance.
-    const topChanged = settings && settings.always_on_top !== s.always_on_top;
     if (topChanged) {
       try {
         await invoke('set_always_on_top', { always_on_top: s.always_on_top === 'On' });
@@ -110,7 +114,7 @@
   }
 
   // Whether the current sheet is the pinned one (drives the header button label).
-  let isPinned = $derived(!!(settings && settings.pinned_slug === selection.slug));
+  let isPinned = $derived(settings.pinned_slug === selection.slug);
 
   // Overlay hotkey status (Task 14). Loaded once on mount so the SettingsPanel can flag the
   // Wayland best-effort path and show the `--toggle` snippets.
@@ -133,8 +137,10 @@
       // Load persisted settings once (Task 11/12): read the pinned slug for the open-sheet decision.
       try {
         settings = await loadSettings();
+        appliedSettings = settings;
       } catch {
         settings = { ...DEFAULT_SETTINGS };
+        appliedSettings = settings;
       }
       // Overlay hotkey status (Task 14): drives the Wayland flag + snippets in the SettingsPanel.
       try {
@@ -148,7 +154,7 @@
         waylandSnippets = null;
       }
       // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
-      const initial = resolveInitialSlug(settings?.pinned_slug ?? '', slugs);
+      const initial = resolveInitialSlug(settings.pinned_slug, slugs);
       if (slugs.length > 0) {
         selection = { slug: initial, slugs };
       }
@@ -184,17 +190,14 @@
     void loadSheets();
   });
 
-  // Live sync (Task 19): when the settings window persists a change, it emits `settings-changed`.
-  // Reload settings so the overlay reflects the edit without a rebuild. Run once on mount.
+  // Live sync (Task 19): when a window persists a change, it emits `settings-changed`.
+  // Use the payload directly so a store failure does not reset the edited in-memory settings.
   $effect(() => {
     let unlisten: (() => void) | undefined;
     (async () => {
       unlisten = await listen<SettingsModel>('settings-changed', async ({ payload }) => {
-        try {
-          settings = await loadSettings();
-        } catch {
-          settings = { ...DEFAULT_SETTINGS };
-        }
+        settings = coerceSettings(payload);
+        appliedSettings = settings;
       });
     })();
     return () => {
@@ -208,43 +211,42 @@
 
   // Sheet slug -> display title, for the pinned-sheet dropdown header. Populated in `loadSheets`.
   let sheetsBySlug: Record<string, string> = $state({});
-
 </script>
 
 {#if !isSettingsWindow}
-<main class="overlay">
-  <header class="title">
-    <h1>{t('app.title')}</h1>
-    <span class="hint">{t('app.hotkey')}</span>
-    <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
-      {isPinned ? t('app.unpin') : t('app.pin')}
-    </button>
-    <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
-      ⚙
-    </button>
-  </header>
+  <main class="overlay">
+    <header class="title">
+      <h1>{t('app.title')}</h1>
+      <span class="hint">{t('app.hotkey')}</span>
+      <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
+        {isPinned ? t('app.unpin') : t('app.pin')}
+      </button>
+      <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
+        ⚙
+      </button>
+    </header>
 
-  <SearchBox {query} {matchCount} />
+    <SearchBox {query} {matchCount} />
 
-  <div class="pane">
-    <div class="pane-body">
-      <Sidebar {selection} onselect={onSelect} />
-      <div class="sheet">
-        <SheetView slug={selection.slug} {load} {query} />
+    <div class="pane">
+      <div class="pane-body">
+        <Sidebar {selection} onselect={onSelect} />
+        <div class="sheet">
+          <SheetView slug={selection.slug} {load} {query} />
+        </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 {/if}
 
 {#if isSettingsWindow}
   <SettingsWindow
-    settings={settings ?? DEFAULT_SETTINGS}
+    bind:settings
     onSave={(s: SettingsModel) => void persist(s)}
     version={APP_VERSION}
     {hotkeyStatus}
     {waylandSnippets}
-    sheetsBySlug={sheetsBySlug}
+    {sheetsBySlug}
   />
 {/if}
 

@@ -18,12 +18,12 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import AboutTab from './AboutTab.svelte';
   import { t } from '../lib/i18n';
-  import { type Settings, type Theme, type SourceMode, type Language } from '../lib/settings/types';
+  import type { Settings } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
 
   let {
-    settings = DEFAULT_SETTINGS,
+    settings = $bindable(DEFAULT_SETTINGS),
     onSave,
     version = '',
     hotkeyStatus = null,
@@ -48,10 +48,7 @@
     const target = e.target as HTMLElement;
     // A control (or the text of a label wrapping one) must not start a drag: the native drag
     // gesture would steal the click and the control would not update.
-    if (
-      target.closest('select, input, textarea, button') ||
-      target.closest('label')
-    ) {
+    if (target.closest('select, input, textarea, button') || target.closest('label')) {
       return;
     }
     void getCurrentWindow().startDragging();
@@ -117,7 +114,7 @@
 
     <div class="content">
       {#if tab === 'settings'}
-        <SettingsPanel {settings} {onSave} {hotkeyStatus} {waylandSnippets} {sheetsBySlug} />
+        <SettingsPanel bind:settings {onSave} {hotkeyStatus} {waylandSnippets} {sheetsBySlug} />
       {:else}
         <AboutTab {version} />
       {/if}

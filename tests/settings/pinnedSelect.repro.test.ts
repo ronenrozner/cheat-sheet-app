@@ -36,55 +36,63 @@ describe('SettingsPanel controls', () => {
     document.body.removeChild(root);
   });
 
-  it('theme select (control): real option click', async () => {
-    let saved: Settings | null = null;
+  it('theme select: saves the selected option', async () => {
+    const saved: { current: Settings | null } = { current: null };
     inst = mount(SettingsPanel, {
       target: root,
       props: {
         settings: fakeSettings,
         onSave: (s: Settings) => {
-          saved = s;
+          saved.current = s;
         },
         sheetsBySlug,
       },
     });
     await flush();
 
-    const themeSelect = [...root.querySelectorAll('select.ctrl')][0] as HTMLSelectElement;
-    // jsdom does not fire `change` on the parent select when an option is clicked, so set the
-    // value and dispatch `change` to drive the handler, as a real browser would.
-    const darkOption = [...root.querySelectorAll('option')].find((o) => o.value === 'Dark');
+    const themeSelect = root.querySelectorAll<HTMLSelectElement>('select.ctrl')[0];
+    expect(themeSelect).toBeTruthy();
+
+    const darkOption = [...root.querySelectorAll<HTMLOptionElement>('option')].find(
+      (option) => option.value === 'Dark'
+    );
+    expect(darkOption).toBeTruthy();
+
     darkOption!.click();
-    themeSelect.value = 'Dark';
-    themeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    themeSelect!.value = 'Dark';
+    themeSelect!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
-    // eslint-disable-next-line no-console
-    console.log('THEME: value=', themeSelect.value, 'saved theme=', saved?.theme);
-    expect(saved?.theme).toBe('Dark');
+
+    expect(saved.current?.theme).toBe('Dark');
   });
 
-  it('pinned select: real option click', async () => {
-    let saved: Settings | null = null;
+  it('pinned select: saves the selected slug', async () => {
+    const saved: { current: Settings | null } = { current: null };
     inst = mount(SettingsPanel, {
       target: root,
       props: {
         settings: fakeSettings,
         onSave: (s: Settings) => {
-          saved = s;
+          saved.current = s;
         },
         sheetsBySlug,
       },
     });
     await flush();
 
-    const pinnedSelect = root.querySelector('select[aria-label="Pinned sheet"]') as HTMLSelectElement;
-    const gitOption = [...root.querySelectorAll('option')].find((o) => o.value === 'git');
+    const pinnedSelect = root.querySelector<HTMLSelectElement>('select[aria-label="Pinned sheet"]');
+    expect(pinnedSelect).toBeTruthy();
+
+    const gitOption = [...root.querySelectorAll<HTMLOptionElement>('option')].find(
+      (option) => option.value === 'git'
+    );
+    expect(gitOption).toBeTruthy();
+
     gitOption!.click();
-    pinnedSelect.value = 'git';
-    pinnedSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    pinnedSelect!.value = 'git';
+    pinnedSelect!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
-    // eslint-disable-next-line no-console
-    console.log('PINNED: value=', pinnedSelect.value, 'saved pinned_slug=', saved?.pinned_slug);
-    expect(saved?.pinned_slug).toBe('git');
+
+    expect(saved.current?.pinned_slug).toBe('git');
   });
 });

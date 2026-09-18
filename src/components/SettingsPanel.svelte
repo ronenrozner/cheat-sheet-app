@@ -13,13 +13,13 @@
   a change updates the prop and the parent persists it.
 -->
 <script lang="ts">
-  import type { Settings, Theme, SourceMode, Language, ShowTray } from '../lib/settings/types';
+  import type { Settings, Theme, Language } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
 
   let {
-    settings = DEFAULT_SETTINGS,
+    settings = $bindable(DEFAULT_SETTINGS),
     onSave,
     hotkeyStatus = null,
     waylandSnippets = null,
@@ -86,7 +86,7 @@
   }
 
   // System tray toggle (Task 17). Off = hidden window only; On = persistent tray icon.
-  function onTray(e: Event, checked: boolean) {
+  function onTray(checked: boolean) {
     settings = {
       ...settings,
       show_tray: checked ? 'On' : 'Off',
@@ -95,7 +95,7 @@
   }
 
   // Always-on-top toggle (Task 18). On = window stays above others; Off = window goes behind.
-  function onAlwaysOnTop(e: Event, checked: boolean) {
+  function onAlwaysOnTop(checked: boolean) {
     settings = {
       ...settings,
       always_on_top: checked ? 'On' : 'Off',
@@ -116,7 +116,7 @@
 <div class="panel">
   <label class="row">
     <span>{t('settings.theme')}</span>
-    <select class="ctrl" bind:value={settings.theme} onchange={onTheme}>
+    <select class="ctrl" value={settings.theme} onchange={onTheme}>
       <option value="Follow">{t('settings.optionFollow')}</option>
       <option value="Light">{t('settings.optionLight')}</option>
       <option value="Dark">{t('settings.optionDark')}</option>
@@ -131,7 +131,7 @@
         type="number"
         min="1"
         placeholder={t('settings.widthPlaceholder')}
-        bind:value={settings.win_size.width}
+        value={settings.win_size.width}
         onchange={onWidth}
       />
       <input
@@ -139,7 +139,7 @@
         type="number"
         min="1"
         placeholder={t('settings.heightPlaceholder')}
-        bind:value={settings.win_size.height}
+        value={settings.win_size.height}
         onchange={onHeight}
       />
     </div>
@@ -151,7 +151,7 @@
       <label
         ><input
           type="checkbox"
-          bind:checked={settings.trigger.ctrl}
+          checked={settings.trigger.ctrl}
           onchange={(e) => onTrigger('ctrl', (e.target as HTMLInputElement).checked)}
         />
         {t('settings.ctrl')}</label
@@ -159,7 +159,7 @@
       <label
         ><input
           type="checkbox"
-          bind:checked={settings.trigger.alt}
+          checked={settings.trigger.alt}
           onchange={(e) => onTrigger('alt', (e.target as HTMLInputElement).checked)}
         />
         {t('settings.alt')}</label
@@ -167,7 +167,7 @@
       <label
         ><input
           type="checkbox"
-          bind:checked={settings.trigger.shift}
+          checked={settings.trigger.shift}
           onchange={(e) => onTrigger('shift', (e.target as HTMLInputElement).checked)}
         />
         {t('settings.shift')}</label
@@ -176,15 +176,15 @@
         class="ctrl key"
         type="text"
         placeholder={t('settings.keyPlaceholder')}
-        bind:value={settings.trigger.key}
-        onchange={onKey}
+        value={settings.trigger.key}
+        oninput={onKey}
       />
     </div>
   </div>
 
   <label class="row">
     <span>{t('settings.language')}</span>
-    <select class="ctrl" bind:value={settings.language} onchange={onLanguage}>
+    <select class="ctrl" value={settings.language} onchange={onLanguage}>
       <option value="EnUs">{t('settings.optionEnUs')}</option>
     </select>
   </label>
@@ -193,7 +193,7 @@
     <span>{t('settings.pinnedSheet')}</span>
     <select
       class="ctrl"
-      bind:value={settings.pinned_slug}
+      value={settings.pinned_slug}
       onchange={onPinned}
       aria-label={t('settings.pinnedSheet')}
     >
@@ -210,7 +210,7 @@
       class="ctrl"
       type="checkbox"
       checked={settings.show_tray === 'On'}
-      onchange={(e) => onTray(e, (e.target as HTMLInputElement).checked)}
+      onchange={(e) => onTray((e.target as HTMLInputElement).checked)}
     />
   </label>
 
@@ -220,7 +220,7 @@
       class="ctrl"
       type="checkbox"
       checked={settings.always_on_top === 'On'}
-      onchange={(e) => onAlwaysOnTop(e, (e.target as HTMLInputElement).checked)}
+      onchange={(e) => onAlwaysOnTop((e.target as HTMLInputElement).checked)}
     />
   </label>
 

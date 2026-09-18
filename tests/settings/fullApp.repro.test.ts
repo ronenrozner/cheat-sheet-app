@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
-// Integration test: pinned-sheet dropdown change persists to the backend (Task 11/12).
+// Full-app regression test for settings controls in the settings window.
 //
-// Mounts App.svelte in settings-window mode (getCurrentWindow().label === 'settings'), so it
-// renders SettingsWindow → SettingsPanel. The dropdown options come from `list_sheets` (mocked
-// with titles). Selecting an option must call `set_settings` with the new pinned_slug.
+// This tests the parent -> child -> binding data flow as it runs in the app. User edits must stay
+// visible after Svelte flushes updates.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
@@ -11,18 +10,13 @@ import App from '../../src/App.svelte';
 
 const invoke = vi.fn();
 vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(...args) }));
-
-// Settings window.
 vi.mock('@tauri-apps/api/window', () => ({
-  getCurrentWindow: () => ({ label: 'settings' }),
+  getCurrentWindow: () => ({ label: 'settings', startDragging: vi.fn(), hide: vi.fn() }),
 }));
-
 vi.mock('@tauri-apps/api/event', () => ({
   listen: async () => () => {},
   emit: async () => undefined,
 }));
-
-let fakeSettings: Record<string, unknown>;
 
 beforeEach(() => {
   vi.mocked(invoke).mockReset();
@@ -34,7 +28,7 @@ beforeEach(() => {
           { slug: 'git', title: 'Git' },
         ];
       case 'get_settings':
-        return fakeSettings;
+        return { pinned_slug: '' };
       case 'set_settings':
         return undefined;
       case 'get_hotkey_status':
@@ -45,7 +39,6 @@ beforeEach(() => {
         return undefined;
     }
   });
-  fakeSettings = { pinned_slug: '' };
 });
 
 afterEach(() => {
@@ -60,13 +53,15 @@ async function flush(): Promise<void> {
   await Promise.resolve();
 }
 
-describe('Settings window: pinned-sheet dropdown', () => {
+describe('Full App: settings controls', () => {
   let root: HTMLElement;
   let inst: ReturnType<typeof mount>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     root = document.createElement('div');
     document.body.appendChild(root);
+    inst = mount(App, { target: root, props: {} });
+    await flush();
   });
 
   afterEach(() => {
@@ -74,27 +69,37 @@ describe('Settings window: pinned-sheet dropdown', () => {
     document.body.removeChild(root);
   });
 
-  it('persists the chosen pinned slug when an option is selected', async () => {
-    inst = mount(App, { target: root, props: {} });
+  it('text input: typed value persists', async () => {
+    const input = root.querySelector<HTMLInputElement>('input[type="text"]');
+    expect(input).toBeTruthy();
+
+    input!.value = 'hello';
+    input!.dispatchEvent(new Event('input', { bubbles: true }));
+    input!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
 
-    const select = root.querySelector<HTMLSelectElement>('select[aria-label="Pinned sheet"]');
+    expect(input!.value).toBe('hello');
+  });
+
+  it('checkbox: checked persists', async () => {
+    const cb = root.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(cb).toBeTruthy();
+
+    cb!.checked = true;
+    cb!.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+
+    expect(cb!.checked).toBe(true);
+  });
+
+  it('select: selected value persists', async () => {
+    const select = root.querySelector<HTMLSelectElement>('select.ctrl');
     expect(select).toBeTruthy();
 
-    const gitOption = [...root.querySelectorAll<HTMLOptionElement>('option')].find(
-      (option) => option.value === 'git'
-    );
-    expect(gitOption).toBeTruthy();
-
-    gitOption!.click();
-    select!.value = 'git';
+    select!.value = 'Dark';
     select!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
 
-    const setSettings = invoke.mock.calls.find((call) => call[0] === 'set_settings');
-    expect(setSettings).toBeTruthy();
-    expect((setSettings![1] as { settings: { pinned_slug: string } }).settings.pinned_slug).toBe(
-      'git'
-    );
+    expect(select!.value).toBe('Dark');
   });
 });

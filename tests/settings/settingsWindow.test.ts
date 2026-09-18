@@ -40,7 +40,14 @@ const h = vi.hoisted(() => {
   return {
     WindowMock,
     get state() {
-      return { getByStub: () => getByStub, created: () => created, createdCount: () => createdCount, shown, focused, hidden };
+      return {
+        getByStub: () => getByStub,
+        created: () => created,
+        createdCount: () => createdCount,
+        shown,
+        focused,
+        hidden,
+      };
     },
     setByStub: (fn: (() => unknown) | undefined) => {
       getByStub = fn;
