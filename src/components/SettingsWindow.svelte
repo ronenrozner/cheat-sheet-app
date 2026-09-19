@@ -190,7 +190,7 @@
   }
   .tab.active {
     background: var(--cs-selected-bg, #7d9ad4);
-    color: #1e1e2e;
+    color: var(--cs-selected-fg, #1e1e2e);
   }
   .content {
     flex: 1;

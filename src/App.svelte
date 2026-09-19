@@ -22,6 +22,7 @@
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { openSettings } from './lib/settingsWindow';
+  import { applyThemePreference, watchPreferredColorScheme } from './lib/theme';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
@@ -162,6 +163,17 @@
     void loadSheets();
   });
 
+  // Theme sync: mirrors the Pomotroid pattern. Resolve the saved preference against the OS
+  // scheme, then apply CSS custom properties on the document root.
+  $effect(() => {
+    applyThemePreference(settings.theme);
+  });
+
+  // If the user selected Follow, live OS scheme changes must update the app without restart.
+  $effect(() => {
+    return watchPreferredColorScheme(() => applyThemePreference(settings.theme));
+  });
+
   // Live sync (Task 19): when a window persists a change, it emits `settings-changed`.
   // Use the payload directly so a store failure does not reset the edited in-memory settings.
   $effect(() => {
@@ -256,7 +268,7 @@
   }
   .pin[aria-pressed='true'] {
     background: var(--cs-selected-bg, #7d9ad4);
-    color: #1e1e2e;
+    color: var(--cs-selected-fg, #1e1e2e);
   }
   .gear {
     display: flex;

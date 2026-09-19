@@ -73,9 +73,9 @@
   .sheet-item:hover {
     background: var(--cs-hover-bg, #282c3f);
   }
-  .sheet-item.selected {
+  .sheet-item-selected {
     background: var(--cs-selected-bg, #7d9ad4);
-    color: #1e1e2e;
+    color: var(--cs-selected-fg, #1e1e2e);
   }
   .sheet-item-name {
     overflow: hidden;

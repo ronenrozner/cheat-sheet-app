@@ -6,6 +6,7 @@
   import { DEFAULT_SETTINGS, type Settings } from '../../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets } from '../../lib/overlay/hotkey';
   import { APP_VERSION } from '../../lib/version';
+  import { applyThemePreference, watchPreferredColorScheme } from '../../lib/theme';
 
   let settings = $state<Settings>({ ...DEFAULT_SETTINGS });
   let appliedSettings: Settings = { ...DEFAULT_SETTINGS };
@@ -80,6 +81,14 @@
 
   $effect(() => {
     void loadSettingsPage();
+  });
+
+  $effect(() => {
+    applyThemePreference(settings.theme);
+  });
+
+  $effect(() => {
+    return watchPreferredColorScheme(() => applyThemePreference(settings.theme));
   });
 
   $effect(() => {
