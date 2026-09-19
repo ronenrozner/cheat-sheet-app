@@ -4,3 +4,4 @@
 
 pub mod settings;
 pub mod sheets;
+pub mod themes;

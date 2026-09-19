@@ -10,6 +10,13 @@
 /** Persisted UI theme. */
 export type Theme = 'Light' | 'Dark' | 'Follow';
 
+/** User-selectable JSON theme entry. */
+export interface ThemeDefinition {
+  name: string;
+  colors: Record<string, string>;
+  is_custom: boolean;
+}
+
 /** Overlay window size in pixels. */
 export interface WinSize {
   width: number;
@@ -39,6 +46,8 @@ export type AlwaysOnTop = 'On' | 'Off';
 /** Full persisted settings snapshot. */
 export interface Settings {
   theme: Theme;
+  theme_light: string;
+  theme_dark: string;
   win_size: WinSize;
   trigger: TriggerKey;
   source_mode: SourceMode;
@@ -56,6 +65,8 @@ export interface Settings {
  */
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'Follow',
+  theme_light: 'Pomotroid Light',
+  theme_dark: 'Pomotroid',
   win_size: { width: 800, height: 900 },
   trigger: { ctrl: true, alt: false, shift: true, key: 'q' },
   source_mode: 'Both',

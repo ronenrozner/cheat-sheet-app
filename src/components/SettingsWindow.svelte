@@ -18,7 +18,7 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import AboutTab from './AboutTab.svelte';
   import { t } from '../lib/i18n';
-  import type { Settings } from '../lib/settings/types';
+  import type { Settings, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
 
@@ -29,6 +29,7 @@
     hotkeyStatus = null,
     waylandSnippets = null,
     sheetsBySlug = {},
+    themes = [],
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
@@ -36,6 +37,7 @@
     hotkeyStatus?: HotkeyStatus | null;
     waylandSnippets?: WaylandSnippets | null;
     sheetsBySlug?: Record<string, string>;
+    themes?: ThemeDefinition[];
   }>();
 
   // Active tab: 'settings' | 'about'.
@@ -114,7 +116,14 @@
 
     <div class="content">
       {#if tab === 'settings'}
-        <SettingsPanel bind:settings {onSave} {hotkeyStatus} {waylandSnippets} {sheetsBySlug} />
+        <SettingsPanel
+          bind:settings
+          {onSave}
+          {hotkeyStatus}
+          {waylandSnippets}
+          {sheetsBySlug}
+          {themes}
+        />
       {:else}
         <AboutTab {version} />
       {/if}

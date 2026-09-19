@@ -19,8 +19,11 @@ export function coerceSettings(raw: unknown): Settings {
     return { ...DEFAULT_SETTINGS };
   }
   const s = raw as Partial<Settings>;
+  const themes = new Set(['Light', 'Dark', 'Follow']);
   return {
-    theme: s.theme ?? DEFAULT_SETTINGS.theme,
+    theme: themes.has(String(s.theme)) ? (s.theme as Settings['theme']) : DEFAULT_SETTINGS.theme,
+    theme_light: typeof s.theme_light === 'string' ? s.theme_light : DEFAULT_SETTINGS.theme_light,
+    theme_dark: typeof s.theme_dark === 'string' ? s.theme_dark : DEFAULT_SETTINGS.theme_dark,
     win_size: isWinSize(s.win_size) ? s.win_size : { ...DEFAULT_SETTINGS.win_size },
     trigger: isTriggerKey(s.trigger) ? s.trigger : { ...DEFAULT_SETTINGS.trigger },
     source_mode: s.source_mode ?? DEFAULT_SETTINGS.source_mode,
@@ -51,12 +54,12 @@ export async function getSettings(): Promise<Settings> {
  * A malformed snapshot is validated, logged, and skipped — it is never written to the store.
  */
 export async function setSettings(settings: Settings): Promise<boolean> {
-  const validated = coerceSettings(settings);
-  const ok = await validate(validated);
+  const ok = await validate(settings);
   if (!ok) {
     console.warn('setSettings: rejecting malformed snapshot; not persisted');
     return false;
   }
+  const validated = coerceSettings(settings);
   try {
     await invoke('set_settings', { settings: validated });
     return true;
@@ -74,6 +77,8 @@ async function validate(s: Settings): Promise<boolean> {
   const tops = new Set(['On', 'Off']);
   return (
     themes.has(s.theme) &&
+    typeof s.theme_light === 'string' &&
+    typeof s.theme_dark === 'string' &&
     modes.has(s.source_mode) &&
     langs.has(s.language) &&
     trays.has(s.show_tray) &&

@@ -1,7 +1,7 @@
 //! Settings load / save via `tauri-plugin-store` (Task 3; UI wiring in Task 13).
 //!
-//! Persists `theme` / `win_size` / `trigger` / `source_mode` / `language` / `pinned_slug` to
-//! `app_config_dir/settings.json`.
+//! Persists `theme` / `theme_light` / `theme_dark` / `win_size` / `trigger` / `source_mode` /
+//! `language` / `pinned_slug` to `app_config_dir/settings.json`.
 //!
 //! The store plugin's own `save` is a plain `fs::write`; Task 3 requires an **atomic** write
 //! (temp file + rename) so a crash mid-write never leaves a partial file. We keep the store cache
@@ -70,6 +70,8 @@ pub enum ShowTray {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
     pub theme: Theme,
+    pub theme_light: String,
+    pub theme_dark: String,
     pub win_size: WinSize,
     pub trigger: TriggerKey,
     pub source_mode: SourceMode,
@@ -83,6 +85,8 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             theme: Theme::Follow,
+            theme_light: "Pomotroid Light".to_string(),
+            theme_dark: "Pomotroid".to_string(),
             win_size: WinSize::default(),
             trigger: TriggerKey {
                 ctrl: true,
@@ -123,6 +127,16 @@ pub fn load(app: &AppHandle) -> Settings {
     if let Some(v) = store.get("theme") {
         s.theme = serde_json::from_value(v.clone()).unwrap_or_default();
     }
+    if let Some(v) = store.get("theme_light") {
+        if let Some(name) = v.as_str() {
+            s.theme_light = name.to_string();
+        }
+    }
+    if let Some(v) = store.get("theme_dark") {
+        if let Some(name) = v.as_str() {
+            s.theme_dark = name.to_string();
+        }
+    }
     if let Some(v) = store.get("win_size") {
         s.win_size = serde_json::from_value(v.clone()).unwrap_or_default();
     }
@@ -154,18 +168,45 @@ pub fn load(app: &AppHandle) -> Settings {
 /// If the rename fails, the original file is left intact (no partial write).
 pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> {
     let Some(store) = build_store(app) else {
-        return Err(std::io::Error::other(
-            "settings store not available",
-        ));
+        return Err(std::io::Error::other("settings store not available"));
     };
     // Keep the in-memory store cache in sync with the values we are about to persist.
-    store.set("theme", serde_json::to_value(settings.theme).unwrap_or_default());
-    store.set("win_size", serde_json::to_value(settings.win_size).unwrap_or_default());
-    store.set("trigger", serde_json::to_value(settings.trigger.clone()).unwrap_or_default());
-    store.set("source_mode", serde_json::to_value(settings.source_mode).unwrap_or_default());
-    store.set("language", serde_json::to_value(settings.language).unwrap_or_default());
-    store.set("pinned_slug", serde_json::to_value(&settings.pinned_slug).unwrap_or_default());
-    store.set("show_tray", serde_json::to_value(settings.show_tray).unwrap_or_default());
+    store.set(
+        "theme",
+        serde_json::to_value(settings.theme).unwrap_or_default(),
+    );
+    store.set(
+        "theme_light",
+        serde_json::to_value(&settings.theme_light).unwrap_or_default(),
+    );
+    store.set(
+        "theme_dark",
+        serde_json::to_value(&settings.theme_dark).unwrap_or_default(),
+    );
+    store.set(
+        "win_size",
+        serde_json::to_value(settings.win_size).unwrap_or_default(),
+    );
+    store.set(
+        "trigger",
+        serde_json::to_value(settings.trigger.clone()).unwrap_or_default(),
+    );
+    store.set(
+        "source_mode",
+        serde_json::to_value(settings.source_mode).unwrap_or_default(),
+    );
+    store.set(
+        "language",
+        serde_json::to_value(settings.language).unwrap_or_default(),
+    );
+    store.set(
+        "pinned_slug",
+        serde_json::to_value(&settings.pinned_slug).unwrap_or_default(),
+    );
+    store.set(
+        "show_tray",
+        serde_json::to_value(settings.show_tray).unwrap_or_default(),
+    );
     store.set(
         "always_on_top",
         serde_json::to_value(settings.always_on_top).unwrap_or_default(),
@@ -178,10 +219,8 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
 
 /// Serialize [`Settings`] to pretty-printed JSON bytes (falls back to a stub object on error).
 fn settings_to_json(settings: &Settings) -> Vec<u8> {
-    serde_json::to_vec(settings).unwrap_or_else(|_| {
-        serde_json::to_vec(&Settings::default())
-            .unwrap_or_else(|_| Vec::new())
-    })
+    serde_json::to_vec(settings)
+        .unwrap_or_else(|_| serde_json::to_vec(&Settings::default()).unwrap_or_else(|_| Vec::new()))
 }
 
 /// Write `bytes` to `path` atomically: serialize to a temp file in the same directory, then
@@ -212,6 +251,8 @@ mod tests {
     fn defaults_are_sane() {
         let s = Settings::default();
         assert_eq!(s.theme, Theme::Follow);
+        assert_eq!(s.theme_light, "Pomotroid Light");
+        assert_eq!(s.theme_dark, "Pomotroid");
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
         assert!(s.pinned_slug.is_empty());
@@ -223,6 +264,8 @@ mod tests {
     fn round_trip_json() {
         let original = Settings {
             theme: Theme::Dark,
+            theme_light: "GitHub".to_string(),
+            theme_dark: "Dracula".to_string(),
             win_size: WinSize {
                 width: 800,
                 height: 900,

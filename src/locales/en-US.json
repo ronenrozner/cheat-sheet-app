@@ -20,7 +20,10 @@
     "label": "Sheets"
   },
   "settings": {
-    "theme": "Theme",
+    "theme": "Theme mode",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "customThemeBadge": "Custom",
     "windowSize": "Window size",
     "trigger": "Trigger",
     "ctrl": "Ctrl",

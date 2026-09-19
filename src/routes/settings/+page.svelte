@@ -3,16 +3,23 @@
   import { emit, listen } from '@tauri-apps/api/event';
   import SettingsWindow from '../../components/SettingsWindow.svelte';
   import { coerceSettings, getSettings, setSettings } from '../../lib/settings/bridge';
-  import { DEFAULT_SETTINGS, type Settings } from '../../lib/settings/types';
+  import { DEFAULT_SETTINGS, type Settings, type ThemeDefinition } from '../../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets } from '../../lib/overlay/hotkey';
   import { APP_VERSION } from '../../lib/version';
-  import { applyThemePreference, watchPreferredColorScheme } from '../../lib/theme';
+  import {
+    FALLBACK_THEMES,
+    applyThemePreference,
+    getThemes,
+    onThemesChanged,
+    watchPreferredColorScheme,
+  } from '../../lib/theme';
 
   let settings = $state<Settings>({ ...DEFAULT_SETTINGS });
   let appliedSettings: Settings = { ...DEFAULT_SETTINGS };
   let hotkeyStatus = $state<HotkeyStatus | null>(null);
   let waylandSnippets = $state<WaylandSnippets | null>(null);
   let sheetsBySlug: Record<string, string> = $state({});
+  let themes = $state<ThemeDefinition[]>(FALLBACK_THEMES);
 
   async function loadSettingsPage(): Promise<void> {
     try {
@@ -21,6 +28,8 @@
     } catch {
       sheetsBySlug = {};
     }
+
+    themes = await getThemes();
 
     try {
       settings = await getSettings();
@@ -84,11 +93,23 @@
   });
 
   $effect(() => {
-    applyThemePreference(settings.theme);
+    applyThemePreference(settings, themes);
   });
 
   $effect(() => {
-    return watchPreferredColorScheme(() => applyThemePreference(settings.theme));
+    return watchPreferredColorScheme(() => applyThemePreference(settings, themes));
+  });
+
+  $effect(() => {
+    let unlisten: (() => void) | undefined;
+    (async () => {
+      unlisten = await onThemesChanged((updated) => {
+        themes = updated.length > 0 ? updated : FALLBACK_THEMES;
+      });
+    })();
+    return () => {
+      unlisten?.();
+    };
   });
 
   $effect(() => {
@@ -112,4 +133,5 @@
   {hotkeyStatus}
   {waylandSnippets}
   {sheetsBySlug}
+  {themes}
 />

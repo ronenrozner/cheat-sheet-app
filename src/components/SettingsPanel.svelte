@@ -13,7 +13,7 @@
   a change updates the prop and the parent persists it.
 -->
 <script lang="ts">
-  import type { Settings, Theme, Language } from '../lib/settings/types';
+  import type { Settings, Theme, Language, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
@@ -24,18 +24,32 @@
     hotkeyStatus = null,
     waylandSnippets = null,
     sheetsBySlug = {},
+    themes = [],
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
     hotkeyStatus?: HotkeyStatus | null;
     waylandSnippets?: WaylandSnippets | null;
     sheetsBySlug?: Record<string, string>;
+    themes?: ThemeDefinition[];
   }>();
 
   // Theme (Follow / Light / Dark).
   function onTheme(e: Event) {
     const v = (e.target as HTMLSelectElement).value;
     settings = { ...settings, theme: v as Theme };
+    onSave(settings);
+  }
+
+  function onLightTheme(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    settings = { ...settings, theme_light: value };
+    onSave(settings);
+  }
+
+  function onDarkTheme(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    settings = { ...settings, theme_dark: value };
     onSave(settings);
   }
 
@@ -120,6 +134,32 @@
       <option value="Follow">{t('settings.optionFollow')}</option>
       <option value="Light">{t('settings.optionLight')}</option>
       <option value="Dark">{t('settings.optionDark')}</option>
+    </select>
+  </label>
+
+  <label class="row">
+    <span>{t('settings.lightTheme')}</span>
+    <select class="ctrl" value={settings.theme_light} onchange={onLightTheme}>
+      {#each themes as themeDefinition (themeDefinition.name)}
+        <option value={themeDefinition.name}>
+          {themeDefinition.name}{themeDefinition.is_custom
+            ? ` · ${t('settings.customThemeBadge')}`
+            : ''}
+        </option>
+      {/each}
+    </select>
+  </label>
+
+  <label class="row">
+    <span>{t('settings.darkTheme')}</span>
+    <select class="ctrl" value={settings.theme_dark} onchange={onDarkTheme}>
+      {#each themes as themeDefinition (themeDefinition.name)}
+        <option value={themeDefinition.name}>
+          {themeDefinition.name}{themeDefinition.is_custom
+            ? ` · ${t('settings.customThemeBadge')}`
+            : ''}
+        </option>
+      {/each}
     </select>
   </label>
 

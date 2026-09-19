@@ -1,14 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { resolveTheme } from '../../src/lib/theme';
+import { resolveTheme, resolveThemeFromSettings } from '../../src/lib/theme';
+import { DEFAULT_SETTINGS, type ThemeDefinition } from '../../src/lib/settings/types';
 
 const cases = [
-  { preference: 'Light' as const, prefersDark: false, expected: 'light' },
-  { preference: 'Light' as const, prefersDark: true, expected: 'light' },
-  { preference: 'Dark' as const, prefersDark: false, expected: 'dark' },
-  { preference: 'Dark' as const, prefersDark: true, expected: 'dark' },
-  { preference: 'Follow' as const, prefersDark: false, expected: 'light' },
-  { preference: 'Follow' as const, prefersDark: true, expected: 'dark' },
+  { preference: 'Light' as const, prefersDark: false, expected: 'Pomotroid Light' },
+  { preference: 'Light' as const, prefersDark: true, expected: 'Pomotroid Light' },
+  { preference: 'Dark' as const, prefersDark: false, expected: 'Pomotroid' },
+  { preference: 'Dark' as const, prefersDark: true, expected: 'Pomotroid' },
+  { preference: 'Follow' as const, prefersDark: false, expected: 'Pomotroid Light' },
+  { preference: 'Follow' as const, prefersDark: true, expected: 'Pomotroid' },
 ];
+
+const customTheme: ThemeDefinition = {
+  name: 'My Custom Theme',
+  is_custom: true,
+  colors: {
+    '--color-background': '#111111',
+    '--color-background-light': '#222222',
+    '--color-background-lightest': '#333333',
+    '--color-foreground': '#eeeeee',
+    '--color-foreground-darker': '#dddddd',
+    '--color-foreground-darkest': '#cccccc',
+    '--color-accent': '#00ff00',
+  },
+};
 
 describe('resolveTheme', () => {
   for (const { preference, prefersDark, expected } of cases) {
@@ -16,4 +31,15 @@ describe('resolveTheme', () => {
       expect(resolveTheme(preference, prefersDark).name).toBe(expected);
     });
   }
+
+  it('resolves saved custom light and dark theme names', () => {
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      theme: 'Light' as const,
+      theme_light: customTheme.name,
+      theme_dark: 'Pomotroid',
+    };
+
+    expect(resolveThemeFromSettings(settings, [customTheme], false)).toBe(customTheme);
+  });
 });

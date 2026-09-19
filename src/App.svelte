@@ -22,7 +22,14 @@
   import { t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { openSettings } from './lib/settingsWindow';
-  import { applyThemePreference, watchPreferredColorScheme } from './lib/theme';
+  import {
+    FALLBACK_THEMES,
+    applyThemePreference,
+    getThemes,
+    onThemesChanged,
+    watchPreferredColorScheme,
+  } from './lib/theme';
+  import type { ThemeDefinition } from './lib/settings/types';
 
   // Body loader (Task 12). Calls the Rust `load_sheet` command, which reads
   // `<home>/cheatsheets/<slug>.md` and returns the body with front-matter stripped, or `None`
@@ -47,6 +54,7 @@
   // open-sheet decision and persist new pins. Loaded defensively (falls back to defaults).
   let settings = $state<SettingsModel>({ ...DEFAULT_SETTINGS });
   let appliedSettings: SettingsModel = { ...DEFAULT_SETTINGS };
+  let themes = $state<ThemeDefinition[]>(FALLBACK_THEMES);
 
   // Switch the selected sheet. Ignores unavailable slugs and no-op switches.
   function onSelect(slug: string) {
@@ -166,12 +174,26 @@
   // Theme sync: mirrors the Pomotroid pattern. Resolve the saved preference against the OS
   // scheme, then apply CSS custom properties on the document root.
   $effect(() => {
-    applyThemePreference(settings.theme);
+    applyThemePreference(settings, themes);
   });
 
   // If the user selected Follow, live OS scheme changes must update the app without restart.
   $effect(() => {
-    return watchPreferredColorScheme(() => applyThemePreference(settings.theme));
+    return watchPreferredColorScheme(() => applyThemePreference(settings, themes));
+  });
+
+  // Load bundled + custom JSON themes, then subscribe to backend hot-reload events.
+  $effect(() => {
+    let unlisten: (() => void) | undefined;
+    (async () => {
+      themes = await getThemes();
+      unlisten = await onThemesChanged((updated) => {
+        themes = updated.length > 0 ? updated : FALLBACK_THEMES;
+      });
+    })();
+    return () => {
+      unlisten?.();
+    };
   });
 
   // Live sync (Task 19): when a window persists a change, it emits `settings-changed`.
