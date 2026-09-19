@@ -65,8 +65,8 @@ export interface Settings {
  */
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'Follow',
-  theme_light: 'Pomotroid Light',
-  theme_dark: 'Pomotroid',
+  theme_light: 'Cheatsheet Light',
+  theme_dark: 'Cheatsheet',
   win_size: { width: 800, height: 900 },
   trigger: { ctrl: true, alt: false, shift: true, key: 'q' },
   source_mode: 'Both',

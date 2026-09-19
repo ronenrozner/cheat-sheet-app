@@ -3,7 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { Settings, Theme as ThemePreference, ThemeDefinition } from './settings/types';
 
 const DARK_THEME: ThemeDefinition = {
-  name: 'Pomotroid',
+  name: 'Cheatsheet',
   is_custom: false,
   colors: {
     '--color-background': '#2f384b',
@@ -17,7 +17,7 @@ const DARK_THEME: ThemeDefinition = {
 };
 
 const LIGHT_THEME: ThemeDefinition = {
-  name: 'Pomotroid Light',
+  name: 'Cheatsheet Light',
   is_custom: false,
   colors: {
     '--color-background': '#f5f0e8',

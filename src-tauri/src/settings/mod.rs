@@ -85,8 +85,8 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             theme: Theme::Follow,
-            theme_light: "Pomotroid Light".to_string(),
-            theme_dark: "Pomotroid".to_string(),
+            theme_light: "Cheatsheet Light".to_string(),
+            theme_dark: "Cheatsheet".to_string(),
             win_size: WinSize::default(),
             trigger: TriggerKey {
                 ctrl: true,
@@ -251,8 +251,8 @@ mod tests {
     fn defaults_are_sane() {
         let s = Settings::default();
         assert_eq!(s.theme, Theme::Follow);
-        assert_eq!(s.theme_light, "Pomotroid Light");
-        assert_eq!(s.theme_dark, "Pomotroid");
+        assert_eq!(s.theme_light, "Cheatsheet Light");
+        assert_eq!(s.theme_dark, "Cheatsheet");
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
         assert!(s.pinned_slug.is_empty());

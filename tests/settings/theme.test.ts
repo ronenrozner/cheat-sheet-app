@@ -3,12 +3,12 @@ import { resolveTheme, resolveThemeFromSettings } from '../../src/lib/theme';
 import { DEFAULT_SETTINGS, type ThemeDefinition } from '../../src/lib/settings/types';
 
 const cases = [
-  { preference: 'Light' as const, prefersDark: false, expected: 'Pomotroid Light' },
-  { preference: 'Light' as const, prefersDark: true, expected: 'Pomotroid Light' },
-  { preference: 'Dark' as const, prefersDark: false, expected: 'Pomotroid' },
-  { preference: 'Dark' as const, prefersDark: true, expected: 'Pomotroid' },
-  { preference: 'Follow' as const, prefersDark: false, expected: 'Pomotroid Light' },
-  { preference: 'Follow' as const, prefersDark: true, expected: 'Pomotroid' },
+  { preference: 'Light' as const, prefersDark: false, expected: 'Cheatsheet Light' },
+  { preference: 'Light' as const, prefersDark: true, expected: 'Cheatsheet Light' },
+  { preference: 'Dark' as const, prefersDark: false, expected: 'Cheatsheet' },
+  { preference: 'Dark' as const, prefersDark: true, expected: 'Cheatsheet' },
+  { preference: 'Follow' as const, prefersDark: false, expected: 'Cheatsheet Light' },
+  { preference: 'Follow' as const, prefersDark: true, expected: 'Cheatsheet' },
 ];
 
 const customTheme: ThemeDefinition = {
@@ -37,7 +37,7 @@ describe('resolveTheme', () => {
       ...DEFAULT_SETTINGS,
       theme: 'Light' as const,
       theme_light: customTheme.name,
-      theme_dark: 'Pomotroid',
+      theme_dark: 'Cheatsheet',
     };
 
     expect(resolveThemeFromSettings(settings, [customTheme], false)).toBe(customTheme);

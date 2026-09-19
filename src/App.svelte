@@ -171,7 +171,7 @@
     void loadSheets();
   });
 
-  // Theme sync: mirrors the Pomotroid pattern. Resolve the saved preference against the OS
+  // Theme sync: mirrors the Cheatsheet pattern. Resolve the saved preference against the OS
   // scheme, then apply CSS custom properties on the document root.
   $effect(() => {
     applyThemePreference(settings, themes);

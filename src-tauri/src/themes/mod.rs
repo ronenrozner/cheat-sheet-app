@@ -52,8 +52,8 @@ const BUNDLED_JSON: &[&str] = &[
     include_str!("../../../static/themes/nord.json"),
     include_str!("../../../static/themes/one-dark.json"),
     include_str!("../../../static/themes/panda.json"),
-    include_str!("../../../static/themes/pomotroid-light.json"),
-    include_str!("../../../static/themes/pomotroid.json"),
+    include_str!("../../../static/themes/cheatsheet-light.json"),
+    include_str!("../../../static/themes/cheatsheet.json"),
     include_str!("../../../static/themes/popping-and-locking.json"),
     include_str!("../../../static/themes/rose-pine-dawn.json"),
     include_str!("../../../static/themes/rose-pine-moon.json"),
@@ -181,8 +181,8 @@ mod tests {
     fn bundled_themes_parse() {
         let themes = load_bundled();
         assert_eq!(themes.len(), 38);
-        assert!(themes.iter().any(|theme| theme.name == "Pomotroid"));
-        assert!(themes.iter().any(|theme| theme.name == "Pomotroid Light"));
+        assert!(themes.iter().any(|theme| theme.name == "Cheatsheet"));
+        assert!(themes.iter().any(|theme| theme.name == "Cheatsheet Light"));
     }
 
     #[test]
@@ -199,7 +199,7 @@ mod tests {
         fs::write(
             themes_dir.join("override.json"),
             r##"{
-              "name": "pomotroid",
+              "name": "cheatsheet",
               "colors": {
                 "--color-background": "#111111",
                 "--color-background-light": "#222222",
@@ -213,7 +213,7 @@ mod tests {
         )
         .unwrap();
 
-        let theme = find(&base, "Pomotroid").unwrap();
+        let theme = find(&base, "Cheatsheet").unwrap();
         assert!(theme.is_custom);
         assert_eq!(theme.colors["--color-background"], "#111111");
         let _ = fs::remove_dir_all(base);
