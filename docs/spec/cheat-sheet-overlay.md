@@ -10,6 +10,7 @@
   * **Sheet storage folder resolved to `<home>/cheatsheets/` (2026-09-09).** Storage path fixed from the previous `app_data_dir/cheatsheets` to `BaseDirectory::Home/cheatsheets` — a flat, visible folder in the user's home directory, per spec. `src-tauri/src/sheets/mod.rs::sheet_dir` resolves it; `src-tauri/src/seed.rs` seeds it on first run by embedding `src-tauri/bundled/` at compile time (`include_dir!`) and copying every `.md` file when the folder is empty/missing (never overwrites user sheets). New dependency: `include_dir` (Ask-first item per spec).
   * **Frontend shell moved to SvelteKit (2026-09-18).** The frontend is now SvelteKit + Svelte 5. Tauri still serves the built static frontend from `dist`. SvelteKit owns `src/app.html`, `src/routes`, generated types, and CSP hash generation for its boot script. The app runs client-only in the Tauri webview (`ssr = false`, `prerender = true`), uses `@sveltejs/adapter-static`, and no longer uses the old Vite-only root `index.html` or manual `src/main.ts` mount entry.
   * **Settings moved to route-owned page (2026-09-18).** The main route `/` renders the HUD. The settings route `/settings` renders the settings window UI (`src/routes/settings/+page.svelte`). The Tauri window still uses label `settings`, but opens `/settings` via `WebviewWindow`, so `App.svelte` no longer branches on the current window label.
+  * **Theme system expanded (Task 23, 2026-09-19).** Theme support now mirrors the Pomotroid JSON theme model, adapted for Cheat-Sheet App. The app ships 38 bundled themes under `static/themes/` and checked-in built assets under `dist/themes/`. It loads custom JSON themes from `app_data_dir/themes`, validates hex color values, lets custom themes override built-ins by name, emits `themes:changed` on hot reload, and lets users choose separate Light and Dark theme slots from Settings. See `THEMES.md`.
 
 ---
 
@@ -30,7 +31,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 6. **Local authoring.** Create/edit a `.md` in `<home>/cheatsheets/` via the user's own editor; it appears after **Rescan** (no in-app editor in v1).
 7. **Online listing (cached).** On demand the user opens a listing of all sheets in the online repo; the listing is cached locally (Task 6). **No online viewing** — the listing is browse/download only.
 8. **Download from listing (later stage).** The user picks a sheet from the cached listing and downloads it to `<home>/cheatsheets/`. **No online viewing** — a sheet is viewed only after download.
-9. **Persistent settings.** Theme (light/dark/follow-system), window size, trigger key, language persist across restarts.
+9. **Persistent settings.** Theme mode (light/dark/follow-system), Light theme, Dark theme, window size, trigger key, language, tray, and always-on-top settings persist across restarts. Custom JSON themes hot-reload from `app_data_dir/themes`.
 10. **i18n.** UI strings flow through a locale layer; **`en-US` only** in v1; selecting another language is a graceful no-op.
 11. **Overlay z-order.** **X11 (must):** the window shows above other windows. **Wayland (best-effort + flagged):** always-on-top / z-order may be limited on some compositors; the UI surfaces which path is active and flags any gap. **Transparency is NOT required in v1** (solid, undecorated window).
 12. **No license/secret leakage.** No upstream content is bundled under our name without a license notice; no secrets committed.
@@ -47,6 +48,7 @@ A global-hotkey **HUD overlay** for Linux that, in one keystroke, surfaces a che
 | Global hotkey | `tauri-plugin-global-shortcut` | **X11 must**; X11-only on Linux; Wayland best-effort (see §Hotkey strategy) |
 | Cross-instance toggle | `tauri-plugin-single-instance` | `cheatsheet-app --toggle` routes to running app (Wayland best-effort + CLI) |
 | Settings | `tauri-plugin-store` → `config/settings.json` | atomic write |
+| Themes | JSON themes + `notify` watcher | 38 bundled themes, custom themes in `app_data_dir/themes`, hot reload |
 | Markdown render | **`marked`** + **`highlight.js`** | lightweight; alternative `shiki` (deferred, WASM/async) |
 | Front-matter | **`gray-matter`** (webview JS) | parses Hexo YAML |
 | Search | **`minisearch`** + normalized-combo index *(deferred)* | client-side, no NLP; v1 uses find-in-current-sheet (see §Search scope revision) |
@@ -99,10 +101,13 @@ cheat-sheet-app/
 │   │   ├─ search/            → combo normalizer (v1) + find-in-current-sheet; minisearch index builder (deferred)
 │   │   ├─ markdown/         → marked+highlight.js render + sanitize
 │   │   ├─ settings/        → typed settings + tauri-plugin-store bridge
+│   │   ├─ theme.ts         → theme list IPC, CSS variable application, OS scheme handling
 │   │   ├─ overlay/         → show/hide/toggle + Esc handling
 │   │   └─ i18n/           → t(key) + locale loader (en-US)
 │   ├─ locales/{en-US.json}   → v1 only
-│   └─ styles/               → theme tokens (light/dark)
+│   └─ locales/              → UI strings
+├─ static/themes/             → bundled JSON theme source files
+├─ dist/themes/               → checked-in built theme assets
 ├─ public/                     → static assets (icons, css)
 ├─ tests/                      → Vitest units (find-in-current-sheet golden set); two-way search fixtures deferred
 ├─ e2e/                        → optional Playwright (overlay open/close)
@@ -114,6 +119,7 @@ cheat-sheet-app/
 - `<home>/cheatsheets/` → the user's sheets folder (default read location), where `<home>` is the user's home directory (`C:\Users\<user>` on Windows, `/home/<user>` on Linux). On Linux this folder is **not** hidden (no leading dot). The folder is **flat**: every sheet lives directly in it. On first run the app seeds this folder with a few **out-of-box** sheets (app-authored, CC0/MIT, see D1).
   - **Implementation (v1.0).** The folder is resolved as `BaseDirectory::Home/cheatsheets` (see `src-tauri/src/sheets/mod.rs::sheet_dir`). The default is populated by `src-tauri/src/seed.rs`, which embeds the sheets in `src-tauri/bundled/` at compile time (`include_dir!`) and copies every `.md` file into the folder on first run. Seeding runs **only** when the folder is empty or missing, so a user's own sheets are never overwritten. Drop a new `.md` into `src-tauri/bundled/` and rebuild to add a sheet; note the bundled folder is compiled into the binary, so it does not ship at runtime (see `src-tauri/Cargo.toml` — `include_dir` dependency).
 - `app_config_dir/settings.json` → user settings (atomic write).
+- `app_data_dir/themes/*.json` → user-created custom themes. Files are watched and hot-reloaded while the app runs.
 - `app_config_dir/index.cache` → built search index (optional, regenerated on Rescan).
 - The online listing is cached locally (Task 6).
 - The default location is `<home>/cheatsheets/` until a new location is selected in settings (a later task).

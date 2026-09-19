@@ -771,6 +771,58 @@ closes all webview windows, then calls `app.exit(0)`. Tray Quit and the debug-on
 **Files touched:** `src-tauri/src/tray.rs`, `src-tauri/src/shortcuts.rs`
 **Estimated scope:** S
 
+## Task 23: Pomotroid-style JSON themes — built-ins, custom directory, hot reload *(new, beyond spec)*
+**Description:** Import and adapt Pomotroid's JSON theme mechanism for Cheat-Sheet App. Ship the 38 bundled
+JSON themes with app-specific default names (`Cheatsheet`, `Cheatsheet Light`), load custom themes from the
+Tauri app data `themes/` directory, hot-reload edits with a filesystem watcher, and expose selectable Light
+and Dark theme slots in Settings. Document custom theme authoring in `THEMES.md`.
+
+**Acceptance criteria:**
+- [x] Bundled themes are available from `static/themes/` and checked-in built assets exist under `dist/themes/`.
+- [x] Custom `.json` theme files in `app_data_dir/themes/` are loaded and marked as custom.
+- [x] Custom themes hot-reload and emit `themes:changed` without app restart.
+- [x] Custom themes can override built-in themes by matching `name` case-insensitively.
+- [x] Settings persist theme mode plus separate Light and Dark theme names.
+- [x] The app applies the selected theme through CSS custom properties on `document.documentElement`.
+- [x] Theme files are validated: JSON only, size-limited, allowed token prefixes, hex colors only.
+- [x] Documentation explains built-in themes, custom theme directory paths, color tokens, hot reload, and overrides.
+
+**Verification:**
+- [x] `npm test`: 19 files pass, 94 tests pass.
+- [x] `npm run check` clean.
+- [x] `npm run lint` clean.
+- [x] `npm run build` clean.
+- [x] `cd src-tauri && cargo test --lib`: 32 tests pass.
+- [x] `cd src-tauri && cargo test --lib themes`: bundled themes and custom override tests pass.
+- [ ] **Manual (human confirm):** add or edit a theme JSON file in `app_data_dir/themes/`; Settings updates
+  within about half a second; selecting it changes the overlay and settings window colors.
+
+**Result (Task 23 — 2026-09-19):** Theme system complete and verifiable headlessly.
+- Added Rust `themes` module with bundled theme parsing, custom theme loading, validation, case-insensitive
+  override, and `themes_list` IPC command.
+- Added `notify` watcher that creates/watches `app_data_dir/themes` and emits `themes:changed` after a
+  debounced file change.
+- Added settings fields `theme_light` and `theme_dark`; defaults are `Cheatsheet Light` and `Cheatsheet`.
+- Added frontend theme list loading, hot-reload subscription, OS color-scheme handling, and CSS variable
+  application.
+- Added Settings UI controls for Theme mode, Light theme, and Dark theme.
+- Added 38 bundled themes to `static/themes/` and checked-in built copies to `dist/themes/`.
+- Added `THEMES.md` with custom theme instructions.
+
+**Commits:**
+- `7cc20dd` — apply persisted theme tokens.
+- `19ffe04` — add custom JSON theme hot reload.
+- `9b338ec` — rename default themes to Cheatsheet.
+- `52ede75` — check in built theme assets.
+- `422af8e` — add theme customization guide.
+
+**Dependencies:** Task 3 (settings), Task 13 (settings UI), Task 21 (SvelteKit settings route)
+**Files touched:** `src-tauri/src/themes/`, `src-tauri/src/commands/themes.rs`, `src-tauri/src/settings/mod.rs`,
+`src-tauri/src/lib.rs`, `src/lib/theme.ts`, `src/lib/settings/types.ts`, `src/lib/settings/bridge.ts`,
+`src/components/SettingsPanel.svelte`, `src/routes/settings/+page.svelte`, `static/themes/`, `dist/themes/`,
+`THEMES.md`, `tests/settings/theme.test.ts`
+**Estimated scope:** L
+
 ---
 
 ## Done when

@@ -38,6 +38,9 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - **A7 — i18n scaffolded from the start, `en-US` only.** All UI strings route through a locale layer;
   `en-US` is the only implemented locale; selecting another language is a graceful no-op.
 - **A8 — No new dependencies beyond the spec's stack table.** Adding one is an "Ask first" boundary.
+- **A9 — JSON theme compatibility.** The app supports the Pomotroid-style JSON theme model, adapted to
+  Cheat-Sheet App names and tokens. Built-in themes live in `static/themes/` and `dist/themes/`; custom
+  themes live in `app_data_dir/themes` and hot-reload through a backend watcher.
 
 ## Task List
 
@@ -84,6 +87,9 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 - [ ] Task 15: `--toggle` single-instance CLI route + Wayland flag + compositor-bind snippets
 - [ ] Task 16: License/secret hygiene (GPL notice, app-authored defaults, license NOTICE, no secret commit)
 
+### Post-v1 UI polish / enhancements
+- [x] Task 23: Pomotroid-style JSON themes, custom theme directory, and hot reload
+
 ### Checkpoint: Complete
 - [ ] All spec acceptance criteria 1–10 met
 - [ ] `npm test -- --coverage`, `cargo test`, `npm run lint`, `cargo clippy -- -D warnings` all clean
@@ -102,6 +108,7 @@ into small, verifiable, vertically-sliced tasks with explicit acceptance criteri
 | Two-way search misses a direction | Med | Golden fixture set (NL-only / combo-only / mixed); >80% coverage on `lib/search` |
 | Search scope changed (Task 8) | Low | Task 8 redirected to find-in-the-open-sheet (NL only, no combo, no cross-sheet index). Original minisearch two-way search deferred. See todo.md Task 8. |
 | New dependency scope creep | Low | Stack table is the allow-list; adding a dep is "Ask first" |
+| Custom theme input is malformed or malicious | Med | Theme files are size-limited, JSON-parsed, restricted to theme CSS variable keys, and validated as hex colors before use |
 
 ## Open Questions (carried from spec — confirm or override; plan assumes the recommendations)
 

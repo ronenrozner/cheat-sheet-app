@@ -4,9 +4,10 @@ A Linux-first global-hotkey **HUD overlay** that, in one keystroke, surfaces a c
 otherwise have to hunt for: a pinned sheet on open, a sidebar to switch sheets, and two-way search
 (natural-language _or_ literal key combo). Ships as a Tauri v2 / Rust / Svelte 5 desktop app.
 
-Status: **v1 scaffold** (Task 1). See [`tasks/plan.md`](tasks/plan.md) and
+Status: **active v1 implementation**. See [`tasks/plan.md`](tasks/plan.md) and
 [`tasks/todo.md`](tasks/todo.md) for the roadmap; design in
-[`docs/spec/cheat-sheet-overlay.md`](docs/spec/cheat-sheet-overlay.md).
+[`docs/spec/cheat-sheet-overlay.md`](docs/spec/cheat-sheet-overlay.md). Theme customization is documented in
+[`THEMES.md`](THEMES.md).
 
 ## Prerequisites (Linux)
 
@@ -54,10 +55,12 @@ npm run tauri build # full release build + bundle
 
 ## Project layout
 
-- `src-tauri/` — Rust backend (Tauri v2): overlay window shell + module stubs for
-  `commands/`, `settings/`, `sheets/`, `shortcuts` (filled by later tasks).
-- `src/` — Svelte 5 (runes) frontend: overlay shell; `lib/` holds the forthcoming
-  `search/`, `sheets/`, `markdown/`, `settings/`, `overlay/`, `i18n/` modules.
+- `src-tauri/` — Rust backend (Tauri v2): overlay window shell, IPC commands, settings,
+  sheets, shortcuts, tray, and JSON theme loading/hot-reload.
+- `src/` — SvelteKit + Svelte 5 frontend: overlay route, settings route, settings bridge,
+  markdown renderer, search helpers, i18n, and theme application.
+- `static/themes/` — bundled JSON theme source files.
+- `dist/themes/` — checked-in built theme assets for packaged/static output.
 - `tests/` — Vitest units + golden fixtures.
 
 ## License
