@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "cheat-sheet-app",
+  "productName": "CheatSheet",
   "version": "0.1.0",
-  "identifier": "dev.cheatsheet.overlay",
+  "identifier": "com.ronenrozner.cheatsheet",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,8 +12,7 @@
   "app": {
     "windows": [
       {
-        "label": "main",
-        "title": "Cheat-Sheet HUD",
+        "title": "CheatSheet",
         "width": 640,
         "height": 800,
         "resizable": true,
@@ -60,6 +59,21 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "category": "Utility",
+    "copyright": "Copyright © 2026 Ronen Rozner. Apache 2 License.",
+    "shortDescription": "A beautiful Cheat Sheet popup",
+    "longDescription": "Cheat Sheet is a simple, configurable and visually pleasing cheat sheet popup. Overlay HUD of keyboard shortcuts and code snippets with a clean, themeable interface.",
+    "linux": {
+      "deb": {
+        "depends": []
+      },
+      "appimage": {
+        "bundleMediaFramework": true
+      },
+      "rpm": {
+        "depends": []
+      }
+    },
     "android": {
       "debugApplicationIdSuffix": ".debug"
     }
