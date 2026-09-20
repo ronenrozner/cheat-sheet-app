@@ -1,8 +1,8 @@
 [package]
-name = "cheat-sheet-app"
+name = "CheatSheet"
 version = "0.1.0"
-description = "Global-hotkey cheat-sheet HUD overlay (Linux first) — Tauri / Rust / Svelte"
-authors = ["cheat-sheet-app contributors"]
+description = "Global-hotkey cheat-sheet HUD overlay — Tauri / Rust / Svelte"
+authors = ["CheatSheet contributors"]
 license = "Apache-2.0"
 repository = ""
 edition = "2021"
