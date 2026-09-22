@@ -3,7 +3,6 @@
 use crate::settings::{load, save, Settings};
 use crate::tray;
 use tauri::AppHandle;
-use tauri::Manager;
 
 /// Load persisted settings. Falls back to defaults on first run.
 #[tauri::command]
@@ -27,8 +26,5 @@ pub fn set_tray_visibility(app: AppHandle, show: bool) -> Result<(), String> {
 /// Set whether the overlay window stays above other windows (Task 18). Applies live.
 #[tauri::command]
 pub fn set_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), String> {
-    match app.get_webview_window("main") {
-        Some(window) => window.set_always_on_top(always_on_top).map_err(|e| e.to_string()),
-        None => Ok(()),
-    }
+    crate::settings::set_main_window_always_on_top(&app, always_on_top).map_err(|e| e.to_string())
 }

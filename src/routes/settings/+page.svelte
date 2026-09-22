@@ -81,7 +81,7 @@
 
     if (topChanged) {
       try {
-        await invoke('set_always_on_top', { always_on_top: next.always_on_top === 'On' });
+        await invoke('set_always_on_top', { alwaysOnTop: next.always_on_top === 'On' });
       } catch {
         // Command failed; ignore.
       }

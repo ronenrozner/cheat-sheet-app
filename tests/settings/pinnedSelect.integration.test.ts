@@ -74,6 +74,25 @@ describe('Settings window: pinned-sheet dropdown', () => {
     document.body.removeChild(root);
   });
 
+  it('calls always-on-top command with camelCase args when toggled', async () => {
+    fakeSettings = { always_on_top: true };
+    inst = mount(SettingsPage, { target: root, props: {} });
+    await flush();
+
+    const alwaysOnTopLabel = [...root.querySelectorAll<HTMLLabelElement>('label.row')].find(
+      (label) => label.textContent?.includes('Always on top')
+    );
+    expect(alwaysOnTopLabel).toBeTruthy();
+    const checkbox = alwaysOnTopLabel!.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(checkbox).toBeTruthy();
+
+    checkbox!.checked = false;
+    checkbox!.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+
+    expect(invoke).toHaveBeenCalledWith('set_always_on_top', { alwaysOnTop: false });
+  });
+
   it('persists the chosen pinned slug when an option is selected', async () => {
     inst = mount(SettingsPage, { target: root, props: {} });
     await flush();

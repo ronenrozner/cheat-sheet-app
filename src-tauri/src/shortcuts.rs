@@ -177,6 +177,7 @@ fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                         let _ = crate::tray::update_overlay_icon(app, false);
                     } else {
                         let _ = window.show();
+                        let _ = crate::settings::apply_main_window_always_on_top(app);
                         let _ = window.set_focus();
                         let _ = crate::tray::update_overlay_icon(app, true);
                     }

@@ -43,8 +43,12 @@ pub fn run() {
             if let Some(watcher) = themes::watcher::spawn_watcher(data_dir, app.handle().clone()) {
                 app.manage(watcher);
             }
-            // System tray (Task 17). Shown only when `show_tray` is On; hidden otherwise.
+            // Apply persisted window behavior before the overlay is shown.
             let settings = settings::load(app.handle());
+            if let Err(error) = settings::apply_main_window_always_on_top(app.handle()) {
+                log::warn!("failed to apply always-on-top setting: {error}");
+            }
+            // System tray (Task 17). Shown only when `show_tray` is On; hidden otherwise.
             if tray::tray_visible(&settings) {
                 if let Err(e) = tray::create_tray(app.handle()) {
                     log::warn!("system tray failed to create: {e:#}");
@@ -67,6 +71,9 @@ pub fn run() {
                                 }
                                 false => {
                                     let _ = window.show();
+                                    let _ = crate::settings::apply_main_window_always_on_top(
+                                        app.app_handle(),
+                                    );
                                     let _ = window.set_focus();
                                     let _ =
                                         crate::tray::update_overlay_icon(app.app_handle(), true);

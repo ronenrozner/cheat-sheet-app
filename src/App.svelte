@@ -102,7 +102,7 @@
     // Always-on-top (Task 18): when the toggle changes, apply it to the running instance.
     if (topChanged) {
       try {
-        await invoke('set_always_on_top', { always_on_top: s.always_on_top === 'On' });
+        await invoke('set_always_on_top', { alwaysOnTop: s.always_on_top === 'On' });
       } catch {
         // command failed; ignore.
       }

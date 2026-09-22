@@ -158,6 +158,7 @@ fn open_overlay(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
         let _ = window.show();
+        let _ = crate::settings::apply_main_window_always_on_top(app);
         let _ = window.set_focus();
         let _ = update_overlay_icon(app, true);
     }

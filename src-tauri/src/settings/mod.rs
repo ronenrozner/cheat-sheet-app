@@ -324,6 +324,19 @@ pub fn settings_from_json(bytes: &[u8]) -> Settings {
         .unwrap_or_default()
 }
 
+/// Apply the persisted always-on-top preference to the main window.
+pub fn apply_main_window_always_on_top(app: &AppHandle) -> tauri::Result<()> {
+    set_main_window_always_on_top(app, load(app).always_on_top)
+}
+
+/// Apply an explicit always-on-top value to the main window.
+pub fn set_main_window_always_on_top(app: &AppHandle, always_on_top: bool) -> tauri::Result<()> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.set_always_on_top(always_on_top)?;
+    }
+    Ok(())
+}
+
 fn sanitize_settings(mut settings: Settings) -> Settings {
     settings.win_size = sanitize_win_size(settings.win_size);
     settings
