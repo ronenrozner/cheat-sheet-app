@@ -78,6 +78,7 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
         .build(app)?;
 
     // macOS: render the icon as a grayscale template.
+    #[cfg(target_os = "macos")]
     tray.set_icon_as_template(true)?;
 
     // Left click toggles the overlay. No other button does anything.
@@ -102,6 +103,7 @@ pub fn tray_visible(settings: &crate::settings::Settings) -> bool {
 pub fn set_tray_visible(app: &AppHandle, visible: bool) -> tauri::Result<()> {
     match app.tray_by_id(TRAY_ID) {
         Some(tray) => tray.set_visible(visible),
+        None if visible => create_tray(app),
         None => Ok(()),
     }
 }
