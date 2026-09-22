@@ -15,7 +15,7 @@ pub mod online;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 /// Which source a sheet came from.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -117,7 +117,8 @@ pub fn scan_dir(dir: &Path, source: SheetSource) -> Vec<Sheet> {
         let Ok(content) = std::fs::read_to_string(&path) else {
             continue;
         };
-        let slug = path.file_stem()
+        let slug = path
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or_default()
             .to_string();
@@ -134,9 +135,11 @@ pub fn scan_dir(dir: &Path, source: SheetSource) -> Vec<Sheet> {
 /// It holds both user-authored and downloaded sheets. A missing folder yields `Ok(empty)` — the
 /// caller (`scan_dir`) returns an empty list and no panic; first-run seeding is a separate task.
 pub fn sheet_dir(app: &AppHandle) -> PathBuf {
-    app.path()
-        .resolve("cheatsheets", tauri::path::BaseDirectory::Home)
-        .unwrap_or_else(|_| PathBuf::from("cheatsheets"))
+    let configured = crate::settings::load(app).data_dir;
+    if configured.is_empty() {
+        return crate::settings::default_data_dir(app);
+    }
+    PathBuf::from(configured)
 }
 
 /// Resolve the sheet storage dir (`<home>/cheatsheets/`) and the (unused until download) upstream

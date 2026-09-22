@@ -28,9 +28,13 @@ pub fn run() {
             // status so the UI can flag it; it never aborts `setup`.
             let status = shortcuts::register_overlay_hotkey(app.handle());
             app.manage(status);
-            // Settings store (Task 3). Loaded lazily via the get_settings / set_settings commands.
+            // Settings store (Task 3). First run creates `<home>/.config/cheatsheet/config.json`
+            // and the configured sheet data folder.
             app.handle()
                 .plugin(tauri_plugin_store::Builder::new().build())?;
+            if let Err(error) = settings::ensure_initialized(app.handle()) {
+                log::warn!("settings initialization failed: {error}");
+            }
             // Custom theme hot-reload. The watcher must stay alive for the full app lifetime.
             let data_dir = app
                 .path()

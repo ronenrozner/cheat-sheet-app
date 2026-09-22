@@ -53,6 +53,7 @@ export interface Settings {
   source_mode: SourceMode;
   language: Language;
   pinned_slug: string;
+  dataDir: string;
   show_tray: ShowTray;
   always_on_top: AlwaysOnTop;
 }
@@ -72,6 +73,7 @@ export const DEFAULT_SETTINGS: Settings = {
   source_mode: 'Both',
   language: 'EnUs',
   pinned_slug: '',
+  dataDir: 'cheatsheets',
   show_tray: 'Off',
   always_on_top: 'On',
 };

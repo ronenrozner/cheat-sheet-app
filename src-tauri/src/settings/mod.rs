@@ -1,7 +1,7 @@
 //! Settings load / save via `tauri-plugin-store` (Task 3; UI wiring in Task 13).
 //!
 //! Persists `theme` / `theme_light` / `theme_dark` / `win_size` / `trigger` / `source_mode` /
-//! `language` / `pinned_slug` to `app_config_dir/settings.json`.
+//! `language` / `pinned_slug` / `dataDir` to `<home>/.config/cheatsheet/config.json`.
 //!
 //! The store plugin's own `save` is a plain `fs::write`; Task 3 requires an **atomic** write
 //! (temp file + rename) so a crash mid-write never leaves a partial file. We keep the store cache
@@ -77,6 +77,8 @@ pub struct Settings {
     pub source_mode: SourceMode,
     pub language: Language,
     pub pinned_slug: String,
+    #[serde(rename = "dataDir")]
+    pub data_dir: String,
     pub show_tray: ShowTray,
     pub always_on_top: bool,
 }
@@ -97,17 +99,42 @@ impl Default for Settings {
             source_mode: SourceMode::Both,
             language: Language::EnUs,
             pinned_slug: String::new(),
+            data_dir: "cheatsheets".to_string(),
             show_tray: ShowTray::Off,
             always_on_top: true,
         }
     }
 }
 
-/// Resolve the on-disk settings path (`app_config_dir/settings.json`).
+/// Build the config path from a home directory.
+pub fn config_path_from_home(home: &Path) -> PathBuf {
+    home.join(".config").join("cheatsheet").join("config.json")
+}
+
+/// Build the default sheet data directory from a home directory.
+pub fn default_data_dir_from_home(home: &Path) -> PathBuf {
+    home.join("cheatsheets")
+}
+
+/// Resolve the on-disk settings path (`<home>/.config/cheatsheet/config.json`).
 pub fn settings_path(app: &AppHandle) -> PathBuf {
     app.path()
-        .resolve("settings.json", tauri::path::BaseDirectory::AppConfig)
-        .unwrap_or_else(|_| PathBuf::from("settings.json"))
+        .resolve(
+            ".config/cheatsheet/config.json",
+            tauri::path::BaseDirectory::Home,
+        )
+        .unwrap_or_else(|_| {
+            PathBuf::from(".config")
+                .join("cheatsheet")
+                .join("config.json")
+        })
+}
+
+/// Resolve the default sheet data directory (`<home>/cheatsheets`).
+pub fn default_data_dir(app: &AppHandle) -> PathBuf {
+    app.path()
+        .resolve("cheatsheets", tauri::path::BaseDirectory::Home)
+        .unwrap_or_else(|_| PathBuf::from("cheatsheets"))
 }
 
 /// Build (or fetch) the settings store at the resolved path.
@@ -121,9 +148,9 @@ fn build_store(app: &AppHandle) -> Option<Arc<Store<tauri::Wry>>> {
 /// Malformed data on disk recovers to defaults (the spec requires no crash on bad on-disk data).
 pub fn load(app: &AppHandle) -> Settings {
     let Some(store) = build_store(app) else {
-        return Settings::default();
+        return settings_with_default_data_dir(app);
     };
-    let mut s = Settings::default();
+    let mut s = settings_with_default_data_dir(app);
     if let Some(v) = store.get("theme") {
         s.theme = serde_json::from_value(v.clone()).unwrap_or_default();
     }
@@ -154,6 +181,12 @@ pub fn load(app: &AppHandle) -> Settings {
             s.pinned_slug = p.to_string();
         }
     }
+    s.data_dir = default_data_dir(app).to_string_lossy().to_string();
+    if let Some(v) = store.get("dataDir") {
+        if let Some(p) = v.as_str() {
+            s.data_dir = p.to_string();
+        }
+    }
     if let Some(v) = store.get("show_tray") {
         s.show_tray = serde_json::from_value(v.clone()).unwrap_or_default();
     }
@@ -161,6 +194,30 @@ pub fn load(app: &AppHandle) -> Settings {
         s.always_on_top = v.as_bool().unwrap_or(true);
     }
     s
+}
+
+/// Build defaults that include the absolute default sheet data directory.
+fn settings_with_default_data_dir(app: &AppHandle) -> Settings {
+    let mut settings = Settings::default();
+    settings.data_dir = default_data_dir(app).to_string_lossy().to_string();
+    settings
+}
+
+/// Ensure the config file and configured data directory exist.
+///
+/// Existing `dataDir` values are kept.
+pub fn ensure_initialized(app: &AppHandle) -> Result<Settings, std::io::Error> {
+    let path = settings_path(app);
+    let existed = path.exists();
+    let has_data_dir = build_store(app)
+        .and_then(|store| store.get("dataDir"))
+        .is_some();
+    let settings = load(app);
+    std::fs::create_dir_all(&settings.data_dir)?;
+    if !existed || !has_data_dir {
+        save(app, &settings)?;
+    }
+    Ok(settings)
 }
 
 /// Persist settings to the store with an **atomic** write (temp file + rename).
@@ -202,6 +259,10 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set(
         "pinned_slug",
         serde_json::to_value(&settings.pinned_slug).unwrap_or_default(),
+    );
+    store.set(
+        "dataDir",
+        serde_json::to_value(&settings.data_dir).unwrap_or_default(),
     );
     store.set(
         "show_tray",
@@ -256,6 +317,7 @@ mod tests {
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
         assert!(s.pinned_slug.is_empty());
+        assert_eq!(s.data_dir, "cheatsheets");
         assert_eq!(s.show_tray, ShowTray::Off);
         assert!(s.always_on_top);
     }
@@ -279,6 +341,7 @@ mod tests {
             source_mode: SourceMode::Local,
             language: Language::EnUs,
             pinned_slug: "1password".to_string(),
+            data_dir: temp_dir().join("cheatsheets").to_string_lossy().to_string(),
             show_tray: ShowTray::On,
             always_on_top: false,
         };
@@ -296,6 +359,35 @@ mod tests {
     #[test]
     fn empty_bytes_recovers_to_defaults() {
         assert_eq!(settings_from_json(b""), Settings::default());
+    }
+
+    #[test]
+    fn config_path_uses_home_dot_config_cheatsheet() {
+        let home = PathBuf::from("/home/example");
+        assert_eq!(
+            config_path_from_home(&home),
+            PathBuf::from("/home/example/.config/cheatsheet/config.json")
+        );
+    }
+
+    #[test]
+    fn default_data_dir_uses_home_cheatsheets() {
+        let home = PathBuf::from("/home/example");
+        assert_eq!(
+            default_data_dir_from_home(&home),
+            PathBuf::from("/home/example/cheatsheets")
+        );
+    }
+
+    #[test]
+    fn serializes_data_dir_as_camel_case() {
+        let settings = Settings {
+            data_dir: "/home/example/cheatsheets".to_string(),
+            ..Settings::default()
+        };
+        let json = String::from_utf8(settings_to_json(&settings)).unwrap();
+        assert!(json.contains("dataDir"));
+        assert!(!json.contains("data_dir"));
     }
 
     #[test]

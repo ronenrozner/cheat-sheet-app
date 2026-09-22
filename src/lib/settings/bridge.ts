@@ -29,6 +29,7 @@ export function coerceSettings(raw: unknown): Settings {
     source_mode: s.source_mode ?? DEFAULT_SETTINGS.source_mode,
     language: s.language ?? DEFAULT_SETTINGS.language,
     pinned_slug: typeof s.pinned_slug === 'string' ? s.pinned_slug : DEFAULT_SETTINGS.pinned_slug,
+    dataDir: typeof s.dataDir === 'string' ? s.dataDir : DEFAULT_SETTINGS.dataDir,
     show_tray:
       s.show_tray === 'On' || s.show_tray === 'Off' ? s.show_tray : DEFAULT_SETTINGS.show_tray,
     always_on_top:
@@ -85,7 +86,8 @@ async function validate(s: Settings): Promise<boolean> {
     tops.has(s.always_on_top) &&
     isWinSize(s.win_size) &&
     isTriggerKey(s.trigger) &&
-    typeof s.pinned_slug === 'string'
+    typeof s.pinned_slug === 'string' &&
+    typeof s.dataDir === 'string'
   );
 }
 
