@@ -214,7 +214,9 @@
 
 <main class="overlay">
   <header class="title">
-    <h1>{t('app.title')}</h1>
+    <div class="drag-region" data-tauri-drag-region>
+      <h1 data-tauri-drag-region>{t('app.title')}</h1>
+    </div>
     <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
       ⚙
     </button>
@@ -254,6 +256,11 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
+  }
+  .drag-region {
+    flex: 1;
+    min-width: 0;
+    cursor: move;
   }
   .title h1 {
     font-size: 1.1rem;

@@ -21,6 +21,7 @@ vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(
 // hit the real backend. `listen` returns a no-op unlisten.
 vi.mock('@tauri-apps/api/event', () => ({
   listen: async () => () => {},
+  emit: async () => undefined,
 }));
 
 // Fake loader keyed by slug. Swapped per test via the `load` prop.
@@ -116,6 +117,26 @@ describe('App sheet switching', () => {
     const iframe = root.querySelector('iframe.sheet-view') as HTMLIFrameElement;
     expect(iframe.srcdoc).toContain('Git');
     expect(iframe.srcdoc).not.toContain('Vim');
+  });
+
+  it('marks the header title area as the Tauri drag region', async () => {
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    const dragRegion = root.querySelector('.drag-region') as HTMLElement;
+    expect(dragRegion).toBeTruthy();
+    expect(dragRegion.hasAttribute('data-tauri-drag-region')).toBe(true);
+
+    const title = root.querySelector('h1') as HTMLElement;
+    expect(title.hasAttribute('data-tauri-drag-region')).toBe(true);
+
+    const gear = root.querySelector('button.gear') as HTMLButtonElement;
+    expect(gear).toBeTruthy();
+    expect(gear.hasAttribute('data-tauri-drag-region')).toBe(false);
   });
 
   it('pins the current sheet on click (Task 11)', async () => {
