@@ -215,9 +215,6 @@
 <main class="overlay">
   <header class="title">
     <h1>{t('app.title')}</h1>
-    <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
-      {isPinned ? t('app.unpin') : t('app.pin')}
-    </button>
     <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
       ⚙
     </button>
@@ -227,7 +224,12 @@
 
   <div class="pane">
     <div class="pane-body">
-      <Sidebar {selection} onselect={onSelect} />
+      <div class="left-rail">
+        <Sidebar {selection} onselect={onSelect} />
+        <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
+          {isPinned ? t('app.unpin') : t('app.pin')}
+        </button>
+      </div>
       <div class="sheet">
         <SheetView slug={selection.slug} {load} {query} />
       </div>
@@ -257,6 +259,17 @@
     font-size: 1.1rem;
     margin: 0;
   }
+  .left-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    width: 7rem;
+  }
+  .left-rail :global(.sidebar) {
+    flex: 1;
+    min-height: 0;
+  }
   .sheet {
     flex: 1;
     min-height: 0;
@@ -271,13 +284,15 @@
     flex: 1;
   }
   .pin {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.8rem;
+    width: 100%;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.78rem;
     border-radius: 4px;
     border: 1px solid var(--cs-border, #44475a);
     background: transparent;
     color: var(--cs-fg, #cdd6f4);
     cursor: pointer;
+    white-space: normal;
   }
   .pin:hover {
     background: var(--cs-hover-bg, #282c3f);

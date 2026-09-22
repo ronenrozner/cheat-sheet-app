@@ -128,8 +128,9 @@ describe('App sheet switching', () => {
     await flush();
 
     // No pin: mount resolves to the bundled default `git`.
-    const pinBtn = root.querySelector('button.pin') as HTMLButtonElement;
+    const pinBtn = root.querySelector('.left-rail button.pin') as HTMLButtonElement;
     expect(pinBtn).toBeTruthy();
+    expect(root.querySelector('header button.pin')).toBeNull();
     expect(pinBtn.textContent).toBe('Pin this sheet');
 
     pinBtn.click();

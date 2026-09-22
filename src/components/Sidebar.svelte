@@ -43,6 +43,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-height: 0;
     border: 1px solid var(--cs-border, #44475a);
     border-radius: 4px;
     padding: 0.5rem;
@@ -54,6 +55,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-height: 0;
+    overflow-y: auto;
   }
   .sheet-item {
     display: flex;
