@@ -80,11 +80,11 @@ describe('SettingsPanel controls', () => {
     });
     await flush();
 
-    const inputs = root.querySelectorAll<HTMLInputElement>('input[type="number"]');
-    const widthInput = inputs[0];
-    const heightInput = inputs[1];
+    const widthInput = root.querySelector<HTMLInputElement>('input[aria-label="width"]');
+    const heightInput = root.querySelector<HTMLInputElement>('input[aria-label="height"]');
     expect(widthInput).toBeTruthy();
     expect(heightInput).toBeTruthy();
+    expect(root.querySelector('.size-separator')?.textContent).toBe('×');
 
     widthInput!.value = '0';
     widthInput!.dispatchEvent(new Event('change', { bubbles: true }));

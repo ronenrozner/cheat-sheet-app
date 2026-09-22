@@ -172,17 +172,20 @@
     <span>{t('settings.windowSize')}</span>
     <div class="size">
       <input
-        class="ctrl"
+        class="ctrl size-input"
         type="number"
         min="1"
+        aria-label={t('settings.widthPlaceholder')}
         placeholder={t('settings.widthPlaceholder')}
         value={settings.win_size.width}
         onchange={onWidth}
       />
+      <span class="size-separator" aria-hidden="true">×</span>
       <input
-        class="ctrl"
+        class="ctrl size-input"
         type="number"
         min="1"
+        aria-label={t('settings.heightPlaceholder')}
         placeholder={t('settings.heightPlaceholder')}
         value={settings.win_size.height}
         onchange={onHeight}
@@ -326,9 +329,20 @@
   }
   .size {
     display: flex;
-    gap: 0.4rem;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
     flex: 1;
-    max-width: 160px;
+    max-width: 180px;
+    min-width: 0;
+  }
+  .size-input {
+    width: 4.8rem;
+    min-width: 0;
+  }
+  .size-separator {
+    font-size: 0.85rem;
+    opacity: 0.65;
   }
   .trigger {
     display: flex;
