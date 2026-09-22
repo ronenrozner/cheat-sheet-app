@@ -68,6 +68,7 @@
     "aboutLinks": "About links",
     "builtWith": "Built with",
     "builtWithText": "Built with Tauri, Svelte, and Rust.",
+    "parchmentIconCredit": "Parchment icons created by Assia Benkerroum - Flaticon",
     "licenseAndCopyright": "Apache-2.0 License — Copyright © 2026 Ronen Rozner.",
     "aboutNote": "This space is reserved for future content."
   }

@@ -35,6 +35,9 @@
   </nav>
 
   <div class="footer">
+    <a href="https://www.flaticon.com/free-icons/parchment" target="_blank" rel="noreferrer">
+      {t('settings.parchmentIconCredit')}
+    </a>
     <p>{t('settings.builtWithText')}</p>
     <p>{t('settings.licenseAndCopyright')}</p>
   </div>
@@ -130,7 +133,12 @@
     opacity: 0.62;
   }
 
-  .footer p {
+  .footer p,
+  .footer a {
     margin: 0;
+  }
+
+  .footer a {
+    color: inherit;
   }
 </style>
