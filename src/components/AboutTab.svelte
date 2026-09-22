@@ -35,10 +35,7 @@
   </nav>
 
   <div class="footer">
-    <section aria-labelledby="built-with-title">
-      <h3 id="built-with-title">{t('settings.builtWith')}</h3>
-      <p>{t('settings.builtWithText')}</p>
-    </section>
+    <p>{t('settings.builtWithText')}</p>
     <p>{t('settings.licenseAndCopyright')}</p>
   </div>
 </section>
@@ -126,7 +123,6 @@
   }
 
   .footer {
-    margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
@@ -134,14 +130,7 @@
     opacity: 0.62;
   }
 
-  .footer h3,
   .footer p {
     margin: 0;
-  }
-
-  .footer h3 {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
   }
 </style>
