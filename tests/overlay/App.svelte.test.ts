@@ -95,6 +95,7 @@ describe('App sheet switching', () => {
     // No pin. `git` is a bundled default and beats `vim` (first in the list) on open.
     const iframe = root.querySelector('iframe.sheet-view') as HTMLIFrameElement;
     expect(iframe.srcdoc).toContain('Git');
+    expect(root.textContent).not.toContain('Ctrl-Shift-Q');
   });
 
   it('refreshes the view when a different sheet is selected', async () => {

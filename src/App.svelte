@@ -215,7 +215,6 @@
 <main class="overlay">
   <header class="title">
     <h1>{t('app.title')}</h1>
-    <span class="hint">{t('app.hotkey')}</span>
     <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
       {isPinned ? t('app.unpin') : t('app.pin')}
     </button>
@@ -256,11 +255,6 @@
   }
   .title h1 {
     font-size: 1.1rem;
-    margin: 0;
-  }
-  .hint {
-    font-size: 0.8rem;
-    opacity: 0.7;
     margin: 0;
   }
   .sheet {
