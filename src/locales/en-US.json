@@ -63,6 +63,12 @@
     "close": "Close settings",
     "about": "About",
     "version": "Version",
+    "releaseNotes": "Release Notes",
+    "sourceCode": "Source Code",
+    "aboutLinks": "About links",
+    "builtWith": "Built with",
+    "builtWithText": "Built with Tauri, Svelte, and Rust.",
+    "licenseAndCopyright": "Apache-2.0 License — Copyright © 2026 Ronen Rozner.",
     "aboutNote": "This space is reserved for future content."
   }
 }
