@@ -1,8 +1,8 @@
 //! System tray icon (Task 17).
 //!
 //! When `show_tray` is `On`, a persistent tray icon appears. Clicking it toggles the overlay. The
-//! icon swaps appearance when the overlay opens/closes. The tray menu has a Quit item so the
-//! resident app has an explicit shutdown path.
+//! icon swaps appearance when the overlay opens/closes. The tray menu has an Open/Close item and a
+//! Quit item so the resident app has an explicit shutdown path.
 //!
 //! macOS renders tray icons as grayscale templates, so both icons are marked `icon_as_template`.
 //! The open-state variant is `icons/icon-open.png` (the base icon with a small checkmark badge).
@@ -26,8 +26,12 @@ const ICON_BASE: &str = "icon.png";
 /// The overlay-open tray icon path in the embedded set.
 const ICON_OPEN: &str = "icon-open.png";
 
-/// Tray menu item id for opening the main HUD window.
+/// Tray menu item id for toggling the main HUD window.
 pub const OPEN_MENU_ID: &str = "open";
+/// Tray menu label when the main HUD window is hidden.
+const OPEN_MENU_LABEL: &str = "Open";
+/// Tray menu label when the main HUD window is visible.
+const CLOSE_MENU_LABEL: &str = "Close";
 /// Tray menu item id for graceful app shutdown.
 pub const QUIT_MENU_ID: &str = "quit";
 
@@ -53,14 +57,28 @@ fn load_icon(path: &str) -> Option<Image<'static>> {
     embedded_icon(path).and_then(|bytes| Image::from_bytes(bytes).ok())
 }
 
+/// The Open/Close menu label for the current overlay state.
+fn open_menu_label(open: bool) -> &'static str {
+    if open {
+        CLOSE_MENU_LABEL
+    } else {
+        OPEN_MENU_LABEL
+    }
+}
+
+/// Build a tray menu for the current overlay state.
+fn build_menu(app: &AppHandle, open: bool) -> tauri::Result<Menu<tauri::Wry>> {
+    let open = MenuItem::with_id(app, OPEN_MENU_ID, open_menu_label(open), true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, QUIT_MENU_ID, "Quit", true, None::<&str>)?;
+    Menu::with_items(app, &[&open, &quit])
+}
+
 /// Create the persistent tray icon. Registered only when `show_tray` is `On`.
 pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let Some(base) = load_icon(ICON_BASE) else {
         return Err(tauri::Error::from(IoError::other("tray icon not embedded")));
     };
-    let open = MenuItem::with_id(app, OPEN_MENU_ID, "Open", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, QUIT_MENU_ID, "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&open, &quit])?;
+    let menu = build_menu(app, overlay_open())?;
 
     let tray = tauri::tray::TrayIconBuilder::with_id(TRAY_ID)
         .icon(base)
@@ -70,7 +88,7 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
             let id = event.id();
             let id = id.as_ref();
             if is_open_menu_id(id) {
-                open_overlay(app);
+                toggle_overlay(app);
             } else if is_quit_menu_id(id) {
                 request_exit(app);
             }
@@ -117,7 +135,10 @@ pub fn update_overlay_icon(app: &AppHandle, open: bool) -> tauri::Result<()> {
         return Ok(());
     };
     match app.tray_by_id(TRAY_ID) {
-        Some(tray) => tray.set_icon(Some(icon)).map(|_| ()),
+        Some(tray) => {
+            tray.set_icon(Some(icon))?;
+            tray.set_menu(Some(build_menu(app, open)?))
+        }
         None => Ok(()),
     }
 }
@@ -209,5 +230,11 @@ mod tests {
         assert!(is_quit_menu_id(QUIT_MENU_ID));
         assert!(!is_open_menu_id(QUIT_MENU_ID));
         assert!(!is_quit_menu_id(OPEN_MENU_ID));
+    }
+
+    #[test]
+    fn open_menu_label_matches_overlay_state() {
+        assert_eq!(open_menu_label(false), "Open");
+        assert_eq!(open_menu_label(true), "Close");
     }
 }
