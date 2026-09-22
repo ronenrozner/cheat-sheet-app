@@ -35,6 +35,11 @@ describe('coerceSettings', () => {
     const out = coerceSettings({ win_size: { width: 'big' } as never });
     expect(out.win_size).toEqual(DEFAULT_SETTINGS.win_size);
   });
+
+  it('replaces zero win_size with the default win_size', () => {
+    const out = coerceSettings({ win_size: { width: 0, height: 0 } });
+    expect(out.win_size).toEqual(DEFAULT_SETTINGS.win_size);
+  });
 });
 
 describe('getSettings', () => {

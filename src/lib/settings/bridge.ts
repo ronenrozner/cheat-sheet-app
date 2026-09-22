@@ -96,7 +96,15 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 
 function isWinSize(v: unknown): v is { width: number; height: number } {
   const w = isPlainObject(v) ? (v as { width?: unknown; height?: unknown }) : undefined;
-  return !!w && typeof w.width === 'number' && typeof w.height === 'number';
+  return (
+    !!w &&
+    typeof w.width === 'number' &&
+    Number.isFinite(w.width) &&
+    w.width > 0 &&
+    typeof w.height === 'number' &&
+    Number.isFinite(w.height) &&
+    w.height > 0
+  );
 }
 
 function coerceAlwaysOnTop(value: unknown): Settings['always_on_top'] {

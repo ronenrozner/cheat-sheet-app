@@ -56,12 +56,12 @@
   // Window size (width / height).
   function onWidth(e: Event) {
     const el = e.target as HTMLInputElement;
-    const width = Number.parseInt(el.value || '0', 10);
+    const width = positiveIntegerOrCurrent(el.value, settings.win_size.width);
     settings = {
       ...settings,
       win_size: {
         ...settings.win_size,
-        width: Number.isFinite(width) ? width : settings.win_size.width,
+        width,
       },
     };
     onSave(settings);
@@ -69,15 +69,20 @@
 
   function onHeight(e: Event) {
     const el = e.target as HTMLInputElement;
-    const height = Number.parseInt(el.value || '0', 10);
+    const height = positiveIntegerOrCurrent(el.value, settings.win_size.height);
     settings = {
       ...settings,
       win_size: {
         ...settings.win_size,
-        height: Number.isFinite(height) ? height : settings.win_size.height,
+        height,
       },
     };
     onSave(settings);
+  }
+
+  function positiveIntegerOrCurrent(value: string, current: number): number {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : current;
   }
 
   // Trigger key parts.

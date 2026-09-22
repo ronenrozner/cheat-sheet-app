@@ -66,6 +66,37 @@ describe('SettingsPanel controls', () => {
     expect(saved.current?.theme).toBe('Dark');
   });
 
+  it('window size inputs keep the previous positive value when cleared or set to zero', async () => {
+    const saved: { current: Settings | null } = { current: null };
+    inst = mount(SettingsPanel, {
+      target: root,
+      props: {
+        settings: { ...fakeSettings, win_size: { width: 800, height: 900 } },
+        onSave: (s: Settings) => {
+          saved.current = s;
+        },
+        sheetsBySlug,
+      },
+    });
+    await flush();
+
+    const inputs = root.querySelectorAll<HTMLInputElement>('input[type="number"]');
+    const widthInput = inputs[0];
+    const heightInput = inputs[1];
+    expect(widthInput).toBeTruthy();
+    expect(heightInput).toBeTruthy();
+
+    widthInput!.value = '0';
+    widthInput!.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+    expect(saved.current?.win_size.width).toBe(800);
+
+    heightInput!.value = '';
+    heightInput!.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+    expect(saved.current?.win_size.height).toBe(900);
+  });
+
   it('pinned select: saves the selected slug', async () => {
     const saved: { current: Settings | null } = { current: null };
     inst = mount(SettingsPanel, {

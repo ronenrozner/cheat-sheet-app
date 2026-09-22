@@ -23,11 +23,23 @@ pub enum Theme {
     Follow,
 }
 
+const DEFAULT_WIN_WIDTH: u32 = 800;
+const DEFAULT_WIN_HEIGHT: u32 = 900;
+
 /// Overlay window size in pixels.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WinSize {
     pub width: u32,
     pub height: u32,
+}
+
+impl Default for WinSize {
+    fn default() -> Self {
+        Self {
+            width: DEFAULT_WIN_WIDTH,
+            height: DEFAULT_WIN_HEIGHT,
+        }
+    }
 }
 
 /// Overlay trigger key combo, as raw key parts (no aliasing — Task 7 normalizes authored combos).
@@ -165,7 +177,9 @@ pub fn load(app: &AppHandle) -> Settings {
         }
     }
     if let Some(v) = store.get("win_size") {
-        s.win_size = serde_json::from_value(v.clone()).unwrap_or_default();
+        s.win_size = serde_json::from_value(v.clone())
+            .map(sanitize_win_size)
+            .unwrap_or_default();
     }
     if let Some(v) = store.get("trigger") {
         s.trigger = serde_json::from_value(v.clone()).unwrap_or_default();
@@ -209,12 +223,17 @@ fn settings_with_default_data_dir(app: &AppHandle) -> Settings {
 pub fn ensure_initialized(app: &AppHandle) -> Result<Settings, std::io::Error> {
     let path = settings_path(app);
     let existed = path.exists();
-    let has_data_dir = build_store(app)
-        .and_then(|store| store.get("dataDir"))
-        .is_some();
+    let store = build_store(app);
+    let has_data_dir = store.as_ref().and_then(|store| store.get("dataDir")).is_some();
+    let has_valid_win_size = store
+        .as_ref()
+        .and_then(|store| store.get("win_size"))
+        .and_then(|value| serde_json::from_value::<WinSize>(value).ok())
+        .map(is_valid_win_size)
+        .unwrap_or(false);
     let settings = load(app);
     std::fs::create_dir_all(&settings.data_dir)?;
-    if !existed || !has_data_dir {
+    if !existed || !has_data_dir || !has_valid_win_size {
         save(app, &settings)?;
     }
     Ok(settings)
@@ -300,7 +319,26 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), std::io::Error> {
 ///
 /// Pure and unit-testable: mirrors what [`load`] does after reading the store.
 pub fn settings_from_json(bytes: &[u8]) -> Settings {
-    serde_json::from_slice(bytes).unwrap_or_default()
+    serde_json::from_slice(bytes)
+        .map(sanitize_settings)
+        .unwrap_or_default()
+}
+
+fn sanitize_settings(mut settings: Settings) -> Settings {
+    settings.win_size = sanitize_win_size(settings.win_size);
+    settings
+}
+
+fn sanitize_win_size(win_size: WinSize) -> WinSize {
+    if is_valid_win_size(win_size) {
+        win_size
+    } else {
+        WinSize::default()
+    }
+}
+
+fn is_valid_win_size(win_size: WinSize) -> bool {
+    win_size.width > 0 && win_size.height > 0
 }
 
 #[cfg(test)]
@@ -316,6 +354,7 @@ mod tests {
         assert_eq!(s.theme_dark, "Cheatsheet");
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
+        assert_eq!(s.win_size, WinSize { width: 800, height: 900 });
         assert!(s.pinned_slug.is_empty());
         assert_eq!(s.data_dir, "cheatsheets");
         assert_eq!(s.show_tray, ShowTray::Off);
@@ -348,6 +387,14 @@ mod tests {
         let bytes = settings_to_json(&original);
         let parsed = settings_from_json(&bytes);
         assert_eq!(parsed, original);
+    }
+
+    #[test]
+    fn zero_win_size_recovers_to_defaults() {
+        let mut settings = Settings::default();
+        settings.win_size = WinSize { width: 0, height: 0 };
+        let parsed = settings_from_json(&settings_to_json(&settings));
+        assert_eq!(parsed.win_size, WinSize { width: 800, height: 900 });
     }
 
     #[test]
