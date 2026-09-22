@@ -50,6 +50,12 @@ describe('getSettings', () => {
     expect(s.theme).toBe('Dark');
     expect(s.trigger).toEqual(DEFAULT_SETTINGS.trigger);
   });
+
+  it('maps backend boolean always_on_top into the UI enum', async () => {
+    invoke.mockResolvedValue({ ...DEFAULT_SETTINGS, always_on_top: false });
+    const s = await getSettings();
+    expect(s.always_on_top).toBe('Off');
+  });
 });
 
 describe('setSettings', () => {
@@ -58,7 +64,20 @@ describe('setSettings', () => {
     const result = await setSettings({ ...DEFAULT_SETTINGS, theme: 'Dark' });
     expect(result).toBe(true);
     expect(invoke).toHaveBeenCalledWith('set_settings', {
-      settings: { ...DEFAULT_SETTINGS, theme: 'Dark' },
+      settings: { ...DEFAULT_SETTINGS, theme: 'Dark', always_on_top: true },
+    });
+  });
+
+  it('sends pinned slug with a backend boolean always_on_top so Rust accepts the payload', async () => {
+    invoke.mockResolvedValue(undefined);
+    const result = await setSettings({
+      ...DEFAULT_SETTINGS,
+      pinned_slug: 'git',
+      always_on_top: 'Off',
+    });
+    expect(result).toBe(true);
+    expect(invoke).toHaveBeenCalledWith('set_settings', {
+      settings: { ...DEFAULT_SETTINGS, pinned_slug: 'git', always_on_top: false },
     });
   });
 

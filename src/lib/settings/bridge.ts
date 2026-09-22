@@ -32,10 +32,7 @@ export function coerceSettings(raw: unknown): Settings {
     dataDir: typeof s.dataDir === 'string' ? s.dataDir : DEFAULT_SETTINGS.dataDir,
     show_tray:
       s.show_tray === 'On' || s.show_tray === 'Off' ? s.show_tray : DEFAULT_SETTINGS.show_tray,
-    always_on_top:
-      s.always_on_top === 'On' || s.always_on_top === 'Off'
-        ? s.always_on_top
-        : DEFAULT_SETTINGS.always_on_top,
+    always_on_top: coerceAlwaysOnTop(s.always_on_top),
   };
 }
 
@@ -62,7 +59,7 @@ export async function setSettings(settings: Settings): Promise<boolean> {
   }
   const validated = coerceSettings(settings);
   try {
-    await invoke('set_settings', { settings: validated });
+    await invoke('set_settings', { settings: toBackendSettings(validated) });
     return true;
   } catch {
     return false;
@@ -100,6 +97,21 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 function isWinSize(v: unknown): v is { width: number; height: number } {
   const w = isPlainObject(v) ? (v as { width?: unknown; height?: unknown }) : undefined;
   return !!w && typeof w.width === 'number' && typeof w.height === 'number';
+}
+
+function coerceAlwaysOnTop(value: unknown): Settings['always_on_top'] {
+  if (value === 'On' || value === true) return 'On';
+  if (value === 'Off' || value === false) return 'Off';
+  return DEFAULT_SETTINGS.always_on_top;
+}
+
+function toBackendSettings(settings: Settings): Omit<Settings, 'always_on_top'> & {
+  always_on_top: boolean;
+} {
+  return {
+    ...settings,
+    always_on_top: settings.always_on_top === 'On',
+  };
 }
 
 function isTriggerKey(v: unknown): v is {
