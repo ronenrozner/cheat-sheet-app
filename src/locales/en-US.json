@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Cheat-Sheet HUD",
+    "title": "CheatSheet",
     "hotkey": "Ctrl-Shift-Q",
     "pin": "Pin this sheet",
     "unpin": "Unpin this sheet"

@@ -65,7 +65,7 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let tray = tauri::tray::TrayIconBuilder::with_id(TRAY_ID)
         .icon(base)
         .menu(&menu)
-        .tooltip("Cheat-Sheet HUD")
+        .tooltip("CheatSheet")
         .on_menu_event(|app, event| {
             let id = event.id();
             let id = id.as_ref();

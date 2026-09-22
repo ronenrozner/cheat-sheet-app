@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe('t resolution', () => {
   it('resolves a known top-level key', () => {
-    expect(t('app.title')).toBe('Cheat-Sheet HUD');
+    expect(t('app.title')).toBe('CheatSheet');
   });
 
   it('resolves a nested key', () => {
