@@ -26,6 +26,8 @@ const ICON_BASE: &str = "icon.png";
 /// The overlay-open tray icon path in the embedded set.
 const ICON_OPEN: &str = "icon-open.png";
 
+/// Tray menu item id for opening the main HUD window.
+pub const OPEN_MENU_ID: &str = "open";
 /// Tray menu item id for graceful app shutdown.
 pub const QUIT_MENU_ID: &str = "quit";
 
@@ -56,15 +58,20 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let Some(base) = load_icon(ICON_BASE) else {
         return Err(tauri::Error::from(IoError::other("tray icon not embedded")));
     };
+    let open = MenuItem::with_id(app, OPEN_MENU_ID, "Open", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, QUIT_MENU_ID, "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&quit])?;
+    let menu = Menu::with_items(app, &[&open, &quit])?;
 
     let tray = tauri::tray::TrayIconBuilder::with_id(TRAY_ID)
         .icon(base)
         .menu(&menu)
         .tooltip("Cheat-Sheet HUD")
         .on_menu_event(|app, event| {
-            if is_quit_menu_id(event.id().as_ref()) {
+            let id = event.id();
+            let id = id.as_ref();
+            if is_open_menu_id(id) {
+                open_overlay(app);
+            } else if is_quit_menu_id(id) {
                 request_exit(app);
             }
         })
@@ -136,9 +143,24 @@ pub fn request_exit(app: &AppHandle) {
     }
 }
 
+/// Whether a tray menu item id requests opening the main HUD window.
+fn is_open_menu_id(id: &str) -> bool {
+    id == OPEN_MENU_ID
+}
+
 /// Whether a tray menu item id requests app shutdown.
 fn is_quit_menu_id(id: &str) -> bool {
     id == QUIT_MENU_ID
+}
+
+/// Open the overlay `main` window and update the tray icon.
+fn open_overlay(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+        let _ = update_overlay_icon(app, true);
+    }
 }
 
 /// Toggle the overlay: show/hide the `main` window and update the tray icon.
@@ -148,9 +170,7 @@ fn toggle_overlay(app: &AppHandle) {
             let _ = window.hide();
             let _ = update_overlay_icon(app, false);
         } else {
-            let _ = window.show();
-            let _ = window.set_focus();
-            let _ = update_overlay_icon(app, true);
+            open_overlay(app);
         }
     }
 }
@@ -181,8 +201,10 @@ mod tests {
     }
 
     #[test]
-    fn quit_menu_id_is_recognized() {
+    fn tray_menu_ids_are_recognized() {
+        assert!(is_open_menu_id(OPEN_MENU_ID));
         assert!(is_quit_menu_id(QUIT_MENU_ID));
-        assert!(!is_quit_menu_id("open"));
+        assert!(!is_open_menu_id(QUIT_MENU_ID));
+        assert!(!is_quit_menu_id(OPEN_MENU_ID));
     }
 }
