@@ -63,6 +63,14 @@ npm run tauri build # full release build + bundle
 - `dist/themes/` — checked-in built theme assets for packaged/static output.
 - `tests/` — Vitest units + golden fixtures.
 
+## User files
+
+- Config file: `<home>/.config/cheatsheet/config.json` on Linux, macOS, and Windows.
+- Config format: JSON.
+- Sheet data preference: `dataDir`.
+- Default sheet data folder: `<home>/cheatsheets`.
+- Existing `dataDir` values are kept. The app does not move existing sheets.
+
 ## License
 
 App = Apache-2.0. Bundled default sheets will be CC0/MIT; upstream sheets are GPL-v3 and carry a

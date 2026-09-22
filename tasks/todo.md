@@ -101,8 +101,8 @@ must-path on the active platform before building UI on top** (Windows on the dev
 
 ## Task 3: Rust settings load/save (atomic JSON)
 **Description:** Implement settings persistence via `tauri-plugin-store` to
-`app_config_dir/settings.json` with an atomic write (temp + rename). Define the settings shape
-(theme / winSize / trigger / language / pinned slug).
+`<home>/.config/cheatsheet/config.json` with an atomic write (temp + rename). Define the settings shape
+(theme / winSize / trigger / language / pinned slug / dataDir).
 
 **Acceptance criteria:**
 - [x] `set`/`get` commands round-trip all settings fields; load is safe on first run (defaults).
@@ -113,17 +113,16 @@ must-path on the active platform before building UI on top** (Windows on the dev
   defaults, atomic write leaves no temp file. 10 backend tests total (5 settings + 5 shortcuts).
 - [x] `cargo clippy --all-targets -- -D warnings` clean; `cargo check` clean.
 - [x] `npm run build` + `npm run lint` clean.
-- [~] Restart the app; settings persist. (Verified via unit round-trip; on-disk file appears only on
-  first `set_settings` — first run loads defaults lazily.)
+- [x] Restart the app; settings persist. First run creates the config file and the configured data folder.
 
 **Result (Task 3 — 2026-09-04):** Settings persistence complete and verifiable headlessly.
 - `Settings` struct with `theme` / `win_size` / `trigger` / `source_mode` / `language` /
-  `pinned_slug`; typed enums with sensible v1 defaults (theme=Follow, source=Both, lang=en-US).
+  `pinned_slug` / `dataDir`; typed enums with sensible v1 defaults (theme=Follow, source=Both, lang=en-US, dataDir=`<home>/cheatsheets`).
 - `tauri-plugin-store` registered in `lib.rs`; `get_settings` / `set_settings` IPC commands added
   (registered in `invoke_handler`).
 - Atomic write implemented in `settings/mod.rs` (temp file in the same dir + rename); the store
   plugin's own `save` is a plain `fs::write`, so this wraps it. Malformed on-disk JSON recovers to
-  defaults; first run loads defaults (no crash).
+  defaults; first run creates `<home>/.config/cheatsheet/config.json` and the configured `dataDir`.
 - `set_settings` returns `Result<(), String>` (Tauri commands must return an `IpcResponse`-able
   error type — `std::io::Error` is not).
 
@@ -389,7 +388,7 @@ bundled app-authored default sheet (CC0/MIT, per D1). The pinned slug persists v
 
 ## Task 12: Persistent settings round-trip (UI ↔ store)
 **Description:** Wire the frontend settings surface to the store bridge (Task 3): theme (light/dark/follow),
-window size, trigger key, language, pinned slug. Persist across restart.
+window size, trigger key, language, pinned slug, and dataDir. Persist across restart.
 
 **Acceptance criteria:**
 - [x] Changing any setting persists and is reloaded on restart; defaults apply on first run.
@@ -404,7 +403,7 @@ window size, trigger key, language, pinned slug. Persist across restart.
 
 **Result (Task 12 — 2026-09-04):** Frontend settings surface complete and verifiable headlessly.
 - `src/lib/settings/types.ts` — `Settings` model mirrors the Rust `Settings` (theme / win_size /
-  trigger / source_mode / language / pinned_slug); enum string values match the Rust unit-variant
+  trigger / source_mode / language / pinned_slug / dataDir); enum string values match the Rust unit-variant
   serialization; `DEFAULT_SETTINGS` default trigger is `Ctrl+Shift+Q` (matches Rust `Settings::default`).
 - `src/lib/settings/bridge.ts` — `getSettings` falls back to defaults on error/partial response;
   `setSettings` validates before persisting (rejects malformed snapshots without calling the backend)
