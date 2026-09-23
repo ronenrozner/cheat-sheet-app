@@ -30,3 +30,6 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-store = "2"
 tauri-plugin-single-instance = "2"
 notify = "8"
+
+[features]
+console = []
