@@ -6,8 +6,9 @@
 <script lang="ts">
   import { t } from '../lib/i18n';
 
-  // `query` (current text) and `matchCount` (matches in the current sheet, by the parent).
-  let { query, matchCount } = $props();
+  // `query` is bindable so typing updates App's source of truth.
+  // `matchCount` is computed by the parent from the current sheet body and query.
+  let { query = $bindable(), matchCount } = $props();
 
   // "N matches" when there are matches; "No matches" when zero but text is entered;
   // empty (placeholder only) when there is no text yet.

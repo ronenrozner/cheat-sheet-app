@@ -222,7 +222,7 @@
     </button>
   </header>
 
-  <SearchBox {query} {matchCount} />
+  <SearchBox bind:query {matchCount} />
 
   <div class="pane">
     <div class="pane-body">

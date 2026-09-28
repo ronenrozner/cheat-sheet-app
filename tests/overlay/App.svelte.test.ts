@@ -119,6 +119,26 @@ describe('App sheet switching', () => {
     expect(iframe.srcdoc).not.toContain('Vim');
   });
 
+  it('updates search query and match count when the user types', async () => {
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    const input = root.querySelector('input.search-input') as HTMLInputElement;
+    expect(input).toBeTruthy();
+
+    input.value = 'git';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await flush();
+
+    expect(root.querySelector('.search-count')?.textContent).toBe('2 matches');
+    const iframe = root.querySelector('iframe.sheet-view') as HTMLIFrameElement;
+    expect(iframe.srcdoc).toContain('<mark>Git</mark>');
+  });
+
   it('marks the header title area as the Tauri drag region', async () => {
     inst = mount(App, {
       target: root,
