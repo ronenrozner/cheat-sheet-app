@@ -12,9 +12,7 @@
 
 <section class="about" aria-label={t('settings.about')}>
   <div class="hero">
-    <div class="app-icon" aria-hidden="true">
-      <span></span>
-    </div>
+    <img class="app-icon" src="/app-icon.png" width="60" height="60" alt="" aria-hidden="true" />
     <div class="identity">
       <h2>{t('app.title')}</h2>
       {#if version}
@@ -59,22 +57,22 @@
   }
 
   .app-icon {
+    flex: 0 0 auto;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--cs-selected-bg, #7d9ad4) 22%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.75rem;
-    height: 3.75rem;
-    flex: 0 0 auto;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--cs-selected-bg, #7d9ad4) 22%, transparent);
   }
 
-  .app-icon span {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    border: 0.55rem solid var(--cs-accent, #ff5f57);
-    box-sizing: border-box;
+  .app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.35rem;
   }
 
   .identity {
