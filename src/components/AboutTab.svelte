@@ -58,21 +58,14 @@
 
   .app-icon {
     flex: 0 0 auto;
+    box-sizing: border-box;
     width: 3.75rem;
     height: 3.75rem;
+    padding: 0.35rem;
     border-radius: 50%;
     overflow: hidden;
     background: color-mix(in srgb, var(--cs-selected-bg, #7d9ad4) 22%, transparent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .app-icon img {
-    width: 100%;
-    height: 100%;
     object-fit: contain;
-    padding: 0.35rem;
   }
 
   .identity {
