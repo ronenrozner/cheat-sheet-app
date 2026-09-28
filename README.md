@@ -1,77 +1,198 @@
-# Cheat-Sheet Global HUD Overlay
+# CheatSheet
 
-A Linux-first global-hotkey **HUD overlay** that, in one keystroke, surfaces a cheat sheet you'd
-otherwise have to hunt for: a pinned sheet on open, a sidebar to switch sheets, and two-way search
-(natural-language _or_ literal key combo). Ships as a Tauri v2 / Rust / Svelte 5 desktop app.
+CheatSheet is a desktop cheat-sheet HUD. Press one global hotkey and get a fast overlay with your pinned cheat sheet, a sheet list, search, themes, and settings.
 
-Status: **active v1 implementation**. See [`tasks/plan.md`](tasks/plan.md) and
-[`tasks/todo.md`](tasks/todo.md) for the roadmap; design in
-[`docs/spec/cheat-sheet-overlay.md`](docs/spec/cheat-sheet-overlay.md). Theme customization is documented in
-[`THEMES.md`](THEMES.md).
+It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The app is Linux-first, but the build is configured for all Tauri desktop targets.
 
-## Prerequisites (Linux)
+## Features
 
-Tauri's system webview needs the WebKit stack. Debian/Ubuntu:
+- Global hotkey overlay.
+- Pinned sheet on open.
+- Sidebar sheet switching.
+- Search in the current sheet.
+- Markdown rendering with code highlighting.
+- Settings window.
+- Theme selector with bundled JSON themes.
+- Custom sheet directory support.
+- Tray and single-instance support.
+- Local files only by default.
 
-```sh
-sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev
-```
+## Status
 
-## Prerequisites (Windows)
+This project is in active `0.1.x` development.
 
-Tauri's shell is already cross-platform (build config uses `targets: "all"`, `icon.ico` is
-shipped, and `main.rs` carries the `windows_subsystem` attribute). Windows needs no code changes
-at this stage — only these system bits:
+Useful project documents:
 
-1. **WebView2 runtime** — the webview on Windows. It is bundled with Windows 11; on Windows 10 it
-   may need the standalone [Evergreen runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
-2. **Microsoft C++ build tools** — Tauri links C/C++ glue through MSVC. Install the **VS 2022
-   “Desktop development with C++”** workload, or the
-   [Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with “C++
-   build tools.” This provides the MSVC linker the `x86_64-pc-windows-msvc` Rust target requires.
-3. **Rust + Node** — as in this repo (Rust `>= 1.85`, active `msvc` target; Node for the build).
+- [`docs/spec/cheat-sheet-overlay.md`](docs/spec/cheat-sheet-overlay.md) — product and technical spec.
+- [`tasks/plan.md`](tasks/plan.md) — implementation plan.
+- [`tasks/todo.md`](tasks/todo.md) — task list.
+- [`THEMES.md`](THEMES.md) — theme format and custom theme notes.
 
-> **Hotkey note (Windows):** Tauri's `global-shortcut` plugin maps to the Win32
-> `RegisterHotKey` API on Windows, so the default `Ctrl-Shift-Q` bind works **without** the
-> X11/Wayland special-casing that Linux needs. That Linux-only logic (session-type detection,
-> `--toggle` fallback, `xdg-open`) is built in later tasks and is **not** Windows-specific.
+## Requirements
 
-> Build/run on Windows via the npm CLI: `npm run tauri dev` and `npm run tauri build`.
+### Common requirements
 
-## Commands
+- Node.js and npm.
+- Rust `1.85` or newer.
+- Tauri platform requirements for your operating system.
+
+Install JavaScript dependencies:
 
 ```sh
-npm run dev         # Vite dev server (front-end only) on :1420
-npm run build       # Vite production build -> dist/
-npm run test        # Vitest (unit + golden sets later)
-npm run lint        # eslint + prettier (format with: npm run format)
-npm run tauri dev   # full app via the npm Tauri CLI (window opens here)
-npm run tauri build # full release build + bundle
+npm install
 ```
 
-> The spec also lists `cargo tauri dev` / `cargo tauri build`. That requires the separate Rust
-> CLI: `cargo install tauri-cli`. The npm `@tauri-apps/cli` (used by `npm run tauri ...`) is
-> equivalent and is what this scaffold drives.
+### Linux requirements
+
+On Debian or Ubuntu, install the WebKit and GTK packages that Tauri needs:
+
+```sh
+sudo apt install \
+  libwebkit2gtk-4.1-dev \
+  libgtk-3-dev \
+  libjavascriptcoregtk-4.1-dev
+```
+
+Other Linux distributions need the equivalent WebKitGTK and GTK development packages.
+
+### Windows requirements
+
+Windows needs:
+
+1. WebView2 runtime. It is included with Windows 11. Windows 10 can need the Evergreen runtime.
+2. Microsoft C++ Build Tools, or Visual Studio 2022 with **Desktop development with C++**.
+3. Rust with the `x86_64-pc-windows-msvc` target.
+4. Node.js and npm.
+
+The default hotkey uses the Tauri global shortcut plugin. On Windows it maps to the Win32 hotkey API.
+
+## Development
+
+Run the frontend only:
+
+```sh
+npm run dev
+```
+
+Run the full desktop app:
+
+```sh
+npm run tauri dev
+```
+
+The Tauri dev command starts Vite and opens the app window.
+
+## Build
+
+Build the frontend only:
+
+```sh
+npm run build
+```
+
+Build the release desktop app and installer bundles:
+
+```sh
+npm run tauri build
+```
+
+Release artifacts are written under:
+
+```text
+src-tauri/target/release/bundle/
+```
+
+The exact files depend on the operating system. For example, Linux can produce AppImage, deb, and rpm bundles.
+
+If you prefer the Rust Tauri CLI, install it first:
+
+```sh
+cargo install tauri-cli
+```
+
+Then run:
+
+```sh
+cargo tauri dev
+cargo tauri build
+```
+
+The npm Tauri CLI and the Rust Tauri CLI run the same Tauri app.
+
+## Quality checks
+
+Run tests:
+
+```sh
+npm test
+```
+
+Run Svelte and TypeScript checks:
+
+```sh
+npm run check
+```
+
+Run lint and format checks:
+
+```sh
+npm run lint
+```
+
+Format the repository:
+
+```sh
+npm run format
+```
 
 ## Project layout
 
-- `src-tauri/` — Rust backend (Tauri v2): overlay window shell, IPC commands, settings,
-  sheets, shortcuts, tray, and JSON theme loading/hot-reload.
-- `src/` — SvelteKit + Svelte 5 frontend: overlay route, settings route, settings bridge,
-  markdown renderer, search helpers, i18n, and theme application.
-- `static/themes/` — bundled JSON theme source files.
-- `dist/themes/` — checked-in built theme assets for packaged/static output.
-- `tests/` — Vitest units + golden fixtures.
+```text
+src/                 SvelteKit frontend and app UI
+src/components/      Svelte components
+src/lib/             Frontend helpers, settings bridge, search, themes, i18n
+src-tauri/           Rust backend and Tauri config
+static/themes/       Bundled theme JSON files
+source-sheets/       Source Markdown cheat sheets
+tests/               Vitest tests
+docs/                Specs and project documentation
+tasks/               Plan and task tracking
+```
 
-## User files
+## User data
 
-- Config file: `<home>/.config/cheatsheet/config.json` on Linux, macOS, and Windows.
-- Config format: JSON.
-- Sheet data preference: `dataDir`.
-- Default sheet data folder: `<home>/cheatsheets`.
-- Existing `dataDir` values are kept. The app does not move existing sheets.
+Default config file:
+
+```text
+~/.config/cheatsheet/config.json
+```
+
+Default sheet directory:
+
+```text
+~/cheatsheets
+```
+
+The app keeps an existing `dataDir` value. It does not move your sheets automatically.
+
+## Themes
+
+Bundled themes live in:
+
+```text
+static/themes/
+```
+
+See [`THEMES.md`](THEMES.md) for the theme JSON format and customization notes.
+
+## Sheets
+
+Sheets are Markdown files. The app renders the selected sheet inside the overlay and supports search in the current sheet.
+
+The repository includes source sheet material in `source-sheets/`.
 
 ## License
 
-App = Apache-2.0. Bundled default sheets will be CC0/MIT; upstream sheets are GPL-v3 and carry a
-notice (license hygiene lands in Task 16).
+The app source code is licensed under Apache-2.0. See [`LICENSE`](LICENSE).
+
+Some bundled or source sheet material can have separate upstream license notices. See [`NOTICE`](NOTICE).
