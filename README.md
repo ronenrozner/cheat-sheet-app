@@ -1,6 +1,6 @@
 # CheatSheet
 
-**This is an AI-Assisted project**
+### This is an AI-Assisted project
 
 CheatSheet is a desktop cheat-sheet HUD. Press one global hotkey and get a fast overlay with your pinned cheat sheet, a sheet list, search, themes, and settings.
 
@@ -21,7 +21,7 @@ It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The ap
 
 ## Status
 
-This project is in active development. The app version uses a date-based SemVer-compatible format: `yyyy.m.d`, for example `2026.9.29`.
+**This project is in active development**. The app version uses a date-based SemVer-compatible format: `yyyy.m.d`, for example `2026.9.29`.
 
 Useful project documents:
 
