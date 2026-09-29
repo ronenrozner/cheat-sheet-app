@@ -109,6 +109,17 @@
     }
   }
 
+  // Move focus to the in-sheet search field. Overrides the browser find shortcut in the overlay.
+  function onWindowKeydown(event: KeyboardEvent) {
+    if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+    if (event.key.toLowerCase() !== 'f') return;
+
+    event.preventDefault();
+    const input = document.querySelector<HTMLInputElement>('.search-input');
+    input?.focus();
+    input?.select();
+  }
+
   // Open the selected sheet in the system editor.
   async function onEditSheet() {
     if (!selection.slug) return;
@@ -221,6 +232,8 @@
     };
   });
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 <main class="overlay">
   <header class="title">

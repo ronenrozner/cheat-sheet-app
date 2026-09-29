@@ -302,8 +302,11 @@ input binds `query`; the parent passes `query` and `matchCount` down.
 - [x] Typing filters/highlights matches in the current sheet; match count shows "N matches" / "No
   matches" / empty (placeholder only).
 - [x] Empty/invalid input clears results without error.
+- [x] `Ctrl-F` focuses the app search field and selects the current query instead of opening the webview's default find UI.
 
 **Verification:**
+- [x] `npm run check` clean after adding the `Ctrl-F` shortcut.
+- [x] `npm test -- --run`: 21 files pass, 107 tests pass after adding the `Ctrl-F` shortcut.
 - [x] svelte-check: 0 errors, 0 warnings (fixed module-resolution import error by using explicit
   `.svelte` extension + default imports).
 - [x] `npm run lint` clean (prettier).
@@ -315,6 +318,9 @@ input binds `query`; the parent passes `query` and `matchCount` down.
 `src/components/SheetView.svelte` (accepts `query`, highlights internally), `src/lib/markdown/render.ts`
 (allow `<mark>` in DOMPurify). Historical note: `src/main.ts` was touched for mount props, then removed by
 Task 20 when SvelteKit took over app boot.
+**Result update (2026-09-29):** Added a main-window `Ctrl-F` shortcut that moves focus to the SearchBox,
+selects the existing query, and prevents the webview's built-in find UI.
+
 **Estimated scope:** M
 
 ### Checkpoint: Search
