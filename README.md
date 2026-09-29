@@ -29,6 +29,7 @@ Useful project documents:
 - [`tasks/plan.md`](tasks/plan.md) — implementation plan.
 - [`tasks/todo.md`](tasks/todo.md) — task list.
 - [`THEMES.md`](THEMES.md) — theme format and custom theme notes.
+- [`source-sheets/editing-cheat-sheets.md`](source-sheets/editing-cheat-sheets.md) — Sheet format and syntax.
 
 ## Requirements
 
@@ -205,7 +206,7 @@ Sheets are Markdown files. The app renders the selected sheet inside the overlay
 
 The repository includes source sheet material in `source-sheets/`.
 
-Creating or editing sheets is done manually, using your favorite text editor. See [`source-sheets/editing-cheat-sheets.md`](editing-cheat-sheets.md) for sheet syntax.
+Creating or editing sheets is done manually, using your favorite text editor. See [`source-sheets/editing-cheat-sheets.md`](source-sheets/editing-cheat-sheets.md) for sheet syntax.
 
 ## License
 
