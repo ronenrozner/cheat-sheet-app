@@ -1,10 +1,10 @@
 # CheatSheet
 
+**This is an AI-Assisted project**
+
 CheatSheet is a desktop cheat-sheet HUD. Press one global hotkey and get a fast overlay with your pinned cheat sheet, a sheet list, search, themes, and settings.
 
 It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The app is Linux-first, but the build is configured for all Tauri desktop targets.
-
-This is an AI-Assisted project.
 
 ## Features
 
@@ -209,6 +209,6 @@ The repository includes source sheet material in `source-sheets/`.
 
 The app source code is licensed under Apache-2.0. See [`LICENSE`](LICENSE).
 
-Parchment icons created by Assia Benkerroum - Flaticon. See [`https://www.flaticon.com/free-icons/parchment`](parchment icons).
+[Parchment icons](https://www.flaticon.com/free-icons/parchment "Parchment icons") created by Assia Benkerroum - Flaticon.
 
 Some bundled or source sheet material can have separate upstream license notices. See [`NOTICE`](NOTICE).
