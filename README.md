@@ -205,7 +205,7 @@ Sheets are Markdown files. The app renders the selected sheet inside the overlay
 
 The repository includes source sheet material in `source-sheets/`.
 
-Creating or editing sheets is done manually, using your favorite text editor. See [`/source-sheets/editing-cheat-sheets.md`](editing-cheat-sheets.md) for sheet syntax.
+Creating or editing sheets is done manually, using your favorite text editor. See [`source-sheets/editing-cheat-sheets.md`](editing-cheat-sheets.md) for sheet syntax.
 
 ## License
 
