@@ -5,9 +5,19 @@
   - `version` (string): the app version, shown below the app name.
 -->
 <script lang="ts">
+  import { invoke } from '@tauri-apps/api/core';
   import { t } from '../lib/i18n';
 
+  const sourceCodeUrl = 'https://github.com/ronenrozner/cheat-sheet-app';
+
   let { version = '' } = $props<{ version?: string }>();
+
+  function openExternal(event: MouseEvent, url: string): void {
+    event.preventDefault();
+    void invoke('open_external_url', { url }).catch((error) => {
+      console.error('failed to open external URL', error);
+    });
+  }
 </script>
 
 <section class="about" aria-label={t('settings.about')}>
@@ -26,7 +36,14 @@
       <span>{t('settings.releaseNotes')}</span>
       <span aria-hidden="true">↗</span>
     </a>
-    <a data-url="" aria-disabled="true" aria-label={t('settings.sourceCode')}>
+    <a
+      href={sourceCodeUrl}
+      data-url={sourceCodeUrl}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={t('settings.sourceCode')}
+      onclick={(event) => openExternal(event, sourceCodeUrl)}
+    >
       <span>{t('settings.sourceCode')}</span>
       <span aria-hidden="true">↗</span>
     </a>

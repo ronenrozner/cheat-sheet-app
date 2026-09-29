@@ -50,7 +50,7 @@
     const target = e.target as HTMLElement;
     // A control (or the text of a label wrapping one) must not start a drag: the native drag
     // gesture would steal the click and the control would not update.
-    if (target.closest('select, input, textarea, button') || target.closest('label')) {
+    if (target.closest('select, input, textarea, button, a') || target.closest('label')) {
       return;
     }
     void getCurrentWindow().startDragging();

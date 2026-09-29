@@ -1,7 +1,15 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
 import AboutTab from '../../src/components/AboutTab.svelte';
+
+const invoke = vi.fn();
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: (command: string, args: unknown) => {
+    invoke(command, args);
+    return Promise.resolve();
+  },
+}));
 
 async function flush(): Promise<void> {
   await Promise.resolve();
@@ -13,6 +21,7 @@ describe('AboutTab', () => {
   let inst: ReturnType<typeof mount>;
 
   beforeEach(() => {
+    invoke.mockReset();
     root = document.createElement('div');
     document.body.appendChild(root);
   });
@@ -38,7 +47,17 @@ describe('AboutTab', () => {
       'ReleaseNotes↗',
       'SourceCode↗',
     ]);
-    expect(links.every((link) => link.dataset.url === '')).toBe(true);
-    expect(links.every((link) => link.getAttribute('aria-disabled') === 'true')).toBe(true);
+    expect(links[0]?.dataset.url).toBe('');
+    expect(links[0]?.getAttribute('aria-disabled')).toBe('true');
+    expect(links[1]?.dataset.url).toBe('https://github.com/ronenrozner/cheat-sheet-app');
+    expect(links[1]?.getAttribute('href')).toBe('https://github.com/ronenrozner/cheat-sheet-app');
+    expect(links[1]?.getAttribute('target')).toBe('_blank');
+    expect(links[1]?.getAttribute('rel')).toBe('noreferrer');
+    expect(links[1]?.hasAttribute('aria-disabled')).toBe(false);
+
+    links[1]?.click();
+    expect(invoke).toHaveBeenCalledWith('open_external_url', {
+      url: 'https://github.com/ronenrozner/cheat-sheet-app',
+    });
   });
 });

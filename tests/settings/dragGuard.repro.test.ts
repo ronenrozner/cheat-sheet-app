@@ -93,6 +93,18 @@ describe('SettingsWindow drag guard', () => {
     expect(startDragging).not.toHaveBeenCalled();
   });
 
+  it('does NOT start a window drag on mousedown over a link', async () => {
+    const aboutTab = root.querySelectorAll<HTMLButtonElement>('.tab')[1];
+    expect(aboutTab).toBeTruthy();
+    aboutTab!.click();
+    await Promise.resolve();
+
+    const link = root.querySelector<HTMLAnchorElement>('.link-card a[href]');
+    expect(link).toBeTruthy();
+    link!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(startDragging).not.toHaveBeenCalled();
+  });
+
   it('still starts a drag on mousedown over the title bar', () => {
     const title = root.querySelector<HTMLSpanElement>('.titlebar .title');
     expect(title).toBeTruthy();

@@ -20,6 +20,7 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            app.handle().plugin(tauri_plugin_opener::init())?;
             #[cfg(desktop)]
             app.handle()
                 .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
@@ -96,6 +97,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             shortcuts::get_hotkey_status,
             shortcuts::get_wayland_snippets,
+            crate::commands::links::open_external_url,
             crate::commands::settings::get_settings,
             crate::commands::settings::set_settings,
             crate::commands::settings::set_tray_visibility,
