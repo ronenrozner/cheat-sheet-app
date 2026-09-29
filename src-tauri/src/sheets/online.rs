@@ -17,7 +17,8 @@ use crate::sheets::{Sheet, SheetSource};
 /// GitHub contents-API URL for the upstream `source/_posts/` directory on branch `main`.
 ///
 /// Paginated with `per_page=100`.
-const CONTENTS_API_URL: &str = "https://api.github.com/repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100";
+const CONTENTS_API_URL: &str =
+    "https://api.github.com/repos/Fechin/reference/contents/source/_posts?ref=main&per_page=100";
 
 /// Cache file name under `app_config_dir/`.
 const CACHE_FILE: &str = "online_listing.json";
@@ -28,9 +29,8 @@ const CACHE_FILE: &str = "online_listing.json";
 /// without the `.md` suffix. The title falls back to the slug. Malformed input yields an empty
 /// list (no panic), so a bad cache or API response degrades gracefully.
 pub fn parse_contents_api_response(body: &str) -> Vec<Sheet> {
-    let items: serde_json::Value = serde_json::from_str(body).unwrap_or_else(
-        |_| serde_json::Value::Array(Vec::new()),
-    );
+    let items: serde_json::Value =
+        serde_json::from_str(body).unwrap_or_else(|_| serde_json::Value::Array(Vec::new()));
     let mut sheets = Vec::new();
     if let Some(arr) = items.as_array() {
         for item in arr {
@@ -132,10 +132,7 @@ pub fn fetch_online_listing(app: &AppHandle) -> Vec<Sheet> {
 /// Minimal HTTPS GET. Returns the response body as a string.
 fn http_get(url: &str) -> Result<String, String> {
     let agent = ureq::Agent::new();
-    let resp = agent
-        .get(url)
-        .call()
-        .map_err(|e| e.to_string())?;
+    let resp = agent.get(url).call().map_err(|e| e.to_string())?;
     resp.into_string().map_err(|e| e.to_string())
 }
 

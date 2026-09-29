@@ -13,6 +13,7 @@
   a change updates the prop and the parent persists it.
 -->
 <script lang="ts">
+  import { open } from '@tauri-apps/plugin-dialog';
   import type { Settings, Theme, Language, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
@@ -119,6 +120,29 @@
       ...settings,
       always_on_top: checked ? 'On' : 'Off',
     };
+    onSave(settings);
+  }
+
+  // Editor: empty path means use the system default .md app.
+  async function onChooseEditor() {
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      title: t('settings.editorSelect'),
+    });
+    if (typeof selected !== 'string') return;
+    settings = { ...settings, editor_path: selected };
+    onSave(settings);
+  }
+
+  function onEditorPath(e: Event) {
+    const value = (e.target as HTMLInputElement).value;
+    settings = { ...settings, editor_path: value };
+    onSave(settings);
+  }
+
+  function onSystemEditor() {
+    settings = { ...settings, editor_path: '' };
     onSave(settings);
   }
 
@@ -237,6 +261,31 @@
     </select>
   </label>
 
+  <div class="row">
+    <span>{t('settings.editor')}</span>
+    <div class="editor-control">
+      <input
+        class="ctrl editor-output"
+        type="text"
+        aria-label={t('settings.editor')}
+        placeholder={t('settings.editorSystem')}
+        value={settings.editor_path}
+        onchange={onEditorPath}
+      />
+      <button class="ctrl button" type="button" onclick={onChooseEditor}>
+        {t('settings.editorBrowse')}
+      </button>
+      <button
+        class="ctrl button"
+        type="button"
+        onclick={onSystemEditor}
+        disabled={!settings.editor_path.trim()}
+      >
+        {t('settings.editorUseSystem')}
+      </button>
+    </div>
+  </div>
+
   <label class="row">
     <span>{t('settings.pinnedSheet')}</span>
     <select
@@ -327,6 +376,20 @@
     outline: 2px solid var(--cs-accent, #7d9ad4);
     outline-offset: 1px;
   }
+  .ctrl[type='text'],
+  .ctrl[type='number'] {
+    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 72%, var(--cs-fg, #cdd6f4));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 18%, transparent);
+  }
+  .ctrl[type='text']:hover,
+  .ctrl[type='number']:hover {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 30%, transparent);
+  }
+  .ctrl[type='text']:focus,
+  .ctrl[type='number']:focus {
+    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 60%, var(--cs-fg, #cdd6f4));
+    box-shadow: inset 0 0 0 1px var(--cs-accent, #7d9ad4);
+  }
   .size {
     display: flex;
     align-items: center;
@@ -358,6 +421,29 @@
   }
   .trigger .key {
     width: 3rem;
+  }
+  .editor-control {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .editor-output {
+    flex: 1;
+    min-width: 8rem;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .button {
+    cursor: pointer;
+  }
+  .button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 
   .wayland-body {

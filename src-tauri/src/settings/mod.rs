@@ -93,6 +93,7 @@ pub struct Settings {
     pub data_dir: String,
     pub show_tray: ShowTray,
     pub always_on_top: bool,
+    pub editor_path: String,
 }
 
 impl Default for Settings {
@@ -114,6 +115,7 @@ impl Default for Settings {
             data_dir: "cheatsheets".to_string(),
             show_tray: ShowTray::Off,
             always_on_top: true,
+            editor_path: String::new(),
         }
     }
 }
@@ -207,6 +209,11 @@ pub fn load(app: &AppHandle) -> Settings {
     if let Some(v) = store.get("always_on_top") {
         s.always_on_top = v.as_bool().unwrap_or(true);
     }
+    if let Some(v) = store.get("editor_path") {
+        if let Some(p) = v.as_str() {
+            s.editor_path = p.to_string();
+        }
+    }
     s
 }
 
@@ -224,7 +231,10 @@ pub fn ensure_initialized(app: &AppHandle) -> Result<Settings, std::io::Error> {
     let path = settings_path(app);
     let existed = path.exists();
     let store = build_store(app);
-    let has_data_dir = store.as_ref().and_then(|store| store.get("dataDir")).is_some();
+    let has_data_dir = store
+        .as_ref()
+        .and_then(|store| store.get("dataDir"))
+        .is_some();
     let has_valid_win_size = store
         .as_ref()
         .and_then(|store| store.get("win_size"))
@@ -290,6 +300,10 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set(
         "always_on_top",
         serde_json::to_value(settings.always_on_top).unwrap_or_default(),
+    );
+    store.set(
+        "editor_path",
+        serde_json::to_value(&settings.editor_path).unwrap_or_default(),
     );
 
     let bytes = settings_to_json(settings);
@@ -367,11 +381,18 @@ mod tests {
         assert_eq!(s.theme_dark, "Cheatsheet");
         assert_eq!(s.source_mode, SourceMode::Both);
         assert_eq!(s.language, Language::EnUs);
-        assert_eq!(s.win_size, WinSize { width: 800, height: 900 });
+        assert_eq!(
+            s.win_size,
+            WinSize {
+                width: 800,
+                height: 900
+            }
+        );
         assert!(s.pinned_slug.is_empty());
         assert_eq!(s.data_dir, "cheatsheets");
         assert_eq!(s.show_tray, ShowTray::Off);
         assert!(s.always_on_top);
+        assert!(s.editor_path.is_empty());
     }
 
     #[test]
@@ -396,6 +417,7 @@ mod tests {
             data_dir: temp_dir().join("cheatsheets").to_string_lossy().to_string(),
             show_tray: ShowTray::On,
             always_on_top: false,
+            editor_path: "/usr/bin/code".to_string(),
         };
         let bytes = settings_to_json(&original);
         let parsed = settings_from_json(&bytes);
@@ -405,9 +427,18 @@ mod tests {
     #[test]
     fn zero_win_size_recovers_to_defaults() {
         let mut settings = Settings::default();
-        settings.win_size = WinSize { width: 0, height: 0 };
+        settings.win_size = WinSize {
+            width: 0,
+            height: 0,
+        };
         let parsed = settings_from_json(&settings_to_json(&settings));
-        assert_eq!(parsed.win_size, WinSize { width: 800, height: 900 });
+        assert_eq!(
+            parsed.win_size,
+            WinSize {
+                width: 800,
+                height: 900
+            }
+        );
     }
 
     #[test]

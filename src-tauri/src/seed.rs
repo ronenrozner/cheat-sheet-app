@@ -51,7 +51,11 @@ mod tests {
 
     #[test]
     fn bundled_has_at_least_one_md_file() {
-        assert!(BUNDLED.files().iter().any(|f| f.path().extension().map(|e| e == "md").unwrap_or(false)));
+        assert!(BUNDLED.files().iter().any(|f| f
+            .path()
+            .extension()
+            .map(|e| e == "md")
+            .unwrap_or(false)));
     }
 
     #[test]
@@ -70,7 +74,10 @@ mod tests {
         // Pre-existing content: seeding must be a no-op.
         std::fs::write(dir.join("user.md"), "user content").unwrap();
         assert!(!seed_bundled(&dir));
-        assert_eq!(std::fs::read_to_string(dir.join("user.md")).unwrap(), "user content");
+        assert_eq!(
+            std::fs::read_to_string(dir.join("user.md")).unwrap(),
+            "user content"
+        );
         std::fs::remove_dir_all(&dir).ok();
     }
 }

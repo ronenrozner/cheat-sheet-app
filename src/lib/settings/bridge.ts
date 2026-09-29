@@ -33,6 +33,7 @@ export function coerceSettings(raw: unknown): Settings {
     show_tray:
       s.show_tray === 'On' || s.show_tray === 'Off' ? s.show_tray : DEFAULT_SETTINGS.show_tray,
     always_on_top: coerceAlwaysOnTop(s.always_on_top),
+    editor_path: typeof s.editor_path === 'string' ? s.editor_path : DEFAULT_SETTINGS.editor_path,
   };
 }
 
@@ -84,7 +85,8 @@ async function validate(s: Settings): Promise<boolean> {
     isWinSize(s.win_size) &&
     isTriggerKey(s.trigger) &&
     typeof s.pinned_slug === 'string' &&
-    typeof s.dataDir === 'string'
+    typeof s.dataDir === 'string' &&
+    typeof s.editor_path === 'string'
   );
 }
 

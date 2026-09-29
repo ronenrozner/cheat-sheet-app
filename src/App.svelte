@@ -109,6 +109,16 @@
     }
   }
 
+  // Open the selected sheet in the system editor.
+  async function onEditSheet() {
+    if (!selection.slug) return;
+    try {
+      await invoke('open_sheet_for_edit', { slug: selection.slug });
+    } catch {
+      // The OS did not open an editor. Keep the overlay usable.
+    }
+  }
+
   // Open the settings window (Task 19). Triggered by the gear icon in the overlay header.
   function onOpenSettings() {
     void openSettings();
@@ -217,9 +227,25 @@
     <div class="drag-region" data-tauri-drag-region>
       <h1 data-tauri-drag-region>{t('app.title')}</h1>
     </div>
-    <button class="gear" type="button" aria-label={t('settings.close')} onclick={onOpenSettings}>
-      ⚙
-    </button>
+    <div class="title-actions">
+      <button
+        class="icon-button"
+        type="button"
+        aria-label={t('app.edit')}
+        onclick={onEditSheet}
+        disabled={!selection.slug}
+      >
+        ✎
+      </button>
+      <button
+        class="icon-button gear"
+        type="button"
+        aria-label={t('settings.settingsOpen')}
+        onclick={onOpenSettings}
+      >
+        ⚙
+      </button>
+    </div>
   </header>
 
   <SearchBox bind:query {matchCount} />
@@ -308,7 +334,12 @@
     background: var(--cs-selected-bg, #7d9ad4);
     color: var(--cs-selected-fg, #1e1e2e);
   }
-  .gear {
+  .title-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .icon-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -321,7 +352,11 @@
     color: var(--cs-fg, #cdd6f4);
     cursor: pointer;
   }
-  .gear:hover {
+  .icon-button:hover:not(:disabled) {
     background: var(--cs-hover-bg, #282c3f);
+  }
+  .icon-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 </style>

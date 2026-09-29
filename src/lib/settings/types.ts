@@ -56,6 +56,8 @@ export interface Settings {
   dataDir: string;
   show_tray: ShowTray;
   always_on_top: AlwaysOnTop;
+  /** Editor executable path. Empty means use the system default editor for .md files. */
+  editor_path: string;
 }
 
 /**
@@ -76,4 +78,5 @@ export const DEFAULT_SETTINGS: Settings = {
   dataDir: 'cheatsheets',
   show_tray: 'Off',
   always_on_top: 'On',
+  editor_path: '',
 };

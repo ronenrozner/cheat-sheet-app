@@ -2,6 +2,7 @@
   "app": {
     "title": "CheatSheet",
     "hotkey": "Ctrl-Shift-Q",
+    "edit": "Edit this sheet",
     "pin": "Pin this sheet",
     "unpin": "Unpin this sheet"
   },
@@ -31,6 +32,11 @@
     "shift": "Shift",
     "language": "Language",
     "pinnedSheet": "Pinned sheet",
+    "editor": "Editor",
+    "editorSystem": "System",
+    "editorBrowse": "Browse…",
+    "editorUseSystem": "Use system",
+    "editorSelect": "Select editor",
     "select": "[Select]",
     "widthPlaceholder": "width",
     "heightPlaceholder": "height",

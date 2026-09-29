@@ -21,6 +21,7 @@ pub fn run() {
                 )?;
             }
             app.handle().plugin(tauri_plugin_opener::init())?;
+            app.handle().plugin(tauri_plugin_dialog::init())?;
             #[cfg(desktop)]
             app.handle()
                 .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
@@ -105,6 +106,7 @@ pub fn run() {
             crate::commands::themes::themes_list,
             crate::commands::sheets::list_sheets,
             crate::commands::sheets::load_sheet,
+            crate::commands::sheets::open_sheet_for_edit,
             crate::commands::sheets::get_online_listing,
             crate::commands::sheets::refresh_online_listing
         ])

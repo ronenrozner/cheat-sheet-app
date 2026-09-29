@@ -822,6 +822,36 @@ and Dark theme slots in Settings. Document custom theme authoring in `THEMES.md`
 `THEMES.md`, `tests/settings/theme.test.ts`
 **Estimated scope:** L
 
+## Task 24: Sheet editor selection and Edit button *(new, beyond spec)*
+**Description:** Add an Edit action to the main overlay and an Editor setting. The default editor is the system
+`.md` handler. Users can select an editor with a file picker or type a path manually. Persist the selected editor
+path in the config file and use it for sheet edits regardless of the system default.
+
+**Acceptance criteria:**
+- [x] Main overlay has an Edit button next to Settings.
+- [x] Edit opens the selected sheet in the system `.md` editor when no custom editor is set.
+- [x] Settings has an Editor field that displays System by default through the empty-path placeholder.
+- [x] Users can browse for an editor executable or enter the editor path manually.
+- [x] Users can reset the editor to System.
+- [x] The selected editor path is saved in config as `editor_path`.
+- [x] Editable fields have a clearer editable and focus style.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] `npm test -- --run`: 21 files pass, 107 tests pass.
+- [x] `cargo test --manifest-path src-tauri/Cargo.toml`: 39 tests pass.
+
+**Result (Task 24 — 2026-09-29):** Edit flow complete. Added `open_sheet_for_edit` IPC, configurable
+`editor_path`, Tauri dialog support for selecting an editor, manual path entry, reset-to-system behavior, and
+clearer editable input styling.
+
+**Dependencies:** Task 12 (settings), Task 19 (settings window)
+**Files touched:** `src/App.svelte`, `src/components/SettingsPanel.svelte`, `src/lib/settings/types.ts`,
+`src/lib/settings/bridge.ts`, `src/locales/en-US.json`, `src-tauri/src/commands/sheets.rs`,
+`src-tauri/src/settings/mod.rs`, `src-tauri/src/lib.rs`, `src-tauri/capabilities/default.json`,
+`package.json`, `src-tauri/Cargo.toml`
+**Estimated scope:** M
+
 ---
 
 ## Done when
