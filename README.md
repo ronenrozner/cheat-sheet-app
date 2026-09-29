@@ -21,7 +21,7 @@ It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The ap
 
 ## Status
 
-**This project is in active development**. The app version uses a date-based SemVer-compatible format: `yyyy.m.d`, for example `2026.9.29`.
+**This project is in active development**. The About dialog shows a date-based version in `yyyy.m.d` format, for example `2026.9.29`. Release bundle metadata uses the Windows-safe `yy.m.d` format, for example `26.9.29`.
 
 Useful project documents:
 
@@ -93,11 +93,13 @@ Build the frontend only:
 npm run build
 ```
 
-Set the app version to today's date in `yyyy.m.d` format:
+When preparing a date-versioned release, update version metadata manually:
 
 ```sh
 npm run version:date
 ```
+
+This command writes a Windows-safe bundle version in `yy.m.d` format, for example `26.9.29`, and keeps the About dialog display version in `yyyy.m.d` format, for example `2026.9.29`. It is not part of the build command.
 
 Build the release desktop app and installer bundles:
 

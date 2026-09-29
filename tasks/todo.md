@@ -907,6 +907,27 @@ opening, and added unit coverage for unsafe slug rejection.
 **Files touched:** `src-tauri/src/sheets/mod.rs`, `src-tauri/src/commands/sheets.rs`
 **Estimated scope:** S
 
+## Task 27: Windows-safe date release versioning *(new, release fix)*
+**Description:** Keep the date-based About version in full `yyyy.m.d` format, but use a shorter `yy.m.d` version for release bundle metadata so Windows resource bundling accepts the major version number.
+
+**Acceptance criteria:**
+- [x] About still displays the full date version, for example `2026.9.29`.
+- [x] Release bundle metadata uses a Windows-safe short date version, for example `26.9.29`.
+- [x] `npm run version:date` updates both forms when run manually.
+- [x] The normal build does not run the version task.
+- [x] README documents the split between display and bundle versions.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] Version metadata files use `26.9.29`: `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
+- [x] About version constant remains `2026.9.29` in `src/lib/version.ts`.
+
+**Result (Task 27 — 2026-09-29):** Split release versioning into a Windows-safe bundle version and a full date display version. Updated the release version script and README so manual date-version releases preserve this split.
+
+**Dependencies:** Task 19 (settings window / About tab)
+**Files touched:** `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src/lib/version.ts`, `scripts/set-date-version.mjs`, `README.md`
+**Estimated scope:** S
+
 ---
 
 ## Done when
