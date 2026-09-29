@@ -23,17 +23,17 @@ describe('AboutTab', () => {
   });
 
   it('shows icon, name, version, empty links, build info, and license', async () => {
-    inst = mount(AboutTab, { target: root, props: { version: '0.1.0' } });
+    inst = mount(AboutTab, { target: root, props: { version: '2026.9.29' } });
     await flush();
 
     expect(root.querySelector('.app-icon')).toBeTruthy();
     expect(root.textContent).toContain('CheatSheet');
-    expect(root.textContent).toContain('Version 0.1.0');
+    expect(root.textContent).toContain('Version 2026.9.29');
     expect(root.textContent).toContain('Built with');
     expect(root.textContent).toContain('Built with Tauri, Svelte, and Rust.');
     expect(root.textContent).toContain('Apache-2.0 License');
 
-    const links = [...root.querySelectorAll<HTMLAnchorElement>('a')];
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('.link-card a')];
     expect(links.map((link) => link.textContent?.replace(/\s+/g, ''))).toEqual([
       'ReleaseNotes↗',
       'SourceCode↗',

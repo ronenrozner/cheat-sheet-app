@@ -1,6 +1,6 @@
 {
   "name": "cheat-sheet-app",
-  "version": "0.1.0",
+  "version": "2026.9.29",
   "description": "Global-hotkey cheat-sheet HUD overlay (Linux-first) — Tauri v2 / Rust / Svelte 5",
   "type": "module",
   "license": "Apache-2.0",
@@ -12,6 +12,7 @@
     "lint": "eslint . && prettier --check \"**/*.{ts,svelte,json,md}\"",
     "format": "prettier --write \"**/*.{ts,svelte,json,md}\"",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "version:date": "node scripts/set-date-version.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "svelte-kit sync"

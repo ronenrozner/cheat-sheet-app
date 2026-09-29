@@ -19,7 +19,7 @@ It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The ap
 
 ## Status
 
-This project is in active `0.1.x` development.
+This project is in active development. The app version uses a date-based SemVer-compatible format: `yyyy.m.d`, for example `2026.9.29`.
 
 Useful project documents:
 
@@ -88,6 +88,12 @@ Build the frontend only:
 
 ```sh
 npm run build
+```
+
+Set the app version to today's date in `yyyy.m.d` format:
+
+```sh
+npm run version:date
 ```
 
 Build the release desktop app and installer bundles:
@@ -177,10 +183,16 @@ The app keeps an existing `dataDir` value. It does not move your sheets automati
 
 ## Themes
 
-Bundled themes live in:
+Bundled theme source files live in:
 
 ```text
 static/themes/
+```
+
+Built theme assets for packaged/static output live in:
+
+```text
+dist/themes/
 ```
 
 See [`THEMES.md`](THEMES.md) for the theme JSON format and customization notes.

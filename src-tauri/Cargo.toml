@@ -1,6 +1,6 @@
 [package]
 name = "CheatSheet"
-version = "0.1.0"
+version = "2026.9.29"
 description = "Global-hotkey cheat-sheet HUD overlay — Tauri / Rust / Svelte"
 authors = ["CheatSheet contributors"]
 license = "Apache-2.0"

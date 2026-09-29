@@ -5,7 +5,7 @@ import { APP_VERSION, APP_LICENSE } from '../src/lib/version';
 // (combo normalizer, two-way search golden set, etc.).
 describe('scaffold smoke', () => {
   it('exposes app metadata', () => {
-    expect(APP_VERSION).toBe('0.1.0');
+    expect(APP_VERSION).toMatch(/^\d{4}\.\d{1,2}\.\d{1,2}$/);
     expect(APP_LICENSE).toBe('Apache-2.0');
   });
 });
