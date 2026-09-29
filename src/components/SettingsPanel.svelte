@@ -30,6 +30,16 @@
     themes?: ThemeDefinition[];
   }>();
 
+  let activeThemeSlot = $derived(
+    settings.theme === 'Light'
+      ? 'light'
+      : settings.theme === 'Dark'
+        ? 'dark'
+        : window.matchMedia?.('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+  );
+
   // Theme (Follow / Light / Dark).
   function onTheme(e: Event) {
     const v = (e.target as HTMLSelectElement).value;
@@ -150,7 +160,12 @@
   </label>
 
   <label class="row">
-    <span>{t('settings.lightTheme')}</span>
+    <span class="setting-label">
+      {t('settings.lightTheme')}
+      {#if activeThemeSlot === 'light'}
+        <strong class="active-badge">{t('settings.activeTheme')}</strong>
+      {/if}
+    </span>
     <select class="ctrl" value={settings.theme_light} onchange={onLightTheme}>
       {#each themes as themeDefinition (themeDefinition.name)}
         <option value={themeDefinition.name}>
@@ -163,7 +178,12 @@
   </label>
 
   <label class="row">
-    <span>{t('settings.darkTheme')}</span>
+    <span class="setting-label">
+      {t('settings.darkTheme')}
+      {#if activeThemeSlot === 'dark'}
+        <strong class="active-badge">{t('settings.activeTheme')}</strong>
+      {/if}
+    </span>
     <select class="ctrl" value={settings.theme_dark} onchange={onDarkTheme}>
       {#each themes as themeDefinition (themeDefinition.name)}
         <option value={themeDefinition.name}>
@@ -295,6 +315,21 @@
   .row span {
     font-size: 0.85rem;
     opacity: 0.8;
+  }
+  .setting-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .active-badge {
+    padding: 0.1rem 0.3rem;
+    border-radius: 999px;
+    background: var(--cs-selected-bg, #7d9ad4);
+    color: var(--cs-selected-fg, #1e1e2e);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    opacity: 1;
   }
   .ctrl {
     padding: 0.3rem 0.4rem;

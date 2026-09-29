@@ -25,6 +25,7 @@
     "lightTheme": "Light theme",
     "darkTheme": "Dark theme",
     "customThemeBadge": "Custom",
+    "activeTheme": "Active",
     "windowSize": "Window size",
     "trigger": "Trigger",
     "ctrl": "Ctrl",
