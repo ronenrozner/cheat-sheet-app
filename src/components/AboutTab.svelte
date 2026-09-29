@@ -8,6 +8,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { t } from '../lib/i18n';
 
+  const releaseNotesUrl = 'https://github.com/ronenrozner/cheat-sheet-app/releases';
   const sourceCodeUrl = 'https://github.com/ronenrozner/cheat-sheet-app';
   const iconCreditUrl = 'https://www.flaticon.com/free-icons/parchment';
 
@@ -33,7 +34,14 @@
   </div>
 
   <nav class="link-card" aria-label={t('settings.aboutLinks')}>
-    <a data-url="" aria-disabled="true" aria-label={t('settings.releaseNotes')}>
+    <a
+      href={releaseNotesUrl}
+      data-url={releaseNotesUrl}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={t('settings.releaseNotes')}
+      onclick={(event) => openExternal(event, releaseNotesUrl)}
+    >
       <span>{t('settings.releaseNotes')}</span>
       <span aria-hidden="true">↗</span>
     </a>
@@ -131,11 +139,7 @@
     border-top: 1px solid var(--cs-border, #44475a);
   }
 
-  .link-card a[aria-disabled='true'] {
-    cursor: default;
-  }
-
-  .link-card a:not([aria-disabled='true']):hover {
+  .link-card a:hover {
     background: var(--cs-hover-bg, #282c3f);
   }
 

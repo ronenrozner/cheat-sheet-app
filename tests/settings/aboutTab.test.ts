@@ -47,13 +47,23 @@ describe('AboutTab', () => {
       'ReleaseNotes↗',
       'SourceCode↗',
     ]);
-    expect(links[0]?.dataset.url).toBe('');
-    expect(links[0]?.getAttribute('aria-disabled')).toBe('true');
+    expect(links[0]?.dataset.url).toBe('https://github.com/ronenrozner/cheat-sheet-app/releases');
+    expect(links[0]?.getAttribute('href')).toBe(
+      'https://github.com/ronenrozner/cheat-sheet-app/releases'
+    );
+    expect(links[0]?.getAttribute('target')).toBe('_blank');
+    expect(links[0]?.getAttribute('rel')).toBe('noreferrer');
+    expect(links[0]?.hasAttribute('aria-disabled')).toBe(false);
     expect(links[1]?.dataset.url).toBe('https://github.com/ronenrozner/cheat-sheet-app');
     expect(links[1]?.getAttribute('href')).toBe('https://github.com/ronenrozner/cheat-sheet-app');
     expect(links[1]?.getAttribute('target')).toBe('_blank');
     expect(links[1]?.getAttribute('rel')).toBe('noreferrer');
     expect(links[1]?.hasAttribute('aria-disabled')).toBe(false);
+
+    links[0]?.click();
+    expect(invoke).toHaveBeenCalledWith('open_external_url', {
+      url: 'https://github.com/ronenrozner/cheat-sheet-app/releases',
+    });
 
     links[1]?.click();
     expect(invoke).toHaveBeenCalledWith('open_external_url', {
