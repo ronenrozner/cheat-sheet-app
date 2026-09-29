@@ -19,10 +19,10 @@ function updateJson(path, updater) {
 
 function replace(path, pattern, replacement) {
   const before = read(path);
-  const after = before.replace(pattern, replacement);
-  if (before === after) {
-    throw new Error(`No change made in ${path}`);
+  if (!pattern.test(before)) {
+    throw new Error(`Pattern not found in ${path}`);
   }
+  const after = before.replace(pattern, replacement);
   write(path, after);
 }
 
