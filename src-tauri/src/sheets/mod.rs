@@ -152,11 +152,23 @@ pub fn sheet_dirs(app: &AppHandle) -> (PathBuf, PathBuf) {
     (local.clone(), local.join("upstream"))
 }
 
+/// Whether a slug is safe to use as a flat file name stem.
+pub fn is_safe_slug(slug: &str) -> bool {
+    !slug.is_empty()
+        && !slug.contains('/')
+        && !slug.contains('\\')
+        && !slug.contains("..")
+        && !slug.contains('\0')
+}
+
 /// Read the Markdown body of one sheet by slug from `<home>/cheatsheets/<slug>.md`.
 ///
-/// Returns the body with front-matter stripped. Returns `None` when the file is missing,
-/// unreadable, or empty — the frontend treats that as "not found" rather than an error.
+/// Returns the body with front-matter stripped. Returns `None` when the slug is invalid, the file is
+/// missing, unreadable, or empty — the frontend treats that as "not found" rather than an error.
 pub fn read_sheet_body(app: &AppHandle, slug: &str) -> Option<String> {
+    if !is_safe_slug(slug) {
+        return None;
+    }
     let path = sheet_dir(app).join(format!("{slug}.md"));
     let Ok(content) = std::fs::read_to_string(&path) else {
         return None;
@@ -248,6 +260,17 @@ mod tests {
     fn parse_malformed_front_matter_recovers_to_slug_title() {
         let sheet = parse_sheet("broken", "---\n: : : ::: ---\nbody");
         assert_eq!(sheet.title, "broken");
+    }
+
+    #[test]
+    fn rejects_unsafe_slugs() {
+        assert!(!is_safe_slug(""));
+        assert!(!is_safe_slug("../secret"));
+        assert!(!is_safe_slug("dir/sheet"));
+        assert!(!is_safe_slug("dir\\sheet"));
+        assert!(!is_safe_slug("bad\0slug"));
+        assert!(is_safe_slug("vim"));
+        assert!(is_safe_slug("1password"));
     }
 
     #[test]

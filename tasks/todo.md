@@ -884,6 +884,29 @@ into it, uppercased tab labels, reordered tabs, and documented the local `Ctrl-F
 `tests/settings/dragGuard.repro.test.ts`
 **Estimated scope:** S
 
+## Task 26: Harden sheet slug loading *(new, security hardening)*
+**Description:** Validate sheet slugs before reading or editing sheet files. Prevent unsafe IPC callers from using
+path traversal or path separators to access files outside the flat sheets directory.
+
+**Acceptance criteria:**
+- [x] Shared backend slug validation exists.
+- [x] `load_sheet` rejects unsafe slugs before building a file path.
+- [x] `open_sheet_for_edit` uses the same validation.
+- [x] Validation rejects empty slugs, `/`, `\\`, `..`, and null bytes.
+- [x] Valid flat slugs still work.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] `npm test -- --run`: 21 files pass, 107 tests pass.
+- [x] `cargo test --manifest-path src-tauri/Cargo.toml`: 40 tests pass.
+
+**Result (Task 26 — 2026-09-29):** Added `sheets::is_safe_slug`, applied it to sheet body loading and edit
+opening, and added unit coverage for unsafe slug rejection.
+
+**Dependencies:** Task 4 (sheet model), Task 24 (Edit button)
+**Files touched:** `src-tauri/src/sheets/mod.rs`, `src-tauri/src/commands/sheets.rs`
+**Estimated scope:** S
+
 ---
 
 ## Done when

@@ -33,7 +33,7 @@ pub fn load_sheet(app: AppHandle, slug: String) -> Option<String> {
 /// Open the selected sheet in the system editor.
 #[tauri::command]
 pub fn open_sheet_for_edit(app: AppHandle, slug: String) -> Result<(), String> {
-    if slug.is_empty() || slug.contains('/') || slug.contains('\\') || slug.contains("..") {
+    if !sheets::is_safe_slug(&slug) {
         return Err("invalid sheet slug".to_string());
     }
 
