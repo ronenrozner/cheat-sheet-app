@@ -34,13 +34,19 @@ categories: [Keyboard Shortcuts]
 
 ## Troubleshooting
 
+### Recover a staged file
+
 ```bash
-# Recover a staged file
 git restore --staged file.txt
+```
+### Discard local changes
 
-# Discard local changes
+```bash
 git checkout -- file.txt
+```
 
-# Amend the last commit message
+### Amend the last commit message
+
+```bash
 git commit --amend -m "new message"
 ```
