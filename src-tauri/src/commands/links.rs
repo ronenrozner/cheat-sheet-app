@@ -1,9 +1,10 @@
 use tauri_plugin_opener::OpenerExt;
 
 const SOURCE_CODE_URL: &str = "https://github.com/ronenrozner/cheat-sheet-app";
+const ICON_CREDIT_URL: &str = "https://www.flaticon.com/free-icons/parchment";
 
 fn is_allowed_external_url(url: &str) -> bool {
-    url == SOURCE_CODE_URL
+    matches!(url, SOURCE_CODE_URL | ICON_CREDIT_URL)
 }
 
 #[tauri::command]
@@ -22,8 +23,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn source_code_url_is_allowed() {
+    fn known_external_urls_are_allowed() {
         assert!(is_allowed_external_url(SOURCE_CODE_URL));
+        assert!(is_allowed_external_url(ICON_CREDIT_URL));
     }
 
     #[test]

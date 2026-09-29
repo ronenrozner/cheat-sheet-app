@@ -9,6 +9,7 @@
   import { t } from '../lib/i18n';
 
   const sourceCodeUrl = 'https://github.com/ronenrozner/cheat-sheet-app';
+  const iconCreditUrl = 'https://www.flaticon.com/free-icons/parchment';
 
   let { version = '' } = $props<{ version?: string }>();
 
@@ -50,7 +51,12 @@
   </nav>
 
   <div class="footer">
-    <a href="https://www.flaticon.com/free-icons/parchment" target="_blank" rel="noreferrer">
+    <a
+      href={iconCreditUrl}
+      target="_blank"
+      rel="noreferrer"
+      onclick={(event) => openExternal(event, iconCreditUrl)}
+    >
       {t('settings.parchmentIconCredit')}
     </a>
     <p>{t('settings.builtWithText')}</p>

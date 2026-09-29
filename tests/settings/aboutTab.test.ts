@@ -59,5 +59,16 @@ describe('AboutTab', () => {
     expect(invoke).toHaveBeenCalledWith('open_external_url', {
       url: 'https://github.com/ronenrozner/cheat-sheet-app',
     });
+
+    const iconCredit = root.querySelector<HTMLAnchorElement>('.footer a');
+    expect(iconCredit).toBeTruthy();
+    expect(iconCredit?.getAttribute('href')).toBe('https://www.flaticon.com/free-icons/parchment');
+    expect(iconCredit?.getAttribute('target')).toBe('_blank');
+    expect(iconCredit?.getAttribute('rel')).toBe('noreferrer');
+
+    iconCredit?.click();
+    expect(invoke).toHaveBeenCalledWith('open_external_url', {
+      url: 'https://www.flaticon.com/free-icons/parchment',
+    });
   });
 });
