@@ -17,6 +17,7 @@
   import { getCurrentWindow } from '@tauri-apps/api/window';
   import SettingsPanel from './SettingsPanel.svelte';
   import AboutTab from './AboutTab.svelte';
+  import ShortcutsTab from './ShortcutsTab.svelte';
   import { t } from '../lib/i18n';
   import type { Settings, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
@@ -40,8 +41,8 @@
     themes?: ThemeDefinition[];
   }>();
 
-  // Active tab: 'settings' | 'about'.
-  let tab = $state<'settings' | 'about'>('settings');
+  // Active tab: 'settings' | 'shortcuts' | 'about'.
+  let tab = $state<'settings' | 'shortcuts' | 'about'>('settings');
 
   // Drag the window from anywhere except form controls (decorations: false, so there is no
   // native drag handle). Without the guard below, starting a drag on a mousedown swallows the
@@ -103,6 +104,16 @@
         {t('settings.settingsTab')}
       </button>
       <button
+        class={`tab ${tab === 'shortcuts' ? 'active' : ''}`}
+        type="button"
+        aria-pressed={tab === 'shortcuts'}
+        onclick={() => {
+          tab = 'shortcuts';
+        }}
+      >
+        {t('settings.shortcutsTab')}
+      </button>
+      <button
         class={`tab ${tab === 'about' ? 'active' : ''}`}
         type="button"
         aria-pressed={tab === 'about'}
@@ -116,14 +127,9 @@
 
     <div class="content">
       {#if tab === 'settings'}
-        <SettingsPanel
-          bind:settings
-          {onSave}
-          {hotkeyStatus}
-          {waylandSnippets}
-          {sheetsBySlug}
-          {themes}
-        />
+        <SettingsPanel bind:settings {onSave} {sheetsBySlug} {themes} />
+      {:else if tab === 'shortcuts'}
+        <ShortcutsTab bind:settings {onSave} {hotkeyStatus} {waylandSnippets} />
       {:else}
         <AboutTab {version} />
       {/if}

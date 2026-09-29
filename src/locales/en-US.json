@@ -62,8 +62,9 @@
     "settingsVersion": "Version",
     "settingsAboutNote": "This space is reserved for future content.",
     "settingsOpen": "Open settings",
-    "settingsTab": "Settings",
-    "aboutTab": "About",
+    "settingsTab": "SETTINGS",
+    "shortcutsTab": "SHORTCUTS",
+    "aboutTab": "ABOUT",
     "title": "SETTINGS",
     "tabsLabel": "Settings tabs",
     "close": "Close settings",
@@ -77,5 +78,10 @@
     "parchmentIconCredit": "Parchment icons created by Assia Benkerroum - Flaticon",
     "licenseAndCopyright": "Apache-2.0 License — Copyright © 2026 Ronen Rozner.",
     "aboutNote": "This space is reserved for future content."
+  },
+  "shortcuts": {
+    "title": "LOCAL SHORTCUTS",
+    "activeWhileFocused": "Active while the app is focused.",
+    "find": "Find in current sheet"
   }
 }

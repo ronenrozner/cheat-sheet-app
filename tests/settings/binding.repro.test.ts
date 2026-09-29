@@ -45,12 +45,12 @@ describe('SettingsPanel controls', () => {
     const input = root.querySelector<HTMLInputElement>('input[type="text"]');
     expect(input).toBeTruthy();
 
-    input!.value = 'x';
-    input!.dispatchEvent(new Event('input', { bubbles: true }));
+    input!.value = '/usr/bin/code';
+    input!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
 
-    expect(input!.value).toBe('x');
-    expect(saved?.trigger.key).toBe('x');
+    expect(input!.value).toBe('/usr/bin/code');
+    expect(saved?.editor_path).toBe('/usr/bin/code');
   });
 
   it('checkbox: clicking updates the saved state and stays visible', async () => {
@@ -62,7 +62,7 @@ describe('SettingsPanel controls', () => {
     await flush();
 
     expect(cb!.checked).toBe(true);
-    expect(saved?.trigger.ctrl).toBe(true);
+    expect(saved?.show_tray).toBe('On');
   });
 
   it('select: selecting an option updates the saved state and stays visible', async () => {

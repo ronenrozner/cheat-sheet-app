@@ -17,20 +17,15 @@
   import type { Settings, Theme, Language, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { t } from '../lib/i18n';
-  import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
 
   let {
     settings = $bindable(DEFAULT_SETTINGS),
     onSave,
-    hotkeyStatus = null,
-    waylandSnippets = null,
     sheetsBySlug = {},
     themes = [],
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
-    hotkeyStatus?: HotkeyStatus | null;
-    waylandSnippets?: WaylandSnippets | null;
     sheetsBySlug?: Record<string, string>;
     themes?: ThemeDefinition[];
   }>();
@@ -84,18 +79,6 @@
   function positiveIntegerOrCurrent(value: string, current: number): number {
     const parsed = Number.parseInt(value, 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : current;
-  }
-
-  // Trigger key parts.
-  function onTrigger(part: 'ctrl' | 'alt' | 'shift', checked: boolean) {
-    settings = { ...settings, trigger: { ...settings.trigger, [part]: checked } };
-    onSave(settings);
-  }
-
-  function onKey(e: Event) {
-    const el = e.target as HTMLInputElement;
-    settings = { ...settings, trigger: { ...settings.trigger, key: el.value } };
-    onSave(settings);
   }
 
   // Language (v1 ships only en-US).
@@ -217,43 +200,6 @@
     </div>
   </div>
 
-  <div class="row">
-    <span>{t('settings.trigger')}</span>
-    <div class="trigger">
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.ctrl}
-          onchange={(e) => onTrigger('ctrl', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.ctrl')}</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.alt}
-          onchange={(e) => onTrigger('alt', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.alt')}</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.shift}
-          onchange={(e) => onTrigger('shift', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.shift')}</label
-      >
-      <input
-        class="ctrl key"
-        type="text"
-        placeholder={t('settings.keyPlaceholder')}
-        value={settings.trigger.key}
-        oninput={onKey}
-      />
-    </div>
-  </div>
-
   <label class="row">
     <span>{t('settings.language')}</span>
     <select class="ctrl" value={settings.language} onchange={onLanguage}>
@@ -321,28 +267,6 @@
     />
   </label>
 
-  <!-- Global hotkey status (Task 14). On Wayland the global grab is best-effort + flagged;
-       surface the `--toggle` fallback and per-compositor bind snippets. On X11/Windows it
-       confirms the registered path. -->
-  <div class="row wayland">
-    <span>{t('settings.waylandTitle')}</span>
-    <div class="wayland-body">
-      {#if isWayland(hotkeyStatus) && waylandSnippets}
-        <p class="warn">{t('settings.waylandUnavailable')}</p>
-        <p>{t('settings.waylandUseToggle')}</p>
-        <code class="cmd">cheatsheet-app --toggle</code>
-        <p>{t('settings.waylandManualBind')}</p>
-        <ul class="snippets">
-          <li><code>{waylandSnippets.hyprland}</code></li>
-          <li><code>{waylandSnippets.sway}</code></li>
-          <li><code>{waylandSnippets.gnome}</code></li>
-        </ul>
-        <p class="hint">{t('settings.waylandHint')}</p>
-      {:else}
-        <p class="ok">{t('settings.waylandX11Ok')}</p>
-      {/if}
-    </div>
-  </div>
 </div>
 
 <style>
@@ -407,21 +331,6 @@
     font-size: 0.85rem;
     opacity: 0.65;
   }
-  .trigger {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    font-size: 0.85rem;
-  }
-  .trigger label {
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-  }
-  .trigger .key {
-    width: 3rem;
-  }
   .editor-control {
     display: flex;
     align-items: center;
@@ -446,44 +355,4 @@
     opacity: 0.45;
   }
 
-  .wayland-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.8rem;
-    max-width: 260px;
-    text-align: right;
-  }
-  .wayland-body p,
-  .wayland-body ul {
-    margin: 0;
-  }
-  .wayland-body .warn {
-    color: #f5deb3;
-  }
-  .wayland-body .ok {
-    color: var(--cs-fg, #cdd6f4);
-  }
-  .wayland-body .hint {
-    opacity: 0.65;
-  }
-  .wayland-body code.cmd {
-    font-family: ui-monospace, monospace;
-    background: var(--cs-input-bg, #282c3f);
-    padding: 0.15rem 0.35rem;
-    border-radius: 3px;
-  }
-  .wayland-body ul.snippets {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-  .wayland-body ul.snippets code {
-    font-family: ui-monospace, monospace;
-    background: var(--cs-input-bg, #282c3f);
-    padding: 0.15rem 0.35rem;
-    border-radius: 3px;
-  }
 </style>

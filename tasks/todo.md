@@ -858,6 +858,32 @@ clearer editable input styling.
 `package.json`, `src-tauri/Cargo.toml`
 **Estimated scope:** M
 
+## Task 25: Shortcuts settings tab *(new, beyond spec)*
+**Description:** Add a dedicated SHORTCUTS tab to the settings window. Move shortcut-related controls out of
+SETTINGS and list local shortcuts that work while the app is focused.
+
+**Acceptance criteria:**
+- [x] Settings window has uppercase tabs: SETTINGS, SHORTCUTS, ABOUT.
+- [x] SHORTCUTS appears above ABOUT.
+- [x] SHORTCUTS tab shows caption `LOCAL SHORTCUTS`.
+- [x] SHORTCUTS tab shows `Active while the app is focused.`.
+- [x] Global trigger controls move from SETTINGS to SHORTCUTS.
+- [x] Global shortcut status/help moves from SETTINGS to SHORTCUTS.
+- [x] Local shortcut list includes Find in current sheet: `Ctrl + F`.
+
+**Verification:**
+- [x] `npm run check` clean.
+- [x] `npm test -- --run`: 21 files pass, 107 tests pass.
+
+**Result (Task 25 — 2026-09-29):** Added `ShortcutsTab`, moved global trigger and global shortcut status/help
+into it, uppercased tab labels, reordered tabs, and documented the local `Ctrl-F` find shortcut.
+
+**Dependencies:** Task 9 (search shortcut), Task 14 (global shortcut status), Task 19 (settings window)
+**Files touched:** `src/components/SettingsWindow.svelte`, `src/components/SettingsPanel.svelte`,
+`src/components/ShortcutsTab.svelte`, `src/locales/en-US.json`, `tests/settings/binding.repro.test.ts`,
+`tests/settings/dragGuard.repro.test.ts`
+**Estimated scope:** S
+
 ---
 
 ## Done when
