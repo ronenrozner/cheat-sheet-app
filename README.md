@@ -4,6 +4,8 @@ CheatSheet is a desktop cheat-sheet HUD. Press one global hotkey and get a fast 
 
 It is built with **Tauri v2**, **Rust**, **SvelteKit**, and **Svelte 5**. The app is Linux-first, but the build is configured for all Tauri desktop targets.
 
+This is an AI-Assisted project.
+
 ## Features
 
 - Global hotkey overlay.
@@ -206,5 +208,7 @@ The repository includes source sheet material in `source-sheets/`.
 ## License
 
 The app source code is licensed under Apache-2.0. See [`LICENSE`](LICENSE).
+
+Parchment icons created by Assia Benkerroum - Flaticon. See [`https://www.flaticon.com/free-icons/parchment`](parchment icons).
 
 Some bundled or source sheet material can have separate upstream license notices. See [`NOTICE`](NOTICE).
