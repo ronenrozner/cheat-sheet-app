@@ -218,4 +218,4 @@ Some bundled or source sheet material can have separate upstream license notices
 
 ## Thanks
 
-**Splode** Christopher Murphy, developer of [Pomotroid](https://github.com/Splode/pomotroid), the inspiration for CheatSheet.
+Christopher Murphy (**Splode**), developer of the beautiful [Pomotroid](https://github.com/Splode/pomotroid) app, the inspiration for CheatSheet.
