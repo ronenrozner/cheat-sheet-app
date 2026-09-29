@@ -215,3 +215,7 @@ The app source code is licensed under Apache-2.0. See [`LICENSE`](LICENSE).
 [Parchment icons](https://www.flaticon.com/free-icons/parchment "Parchment icons") created by Assia Benkerroum - Flaticon.
 
 Some bundled or source sheet material can have separate upstream license notices. See [`NOTICE`](NOTICE).
+
+## Thanks
+
+**Splode** Christopher Murphy, developer of [Pomotroid](https://github.com/Splode/pomotroid), the inspiration for CheatSheet.
