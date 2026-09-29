@@ -288,7 +288,7 @@
     box-sizing: border-box;
     background: var(--cs-bg, #1e1e2e);
     color: var(--cs-fg, #cdd6f4);
-    font-family: system-ui, sans-serif;
+    font-family: 'Mona Sans', system-ui, sans-serif;
   }
   .title {
     display: flex;

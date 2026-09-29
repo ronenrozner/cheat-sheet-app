@@ -95,7 +95,7 @@ describe('SettingsWindow drag guard', () => {
 
   it('does NOT start a window drag on mousedown over a link', async () => {
     const aboutTab = Array.from(root.querySelectorAll<HTMLButtonElement>('.tab')).find(
-      (button) => button.textContent?.trim() === 'ABOUT'
+      (button) => button.textContent?.trim() === 'About'
     );
     expect(aboutTab).toBeTruthy();
     aboutTab!.click();

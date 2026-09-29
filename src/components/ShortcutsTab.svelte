@@ -31,14 +31,16 @@
   <h2 id="shortcuts-title">{t('shortcuts.title')}</h2>
   <p>{t('shortcuts.activeWhileFocused')}</p>
 
-  <dl class="shortcut-list">
-    <div class="shortcut-item">
-      <dt>{t('shortcuts.find')}</dt>
-      <dd><kbd>Ctrl</kbd><span>+</span><kbd>F</kbd></dd>
-    </div>
-  </dl>
+  <div class="section">
+    <dl class="shortcut-list">
+      <div class="shortcut-item">
+        <dt>{t('shortcuts.find')}</dt>
+        <dd><kbd>Ctrl</kbd><span>+</span><kbd>F</kbd></dd>
+      </div>
+    </dl>
+  </div>
 
-  <div class="row">
+  <div class="row section">
     <span>{t('settings.trigger')}</span>
     <div class="trigger">
       <label
@@ -76,7 +78,7 @@
   </div>
 
   <!-- Global hotkey status (Task 14). On Wayland the global grab is best-effort + flagged. -->
-  <div class="row wayland">
+  <div class="row wayland section">
     <span>{t('settings.waylandTitle')}</span>
     <div class="wayland-body">
       {#if isWayland(hotkeyStatus) && waylandSnippets}
@@ -117,6 +119,12 @@
     opacity: 0.85;
   }
 
+  .section {
+    border-top: 1px solid var(--cs-border, #44475a);
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
   .shortcut-list {
     display: flex;
     flex-direction: column;
@@ -151,7 +159,7 @@
     border-radius: 3px;
     background: var(--cs-input-bg, #282c3f);
     color: var(--cs-fg, #cdd6f4);
-    font-family: ui-monospace, monospace;
+    font-family: 'Mona Sans Mono', ui-monospace, monospace;
     text-align: center;
   }
 
@@ -231,7 +239,7 @@
   }
 
   .wayland-body code.cmd {
-    font-family: ui-monospace, monospace;
+    font-family: 'Mona Sans Mono', ui-monospace, monospace;
     background: var(--cs-input-bg, #282c3f);
     padding: 0.15rem 0.35rem;
     border-radius: 3px;
@@ -246,7 +254,7 @@
   }
 
   .wayland-body ul.snippets code {
-    font-family: ui-monospace, monospace;
+    font-family: 'Mona Sans Mono', ui-monospace, monospace;
     background: var(--cs-input-bg, #282c3f);
     padding: 0.15rem 0.35rem;
     border-radius: 3px;

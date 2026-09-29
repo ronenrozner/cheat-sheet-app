@@ -273,7 +273,6 @@
   .panel {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
     border: 1px solid var(--cs-border, #44475a);
     border-radius: 4px;
     padding: 0.6rem;
@@ -283,6 +282,15 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--cs-border, #44475a);
+  }
+  .panel > .row:first-child {
+    padding-top: 0;
+  }
+  .panel > .row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
   .row span {
     font-size: 0.85rem;

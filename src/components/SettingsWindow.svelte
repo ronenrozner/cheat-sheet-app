@@ -144,23 +144,27 @@
     height: 100vh;
     background: var(--cs-bg, #1e1e2e);
     color: var(--cs-fg, #cdd6f4);
-    font-family: system-ui, sans-serif;
+    font-family: 'Mona Sans', system-ui, sans-serif;
     user-select: none;
   }
   .titlebar {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr 1.5rem;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     cursor: move;
     border-bottom: 1px solid var(--cs-border, #44475a);
   }
   .titlebar .title {
+    grid-column: 2;
+    justify-self: center;
     font-size: 0.95rem;
     letter-spacing: 0.15em;
     opacity: 0.9;
   }
   .titlebar .close {
+    grid-column: 3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -211,5 +215,9 @@
     flex: 1;
     padding: 0.75rem;
     overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar {
+    display: none;
   }
 </style>

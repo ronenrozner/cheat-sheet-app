@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('/fonts/MonaSansVF.woff2') format('woff2');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Mona Sans Mono';
+  src: url('/fonts/MonaSansMonoVF.woff2') format('woff2');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  font-family: 'Mona Sans', system-ui, sans-serif;
+  font-optical-sizing: auto;
+}
+
+body {
+  font-family: 'Mona Sans', system-ui, sans-serif;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: 'Mona Sans Mono', ui-monospace, monospace;
+}
