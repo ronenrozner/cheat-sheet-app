@@ -18,6 +18,8 @@ use tauri::tray::MouseButton;
 use tauri::tray::TrayIconEvent;
 use tauri::{AppHandle, Manager};
 
+use crate::settings::Language;
+
 /// The tray icon id. Shared by the base and open variants so we only have one tray instance.
 pub const TRAY_ID: &str = "cheat-sheet-tray";
 
@@ -28,10 +30,6 @@ const ICON_OPEN: &str = "icon-open.png";
 
 /// Tray menu item id for toggling the main HUD window.
 pub const OPEN_MENU_ID: &str = "open";
-/// Tray menu label when the main HUD window is hidden.
-const OPEN_MENU_LABEL: &str = "Open";
-/// Tray menu label when the main HUD window is visible.
-const CLOSE_MENU_LABEL: &str = "Close";
 /// Tray menu item id for graceful app shutdown.
 pub const QUIT_MENU_ID: &str = "quit";
 
@@ -57,19 +55,43 @@ fn load_icon(path: &str) -> Option<Image<'static>> {
     embedded_icon(path).and_then(|bytes| Image::from_bytes(bytes).ok())
 }
 
-/// The Open/Close menu label for the current overlay state.
-fn open_menu_label(open: bool) -> &'static str {
-    if open {
-        CLOSE_MENU_LABEL
-    } else {
-        OPEN_MENU_LABEL
+/// The Open/Close menu label for the current overlay state and locale.
+fn open_menu_label(open: bool, language: Language) -> &'static str {
+    match (open, language) {
+        (true, Language::EsEs) => "Cerrar",
+        (false, Language::EsEs) => "Abrir",
+        (true, Language::FrFr) => "Fermer",
+        (false, Language::FrFr) => "Ouvrir",
+        (true, Language::EnUs) => "Close",
+        (false, Language::EnUs) => "Open",
     }
+}
+
+/// The Quit menu label for the current locale.
+fn quit_menu_label(language: Language) -> &'static str {
+    match language {
+        Language::EsEs => "Salir",
+        Language::FrFr => "Quitter",
+        Language::EnUs => "Quit",
+    }
+}
+
+/// Current tray menu language from persisted settings.
+fn menu_language(app: &AppHandle) -> Language {
+    crate::settings::load(app).language
 }
 
 /// Build a tray menu for the current overlay state.
 fn build_menu(app: &AppHandle, open: bool) -> tauri::Result<Menu<tauri::Wry>> {
-    let open = MenuItem::with_id(app, OPEN_MENU_ID, open_menu_label(open), true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, QUIT_MENU_ID, "Quit", true, None::<&str>)?;
+    let language = menu_language(app);
+    let open = MenuItem::with_id(
+        app,
+        OPEN_MENU_ID,
+        open_menu_label(open, language),
+        true,
+        None::<&str>,
+    )?;
+    let quit = MenuItem::with_id(app, QUIT_MENU_ID, quit_menu_label(language), true, None::<&str>)?;
     Menu::with_items(app, &[&open, &quit])
 }
 
@@ -139,6 +161,14 @@ pub fn update_overlay_icon(app: &AppHandle, open: bool) -> tauri::Result<()> {
             tray.set_icon(Some(icon))?;
             tray.set_menu(Some(build_menu(app, open)?))
         }
+        None => Ok(()),
+    }
+}
+
+/// Rebuild the tray menu after settings such as language change.
+pub fn update_menu(app: &AppHandle) -> tauri::Result<()> {
+    match app.tray_by_id(TRAY_ID) {
+        Some(tray) => tray.set_menu(Some(build_menu(app, overlay_open())?)),
         None => Ok(()),
     }
 }
@@ -234,7 +264,18 @@ mod tests {
 
     #[test]
     fn open_menu_label_matches_overlay_state() {
-        assert_eq!(open_menu_label(false), "Open");
-        assert_eq!(open_menu_label(true), "Close");
+        assert_eq!(open_menu_label(false, Language::EnUs), "Open");
+        assert_eq!(open_menu_label(true, Language::EnUs), "Close");
+        assert_eq!(open_menu_label(false, Language::EsEs), "Abrir");
+        assert_eq!(open_menu_label(true, Language::EsEs), "Cerrar");
+        assert_eq!(open_menu_label(false, Language::FrFr), "Ouvrir");
+        assert_eq!(open_menu_label(true, Language::FrFr), "Fermer");
+    }
+
+    #[test]
+    fn quit_menu_label_matches_language() {
+        assert_eq!(quit_menu_label(Language::EnUs), "Quit");
+        assert_eq!(quit_menu_label(Language::EsEs), "Salir");
+        assert_eq!(quit_menu_label(Language::FrFr), "Quitter");
     }
 }

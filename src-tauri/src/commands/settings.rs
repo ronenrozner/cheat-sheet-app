@@ -13,7 +13,8 @@ pub fn get_settings(app: AppHandle) -> Settings {
 /// Persist a settings snapshot (theme / win_size / trigger / source_mode / language / pinned_slug / show_tray).
 #[tauri::command]
 pub fn set_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
-    save(&app, &settings).map_err(|e| e.to_string())
+    save(&app, &settings).map_err(|e| e.to_string())?;
+    tray::update_menu(&app).map_err(|e| e.to_string())
 }
 
 /// Show or hide the persistent system tray icon (Task 17). Called from the frontend when the
