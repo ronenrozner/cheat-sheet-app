@@ -38,6 +38,12 @@ describe('t resolution', () => {
     expect(t('does.not.exist')).toBe('does.not.exist');
   });
 
+  it('resolves European Spanish strings', () => {
+    expect(setLocale('es-ES')).toBe(true);
+    expect(t('settings.language')).toBe('Idioma');
+    expect(t('settings.optionEsEs')).toBe('Espanol');
+  });
+
   it('returns the key when the value is empty', () => {
     // No such key -> key fallback.
     expect(t('')).toBe('');

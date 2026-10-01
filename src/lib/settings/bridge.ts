@@ -27,7 +27,7 @@ export function coerceSettings(raw: unknown): Settings {
     win_size: isWinSize(s.win_size) ? s.win_size : { ...DEFAULT_SETTINGS.win_size },
     trigger: isTriggerKey(s.trigger) ? s.trigger : { ...DEFAULT_SETTINGS.trigger },
     source_mode: s.source_mode ?? DEFAULT_SETTINGS.source_mode,
-    language: s.language ?? DEFAULT_SETTINGS.language,
+    language: coerceLanguage(s.language),
     pinned_slug: typeof s.pinned_slug === 'string' ? s.pinned_slug : DEFAULT_SETTINGS.pinned_slug,
     dataDir: typeof s.dataDir === 'string' ? s.dataDir : DEFAULT_SETTINGS.dataDir,
     show_tray:
@@ -71,7 +71,7 @@ export async function setSettings(settings: Settings): Promise<boolean> {
 async function validate(s: Settings): Promise<boolean> {
   const themes = new Set(['Light', 'Dark', 'Follow']);
   const modes = new Set(['Online', 'Local', 'Both']);
-  const langs = new Set(['EnUs']);
+  const langs = new Set(['EnUs', 'EsEs']);
   const trays = new Set(['Off', 'On']);
   const tops = new Set(['On', 'Off']);
   return (
@@ -107,6 +107,11 @@ function isWinSize(v: unknown): v is { width: number; height: number } {
     Number.isFinite(w.height) &&
     w.height > 0
   );
+}
+
+function coerceLanguage(value: unknown): Settings['language'] {
+  if (value === 'EnUs' || value === 'EsEs') return value;
+  return DEFAULT_SETTINGS.language;
 }
 
 function coerceAlwaysOnTop(value: unknown): Settings['always_on_top'] {

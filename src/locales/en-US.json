@@ -47,6 +47,7 @@
     "optionLight": "Light",
     "optionDark": "Dark",
     "optionEnUs": "English (United States)",
+    "optionEsEs": "Espanol",
     "waylandTitle": "Global hotkey",
     "waylandUnavailable": "Global hotkey is unavailable on Wayland.",
     "waylandUseToggle": "Use the command-line toggle instead:",

@@ -36,6 +36,11 @@ describe('coerceSettings', () => {
     expect(out.win_size).toEqual(DEFAULT_SETTINGS.win_size);
   });
 
+  it('keeps the European Spanish language setting', () => {
+    const out = coerceSettings({ language: 'EsEs' });
+    expect(out.language).toBe('EsEs');
+  });
+
   it('replaces zero win_size with the default win_size', () => {
     const out = coerceSettings({ win_size: { width: 0, height: 0 } });
     expect(out.win_size).toEqual(DEFAULT_SETTINGS.win_size);
@@ -70,6 +75,15 @@ describe('setSettings', () => {
     expect(result).toBe(true);
     expect(invoke).toHaveBeenCalledWith('set_settings', {
       settings: { ...DEFAULT_SETTINGS, theme: 'Dark', always_on_top: true },
+    });
+  });
+
+  it('persists the European Spanish language setting', async () => {
+    invoke.mockResolvedValue(undefined);
+    const result = await setSettings({ ...DEFAULT_SETTINGS, language: 'EsEs' });
+    expect(result).toBe(true);
+    expect(invoke).toHaveBeenCalledWith('set_settings', {
+      settings: { ...DEFAULT_SETTINGS, language: 'EsEs', always_on_top: true },
     });
   });
 

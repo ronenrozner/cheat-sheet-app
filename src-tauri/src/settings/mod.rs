@@ -60,11 +60,12 @@ pub enum SourceMode {
     Both,
 }
 
-/// UI locale. v1 ships only `en-US`; any other value is a graceful no-op (Task 14).
+/// UI locale.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum Language {
     #[default]
     EnUs,
+    EsEs,
 }
 
 /// Whether to show a persistent system tray icon (Task 17). Default off so a new install keeps the

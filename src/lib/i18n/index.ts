@@ -1,23 +1,27 @@
 // Hand-rolled i18n layer (Task 13). No `svelte-i18n` dependency.
 //
-// `t(key)` resolves `key` (dot-separated) in `locales/en-US.json`, interpolating `{{name}}`
+// `t(key)` resolves `key` (dot-separated) in the active locale file, interpolating `{{name}}`
 // placeholders. Missing keys fall back to the key itself. `setLocale(next)` switches locale, but
 // an unimplemented locale is a no-op (the current locale is retained, no crash).
 //
 // The locale is a plain module-level variable. Components that want it reactive import `getLocale`
 // and read it inside `$derived`/`$effect` (or bind it to a settings `language` field, Task 12).
 
+import { writable } from 'svelte/store';
 import enUS from '../../locales/en-US.json';
+import esES from '../../locales/es-ES.json';
 
-/** The one implemented locale. Any other value is a graceful no-op (see setLocale). */
-export const SUPPORTED_LOCALES = ['en-US'] as const;
+/** Implemented locales. Any other value is a graceful no-op (see setLocale). */
+export const SUPPORTED_LOCALES = ['en-US', 'es-ES'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const LOCALES: Record<SupportedLocale, Record<string, unknown>> = {
   'en-US': enUS as unknown as Record<string, unknown>,
+  'es-ES': esES as unknown as Record<string, unknown>,
 };
 
 let current: SupportedLocale = 'en-US';
+export const localeRevision = writable(0);
 
 /** Get the current locale. Read inside `$derived`/`$effect` to keep it reactive. */
 export function getLocale(): SupportedLocale {
@@ -32,7 +36,17 @@ export function setLocale(next: string): boolean {
   if (next === current) return false;
   if (!(next in LOCALES)) return false;
   current = next as SupportedLocale;
+  localeRevision.update((value) => value + 1);
   return true;
+}
+
+/** Switch locale from the persisted settings language enum. */
+export function setLanguageLocale(language: string): boolean {
+  const localeByLanguage: Record<string, SupportedLocale> = {
+    EnUs: 'en-US',
+    EsEs: 'es-ES',
+  };
+  return setLocale(localeByLanguage[language] ?? 'en-US');
 }
 
 /**

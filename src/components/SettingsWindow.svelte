@@ -18,7 +18,7 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import AboutTab from './AboutTab.svelte';
   import ShortcutsTab from './ShortcutsTab.svelte';
-  import { t } from '../lib/i18n';
+  import { localeRevision, t } from '../lib/i18n';
   import type { Settings, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
@@ -63,6 +63,7 @@
   }
 </script>
 
+{#key $localeRevision}
 <div
   class="window"
   role="dialog"
@@ -136,6 +137,7 @@
     </div>
   </div>
 </div>
+{/key}
 
 <style>
   .window {

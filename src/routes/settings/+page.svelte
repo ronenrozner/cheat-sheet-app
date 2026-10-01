@@ -6,6 +6,7 @@
   import { DEFAULT_SETTINGS, type Settings, type ThemeDefinition } from '../../lib/settings/types';
   import { type HotkeyStatus, type WaylandSnippets } from '../../lib/overlay/hotkey';
   import { APP_VERSION } from '../../lib/version';
+  import { setLanguageLocale } from '../../lib/i18n';
   import {
     FALLBACK_THEMES,
     applyThemePreference,
@@ -32,10 +33,14 @@
     themes = await getThemes();
 
     try {
-      settings = await getSettings();
+      const loadedSettings = await getSettings();
+      setLanguageLocale(loadedSettings.language);
+      settings = loadedSettings;
       appliedSettings = settings;
     } catch {
-      settings = { ...DEFAULT_SETTINGS };
+      const defaultSettings = { ...DEFAULT_SETTINGS };
+      setLanguageLocale(defaultSettings.language);
+      settings = defaultSettings;
       appliedSettings = settings;
     }
 
@@ -56,6 +61,7 @@
     const trayChanged = appliedSettings.show_tray !== next.show_tray;
     const topChanged = appliedSettings.always_on_top !== next.always_on_top;
 
+    setLanguageLocale(next.language);
     settings = next;
     appliedSettings = next;
 

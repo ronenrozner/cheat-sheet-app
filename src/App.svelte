@@ -19,7 +19,7 @@
     setSettings as persistSettings,
   } from './lib/settings/bridge';
   import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
-  import { t } from './lib/i18n';
+  import { localeRevision, setLanguageLocale, t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { openSettings } from './lib/settingsWindow';
   import {
@@ -149,10 +149,14 @@
       const slugs = sheets.map((s: { slug: string }) => s.slug);
       // Load persisted settings once (Task 11/12): read the pinned slug for the open-sheet decision.
       try {
-        settings = await loadSettings();
+        const loadedSettings = await loadSettings();
+        setLanguageLocale(loadedSettings.language);
+        settings = loadedSettings;
         appliedSettings = settings;
       } catch {
-        settings = { ...DEFAULT_SETTINGS };
+        const defaultSettings = { ...DEFAULT_SETTINGS };
+        setLanguageLocale(defaultSettings.language);
+        settings = defaultSettings;
         appliedSettings = settings;
       }
       // Pinned sheet wins; first run falls back to a bundled default, then the first available sheet.
@@ -223,7 +227,9 @@
     let unlisten: (() => void) | undefined;
     (async () => {
       unlisten = await listen<SettingsModel>('settings-changed', async ({ payload }) => {
-        settings = coerceSettings(payload);
+        const nextSettings = coerceSettings(payload);
+        setLanguageLocale(nextSettings.language);
+        settings = nextSettings;
         appliedSettings = settings;
       });
     })();
@@ -235,6 +241,7 @@
 
 <svelte:window onkeydown={onWindowKeydown} />
 
+{#key $localeRevision}
 <main class="overlay">
   <header class="title">
     <div class="drag-region" data-tauri-drag-region>
@@ -277,6 +284,7 @@
     </div>
   </div>
 </main>
+{/key}
 
 <style>
   .overlay {

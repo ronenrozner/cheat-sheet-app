@@ -16,7 +16,7 @@
   import { open } from '@tauri-apps/plugin-dialog';
   import type { Settings, Theme, Language, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
-  import { t } from '../lib/i18n';
+  import { setLanguageLocale, t } from '../lib/i18n';
 
   let {
     settings = $bindable(DEFAULT_SETTINGS),
@@ -93,8 +93,9 @@
 
   // Language (v1 ships only en-US).
   function onLanguage(e: Event) {
-    const v = (e.target as HTMLSelectElement).value;
-    settings = { ...settings, language: v as Language };
+    const v = (e.target as HTMLSelectElement).value as Language;
+    setLanguageLocale(v);
+    settings = { ...settings, language: v };
     onSave(settings);
   }
 
@@ -224,6 +225,7 @@
     <span>{t('settings.language')}</span>
     <select class="ctrl language-select" value={settings.language} onchange={onLanguage}>
       <option value="EnUs">{t('settings.optionEnUs')}</option>
+      <option value="EsEs">{t('settings.optionEsEs')}</option>
     </select>
   </label>
 

@@ -34,8 +34,8 @@ export interface TriggerKey {
 /** Which sheet sources are visible. */
 export type SourceMode = 'Online' | 'Local' | 'Both';
 
-/** UI locale. v1 ships only `en-US`; any other value is a graceful no-op (Task 13). */
-export type Language = 'EnUs';
+/** UI locale. */
+export type Language = 'EnUs' | 'EsEs';
 
 /** Whether to show a persistent system tray icon (Task 17). Default off. */
 export type ShowTray = 'Off' | 'On';
