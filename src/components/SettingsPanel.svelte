@@ -226,6 +226,7 @@
     <select class="ctrl language-select" value={settings.language} onchange={onLanguage}>
       <option value="EnUs">{t('settings.optionEnUs')}</option>
       <option value="EsEs">{t('settings.optionEsEs')}</option>
+      <option value="FrFr">{t('settings.optionFrFr')}</option>
     </select>
   </label>
 

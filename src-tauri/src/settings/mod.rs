@@ -66,6 +66,7 @@ pub enum Language {
     #[default]
     EnUs,
     EsEs,
+    FrFr,
 }
 
 /// Whether to show a persistent system tray icon (Task 17). Default off so a new install keeps the

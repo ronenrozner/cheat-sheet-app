@@ -71,7 +71,7 @@ export async function setSettings(settings: Settings): Promise<boolean> {
 async function validate(s: Settings): Promise<boolean> {
   const themes = new Set(['Light', 'Dark', 'Follow']);
   const modes = new Set(['Online', 'Local', 'Both']);
-  const langs = new Set(['EnUs', 'EsEs']);
+  const langs = new Set(['EnUs', 'EsEs', 'FrFr']);
   const trays = new Set(['Off', 'On']);
   const tops = new Set(['On', 'Off']);
   return (
@@ -110,7 +110,7 @@ function isWinSize(v: unknown): v is { width: number; height: number } {
 }
 
 function coerceLanguage(value: unknown): Settings['language'] {
-  if (value === 'EnUs' || value === 'EsEs') return value;
+  if (value === 'EnUs' || value === 'EsEs' || value === 'FrFr') return value;
   return DEFAULT_SETTINGS.language;
 }
 

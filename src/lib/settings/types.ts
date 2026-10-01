@@ -35,7 +35,7 @@ export interface TriggerKey {
 export type SourceMode = 'Online' | 'Local' | 'Both';
 
 /** UI locale. */
-export type Language = 'EnUs' | 'EsEs';
+export type Language = 'EnUs' | 'EsEs' | 'FrFr';
 
 /** Whether to show a persistent system tray icon (Task 17). Default off. */
 export type ShowTray = 'Off' | 'On';

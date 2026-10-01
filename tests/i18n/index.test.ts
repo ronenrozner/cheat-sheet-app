@@ -41,7 +41,13 @@ describe('t resolution', () => {
   it('resolves European Spanish strings', () => {
     expect(setLocale('es-ES')).toBe(true);
     expect(t('settings.language')).toBe('Idioma');
-    expect(t('settings.optionEsEs')).toBe('Espanol');
+    expect(t('settings.optionEsEs')).toBe('Español');
+  });
+
+  it('resolves French strings', () => {
+    expect(setLocale('fr-FR')).toBe(true);
+    expect(t('settings.language')).toBe('Langue');
+    expect(t('settings.optionFrFr')).toBe('Français');
   });
 
   it('returns the key when the value is empty', () => {
@@ -57,7 +63,7 @@ describe('setLocale', () => {
   });
 
   it('no-ops on an unsupported locale (stays en-US, no crash)', () => {
-    expect(setLocale('fr-FR')).toBe(false);
+    expect(setLocale('de-DE')).toBe(false);
     expect(getLocale()).toBe('en-US');
   });
 });

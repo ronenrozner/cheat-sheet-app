@@ -10,14 +10,16 @@
 import { writable } from 'svelte/store';
 import enUS from '../../locales/en-US.json';
 import esES from '../../locales/es-ES.json';
+import frFR from '../../locales/fr-FR.json';
 
 /** Implemented locales. Any other value is a graceful no-op (see setLocale). */
-export const SUPPORTED_LOCALES = ['en-US', 'es-ES'] as const;
+export const SUPPORTED_LOCALES = ['en-US', 'es-ES', 'fr-FR'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const LOCALES: Record<SupportedLocale, Record<string, unknown>> = {
   'en-US': enUS as unknown as Record<string, unknown>,
   'es-ES': esES as unknown as Record<string, unknown>,
+  'fr-FR': frFR as unknown as Record<string, unknown>,
 };
 
 let current: SupportedLocale = 'en-US';
@@ -45,6 +47,7 @@ export function setLanguageLocale(language: string): boolean {
   const localeByLanguage: Record<string, SupportedLocale> = {
     EnUs: 'en-US',
     EsEs: 'es-ES',
+    FrFr: 'fr-FR',
   };
   return setLocale(localeByLanguage[language] ?? 'en-US');
 }
