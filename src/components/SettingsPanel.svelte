@@ -270,8 +270,10 @@
   <label class="row">
     <span>{t('settings.trayToggle')}</span>
     <input
-      class="ctrl"
+      class="switch"
       type="checkbox"
+      role="switch"
+      aria-label={t('settings.trayToggle')}
       checked={settings.show_tray === 'On'}
       onchange={(e) => onTray((e.target as HTMLInputElement).checked)}
     />
@@ -280,8 +282,10 @@
   <label class="row">
     <span>{t('settings.alwaysOnTop')}</span>
     <input
-      class="ctrl"
+      class="switch"
       type="checkbox"
+      role="switch"
+      aria-label={t('settings.alwaysOnTop')}
       checked={settings.always_on_top === 'On'}
       onchange={(e) => onAlwaysOnTop((e.target as HTMLInputElement).checked)}
     />
@@ -396,6 +400,45 @@
   .button:disabled {
     cursor: not-allowed;
     opacity: 0.45;
+  }
+  .switch {
+    position: relative;
+    width: 2.7rem;
+    height: 1.45rem;
+    flex: 0 0 auto;
+    margin: 0;
+    appearance: none;
+    cursor: pointer;
+    border: 1px solid var(--cs-border, #44475a);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 80%, var(--cs-fg, #cdd6f4));
+    transition:
+      background 120ms ease,
+      border-color 120ms ease;
+  }
+  .switch::before {
+    content: '';
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    background: var(--cs-fg, #cdd6f4);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+    transition: transform 120ms ease;
+  }
+  .switch:checked {
+    border-color: var(--cs-accent, #7d9ad4);
+    background: var(--cs-accent, #7d9ad4);
+  }
+  .switch:checked::before {
+    transform: translateX(1.25rem);
+    background: var(--cs-selected-fg, #1e1e2e);
+  }
+  .switch:focus-visible {
+    outline: 2px solid var(--cs-accent, #7d9ad4);
+    outline-offset: 2px;
   }
 
 </style>
