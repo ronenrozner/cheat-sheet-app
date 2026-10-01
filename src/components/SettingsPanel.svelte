@@ -222,7 +222,7 @@
 
   <label class="row">
     <span>{t('settings.language')}</span>
-    <select class="ctrl" value={settings.language} onchange={onLanguage}>
+    <select class="ctrl language-select" value={settings.language} onchange={onLanguage}>
       <option value="EnUs">{t('settings.optionEnUs')}</option>
     </select>
   </label>
@@ -377,6 +377,9 @@
   .size-separator {
     font-size: 0.85rem;
     opacity: 0.65;
+  }
+  .language-select {
+    min-width: 13rem;
   }
   .editor-control {
     display: flex;

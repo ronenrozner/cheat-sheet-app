@@ -46,7 +46,7 @@
     "optionFollow": "Follow",
     "optionLight": "Light",
     "optionDark": "Dark",
-    "optionEnUs": "en-US",
+    "optionEnUs": "English (United States)",
     "waylandTitle": "Global hotkey",
     "waylandUnavailable": "Global hotkey is unavailable on Wayland.",
     "waylandUseToggle": "Use the command-line toggle instead:",
