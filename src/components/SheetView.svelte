@@ -9,8 +9,11 @@
   import { highlightMarkdown } from '../lib/search/findInSheet';
   import { t } from '../lib/i18n';
 
-  // `slug` (required), optional `load` (slug => body), and optional `query` (Task 8).
-  let { slug, load, query = '' } = $props();
+  // `slug` (required), optional `load` (slug => body), optional `query` (Task 8), and optional
+  // `onctrlfind` callback for forwarding Ctrl+F from the focused iframe to the app shell.
+  let { slug, load, query = '', onctrlfind } = $props();
+
+  let iframe: HTMLIFrameElement | undefined;
 
   // Rendered HTML (sanitized).
   let html: string = $state('');
@@ -41,6 +44,17 @@
     }
   }
 
+  function onIframeLoad() {
+    const win = iframe?.contentWindow;
+    if (!win) return;
+    win.onkeydown = (event: KeyboardEvent) => {
+      if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+      if (event.key.toLowerCase() !== 'f') return;
+      event.preventDefault();
+      onctrlfind?.();
+    };
+  }
+
   // Re-render whenever the slug or query changes.
   $effect(() => {
     void render(slug, query);
@@ -48,7 +62,13 @@
 </script>
 
 <!-- Isolated render surface: sandbox blocks top-level scripts; the render happens in render.ts. -->
-<iframe class="sheet-view" title={slug} srcdoc={html || message} sandbox="allow-same-origin"
+<iframe
+  bind:this={iframe}
+  class="sheet-view"
+  title={slug}
+  srcdoc={html || message}
+  sandbox="allow-same-origin"
+  onload={onIframeLoad}
 ></iframe>
 
 {#if message && !html}

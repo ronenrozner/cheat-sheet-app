@@ -8,7 +8,7 @@
     "resize": "Cambiar tamaño de la ventana"
   },
   "search": {
-    "placeholder": "Buscar en esta hoja…",
+    "placeholder": "Buscar en esta hoja… (CTRL+F)",
     "match": "coincidencia",
     "matches": "coincidencias",
     "noMatches": "Sin coincidencias"

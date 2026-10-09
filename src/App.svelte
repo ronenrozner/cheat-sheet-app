@@ -110,15 +110,19 @@
     }
   }
 
+  function focusSearchInput() {
+    const input = document.querySelector<HTMLInputElement>('.search-input');
+    input?.focus();
+    input?.select();
+  }
+
   // Move focus to the in-sheet search field. Overrides the browser find shortcut in the overlay.
   function onWindowKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
     if (event.key.toLowerCase() !== 'f') return;
 
     event.preventDefault();
-    const input = document.querySelector<HTMLInputElement>('.search-input');
-    input?.focus();
-    input?.select();
+    focusSearchInput();
   }
 
   // Open the selected sheet in the system editor.
@@ -293,7 +297,7 @@
       </div>
       <div class="sheet">
         {#key selection.slug}
-          <SheetView slug={selection.slug} {load} {query} />
+          <SheetView slug={selection.slug} {load} {query} onctrlfind={focusSearchInput} />
         {/key}
       </div>
     </div>

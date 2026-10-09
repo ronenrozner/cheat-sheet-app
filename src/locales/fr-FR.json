@@ -8,7 +8,7 @@
     "resize": "Redimensionner la fenetre"
   },
   "search": {
-    "placeholder": "Rechercher dans cette fiche…",
+    "placeholder": "Rechercher dans cette fiche… (CTRL+F)",
     "match": "resultat",
     "matches": "resultats",
     "noMatches": "Aucun resultat"

@@ -164,6 +164,28 @@ describe('App sheet switching', () => {
     expect(gear.hasAttribute('data-tauri-drag-region')).toBe(false);
   });
 
+  it('focuses search from Ctrl+F pressed inside the sheet iframe', async () => {
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    const input = root.querySelector<HTMLInputElement>('input.search-input');
+    const iframe = root.querySelector<HTMLIFrameElement>('iframe.sheet-view');
+    expect(input).toBeTruthy();
+    expect(iframe?.contentWindow).toBeTruthy();
+
+    iframe!.dispatchEvent(new Event('load'));
+    iframe!.contentWindow!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true })
+    );
+    await flush();
+
+    expect(document.activeElement).toBe(input);
+  });
+
   it('starts southeast resize dragging from the custom grip', async () => {
     inst = mount(App, {
       target: root,

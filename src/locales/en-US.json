@@ -8,7 +8,7 @@
     "resize": "Resize window"
   },
   "search": {
-    "placeholder": "Find in this sheet…",
+    "placeholder": "Find in this sheet… (CTRL+F)",
     "match": "match",
     "matches": "matches",
     "noMatches": "No matches"
