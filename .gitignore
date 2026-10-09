@@ -23,3 +23,4 @@ src-tauri/target/
 
 # ---- Keep empty structural dirs in git ----
 # (use .gitkeep inside the dir)
+public-key.asc
