@@ -2,7 +2,7 @@
 
 use crate::settings::{load, save, Settings};
 use crate::tray;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 /// Load persisted settings. Falls back to defaults on first run.
 #[tauri::command]
@@ -22,6 +22,15 @@ pub fn set_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
 #[tauri::command]
 pub fn set_tray_visibility(app: AppHandle, show: bool) -> Result<(), String> {
     tray::set_tray_visible(&app, show).map_err(|e| e.to_string())
+}
+
+/// Hide the main overlay window. This mirrors the ESC behavior and updates the tray icon.
+#[tauri::command]
+pub fn hide_main_window(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.hide().map_err(|e| e.to_string())?;
+    }
+    tray::update_overlay_icon(&app, false).map_err(|e| e.to_string())
 }
 
 /// Set whether the overlay window stays above other windows (Task 18). Applies live.

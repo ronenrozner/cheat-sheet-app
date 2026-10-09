@@ -5,7 +5,8 @@
     "edit": "Editar esta hoja",
     "pin": "Fijar esta hoja",
     "unpin": "Desfijar esta hoja",
-    "resize": "Cambiar tamaño de la ventana"
+    "resize": "Cambiar tamaño de la ventana",
+    "close": "Cerrar ventana"
   },
   "search": {
     "placeholder": "Buscar en esta hoja… (CTRL+F)",

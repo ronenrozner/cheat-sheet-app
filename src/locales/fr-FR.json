@@ -5,7 +5,8 @@
     "edit": "Modifier cette fiche",
     "pin": "Epingler cette fiche",
     "unpin": "Desepingler cette fiche",
-    "resize": "Redimensionner la fenetre"
+    "resize": "Redimensionner la fenetre",
+    "close": "Fermer la fenetre"
   },
   "search": {
     "placeholder": "Rechercher dans cette fiche… (CTRL+F)",

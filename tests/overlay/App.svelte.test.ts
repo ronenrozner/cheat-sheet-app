@@ -164,6 +164,22 @@ describe('App sheet switching', () => {
     expect(gear.hasAttribute('data-tauri-drag-region')).toBe(false);
   });
 
+  it('hides the main window when the close button is clicked', async () => {
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    const close = root.querySelector<HTMLButtonElement>('button.close-window');
+    expect(close).toBeTruthy();
+    close!.click();
+    await flush();
+
+    expect(invoke).toHaveBeenCalledWith('hide_main_window', {});
+  });
+
   it('focuses search from Ctrl+F pressed inside the sheet iframe', async () => {
     inst = mount(App, {
       target: root,

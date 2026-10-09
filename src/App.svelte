@@ -140,6 +140,14 @@
     void openSettings();
   }
 
+  async function onCloseWindow() {
+    try {
+      await invoke('hide_main_window', {});
+    } catch {
+      // If the backend command fails, leave the overlay running.
+    }
+  }
+
   // Start native resize from the bottom-right custom grip. Required because the main window is
   // borderless (`decorations=false`) and has no OS resize handles.
   async function onResizeGripPointerDown(event: PointerEvent) {
@@ -281,6 +289,14 @@
         onclick={onOpenSettings}
       >
         ⚙
+      </button>
+      <button
+        class="icon-button close-window"
+        type="button"
+        aria-label={t('app.close')}
+        onclick={onCloseWindow}
+      >
+        ×
       </button>
     </div>
   </header>

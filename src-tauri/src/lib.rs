@@ -120,6 +120,7 @@ pub fn run() {
             crate::commands::settings::get_settings,
             crate::commands::settings::set_settings,
             crate::commands::settings::set_tray_visibility,
+            crate::commands::settings::hide_main_window,
             crate::commands::settings::set_always_on_top,
             crate::commands::themes::themes_list,
             crate::commands::sheets::list_sheets,

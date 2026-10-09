@@ -5,7 +5,8 @@
     "edit": "Edit this sheet",
     "pin": "Pin this sheet",
     "unpin": "Unpin this sheet",
-    "resize": "Resize window"
+    "resize": "Resize window",
+    "close": "Close window"
   },
   "search": {
     "placeholder": "Find in this sheet… (CTRL+F)",
