@@ -374,6 +374,7 @@
   .pane-body {
     display: flex;
     flex: 1;
+    gap: 10px;
     min-height: 0;
   }
   .pane {
