@@ -47,6 +47,9 @@ pub fn run() {
             }
             // Apply persisted window behavior before the overlay is shown.
             let settings = settings::load(app.handle());
+            if let Err(error) = settings::apply_main_window_geometry(app.handle()) {
+                log::warn!("failed to apply window geometry setting: {error}");
+            }
             if let Err(error) = settings::apply_main_window_always_on_top(app.handle()) {
                 log::warn!("failed to apply always-on-top setting: {error}");
             }
@@ -94,6 +97,21 @@ pub fn run() {
                 log::info!("sheet folder {sheet_dir:?} already populated; skipping seed");
             }
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() != "main" {
+                return;
+            }
+            if matches!(
+                event,
+                tauri::WindowEvent::Resized(_) | tauri::WindowEvent::Moved(_)
+            ) {
+                if let Err(error) =
+                    crate::settings::save_main_window_geometry_if_enabled(window.app_handle())
+                {
+                    log::warn!("failed to save window geometry: {error}");
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             shortcuts::get_hotkey_status,

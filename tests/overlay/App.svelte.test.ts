@@ -24,6 +24,11 @@ vi.mock('@tauri-apps/api/event', () => ({
   emit: async () => undefined,
 }));
 
+const startResizeDragging = vi.fn();
+vi.mock('@tauri-apps/api/window', () => ({
+  getCurrentWindow: () => ({ startResizeDragging }),
+}));
+
 // Fake loader keyed by slug. Swapped per test via the `load` prop.
 let fakeLoad: (slug: string) => Promise<string | null>;
 
@@ -157,6 +162,22 @@ describe('App sheet switching', () => {
     const gear = root.querySelector('button.gear') as HTMLButtonElement;
     expect(gear).toBeTruthy();
     expect(gear.hasAttribute('data-tauri-drag-region')).toBe(false);
+  });
+
+  it('starts southeast resize dragging from the custom grip', async () => {
+    inst = mount(App, {
+      target: root,
+      props: { load: fakeLoad },
+    });
+
+    await flush();
+
+    const grip = root.querySelector<HTMLButtonElement>('button.resize-grip');
+    expect(grip).toBeTruthy();
+    grip!.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+    await flush();
+
+    expect(startResizeDragging).toHaveBeenCalledWith('SouthEast');
   });
 
   it('pins the current sheet on click (Task 11)', async () => {

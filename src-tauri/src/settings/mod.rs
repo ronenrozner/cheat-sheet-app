@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize};
 use tauri_plugin_store::{Store, StoreExt};
 
 /// Persisted UI theme.
@@ -31,6 +31,13 @@ const DEFAULT_WIN_HEIGHT: u32 = 900;
 pub struct WinSize {
     pub width: u32,
     pub height: u32,
+}
+
+/// Overlay window position in physical pixels.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct WinPosition {
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Default for WinSize {
@@ -80,6 +87,14 @@ pub enum ShowTray {
     On,
 }
 
+/// Whether to save the main window geometry when it changes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum SaveWindowGeometry {
+    #[default]
+    Off,
+    On,
+}
+
 /// Full persisted settings snapshot.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
@@ -87,6 +102,10 @@ pub struct Settings {
     pub theme_light: String,
     pub theme_dark: String,
     pub win_size: WinSize,
+    #[serde(default)]
+    pub win_position: WinPosition,
+    #[serde(default)]
+    pub save_window_geometry: SaveWindowGeometry,
     pub trigger: TriggerKey,
     pub source_mode: SourceMode,
     pub language: Language,
@@ -105,6 +124,8 @@ impl Default for Settings {
             theme_light: "Cheatsheet Light".to_string(),
             theme_dark: "Cheatsheet".to_string(),
             win_size: WinSize::default(),
+            win_position: WinPosition::default(),
+            save_window_geometry: SaveWindowGeometry::Off,
             trigger: TriggerKey {
                 ctrl: true,
                 alt: false,
@@ -184,6 +205,12 @@ pub fn load(app: &AppHandle) -> Settings {
         s.win_size = serde_json::from_value(v.clone())
             .map(sanitize_win_size)
             .unwrap_or_default();
+    }
+    if let Some(v) = store.get("win_position") {
+        s.win_position = serde_json::from_value(v.clone()).unwrap_or_default();
+    }
+    if let Some(v) = store.get("save_window_geometry") {
+        s.save_window_geometry = serde_json::from_value(v.clone()).unwrap_or_default();
     }
     if let Some(v) = store.get("trigger") {
         s.trigger = serde_json::from_value(v.clone()).unwrap_or_default();
@@ -276,6 +303,14 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
         serde_json::to_value(settings.win_size).unwrap_or_default(),
     );
     store.set(
+        "win_position",
+        serde_json::to_value(settings.win_position).unwrap_or_default(),
+    );
+    store.set(
+        "save_window_geometry",
+        serde_json::to_value(settings.save_window_geometry).unwrap_or_default(),
+    );
+    store.set(
         "trigger",
         serde_json::to_value(settings.trigger.clone()).unwrap_or_default(),
     );
@@ -340,6 +375,46 @@ pub fn settings_from_json(bytes: &[u8]) -> Settings {
         .unwrap_or_default()
 }
 
+/// Apply the persisted size and position to the main window.
+pub fn apply_main_window_geometry(app: &AppHandle) -> tauri::Result<()> {
+    let settings = load(app);
+    if let Some(window) = app.get_webview_window("main") {
+        window.set_size(PhysicalSize::new(
+            settings.win_size.width,
+            settings.win_size.height,
+        ))?;
+        window.set_position(PhysicalPosition::new(
+            settings.win_position.x,
+            settings.win_position.y,
+        ))?;
+    }
+    Ok(())
+}
+
+/// Save the main window size and position if geometry saving is enabled.
+pub fn save_main_window_geometry_if_enabled(app: &AppHandle) -> Result<(), std::io::Error> {
+    let mut settings = load(app);
+    if settings.save_window_geometry != SaveWindowGeometry::On {
+        return Ok(());
+    }
+    if let Some(window) = app.get_webview_window("main") {
+        if let Ok(size) = window.outer_size() {
+            settings.win_size = sanitize_win_size(WinSize {
+                width: size.width,
+                height: size.height,
+            });
+        }
+        if let Ok(position) = window.outer_position() {
+            settings.win_position = WinPosition {
+                x: position.x,
+                y: position.y,
+            };
+        }
+        save(app, &settings)?;
+    }
+    Ok(())
+}
+
 /// Apply the persisted always-on-top preference to the main window.
 pub fn apply_main_window_always_on_top(app: &AppHandle) -> tauri::Result<()> {
     set_main_window_always_on_top(app, load(app).always_on_top)
@@ -393,6 +468,8 @@ mod tests {
         assert!(s.pinned_slug.is_empty());
         assert_eq!(s.data_dir, "cheatsheets");
         assert_eq!(s.show_tray, ShowTray::Off);
+        assert_eq!(s.win_position, WinPosition { x: 0, y: 0 });
+        assert_eq!(s.save_window_geometry, SaveWindowGeometry::Off);
         assert!(s.always_on_top);
         assert!(s.editor_path.is_empty());
     }
@@ -407,6 +484,8 @@ mod tests {
                 width: 800,
                 height: 900,
             },
+            win_position: WinPosition { x: 10, y: 20 },
+            save_window_geometry: SaveWindowGeometry::On,
             trigger: TriggerKey {
                 ctrl: true,
                 alt: false,

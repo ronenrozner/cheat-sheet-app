@@ -4,7 +4,8 @@
     "hotkey": "Ctrl-Shift-Q",
     "edit": "Editar esta hoja",
     "pin": "Fijar esta hoja",
-    "unpin": "Desfijar esta hoja"
+    "unpin": "Desfijar esta hoja",
+    "resize": "Cambiar tamaño de la ventana"
   },
   "search": {
     "placeholder": "Buscar en esta hoja…",
@@ -27,6 +28,7 @@
     "customThemeBadge": "Personalizado",
     "activeTheme": "Activo",
     "windowSize": "Tamaño de ventana",
+    "saveWindowGeometry": "Guardar tamaño y posición de la ventana",
     "trigger": "Activador",
     "ctrl": "Ctrl",
     "alt": "Alt",

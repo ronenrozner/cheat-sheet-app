@@ -4,7 +4,8 @@
     "hotkey": "Ctrl-Shift-Q",
     "edit": "Modifier cette fiche",
     "pin": "Epingler cette fiche",
-    "unpin": "Desepingler cette fiche"
+    "unpin": "Desepingler cette fiche",
+    "resize": "Redimensionner la fenetre"
   },
   "search": {
     "placeholder": "Rechercher dans cette fiche…",
@@ -27,6 +28,7 @@
     "customThemeBadge": "Personnalise",
     "activeTheme": "Actif",
     "windowSize": "Taille de la fenetre",
+    "saveWindowGeometry": "Enregistrer taille et position de la fenetre",
     "trigger": "Declencheur",
     "ctrl": "Ctrl",
     "alt": "Alt",

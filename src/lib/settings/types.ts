@@ -23,6 +23,15 @@ export interface WinSize {
   height: number;
 }
 
+/** Overlay window position in pixels. */
+export interface WinPosition {
+  x: number;
+  y: number;
+}
+
+/** Whether to save overlay geometry when the user moves or resizes it. */
+export type SaveWindowGeometry = 'Off' | 'On';
+
 /** Overlay trigger key combo, as raw key parts (no aliasing — Task 7 normalizes authored combos). */
 export interface TriggerKey {
   ctrl: boolean;
@@ -49,6 +58,8 @@ export interface Settings {
   theme_light: string;
   theme_dark: string;
   win_size: WinSize;
+  win_position: WinPosition;
+  save_window_geometry: SaveWindowGeometry;
   trigger: TriggerKey;
   source_mode: SourceMode;
   language: Language;
@@ -71,6 +82,8 @@ export const DEFAULT_SETTINGS: Settings = {
   theme_light: 'Cheatsheet Light',
   theme_dark: 'Cheatsheet',
   win_size: { width: 800, height: 900 },
+  win_position: { x: 0, y: 0 },
+  save_window_geometry: 'Off',
   trigger: { ctrl: true, alt: false, shift: true, key: 'q' },
   source_mode: 'Both',
   language: 'EnUs',

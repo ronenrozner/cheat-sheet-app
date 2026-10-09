@@ -4,7 +4,8 @@
     "hotkey": "Ctrl-Shift-Q",
     "edit": "Edit this sheet",
     "pin": "Pin this sheet",
-    "unpin": "Unpin this sheet"
+    "unpin": "Unpin this sheet",
+    "resize": "Resize window"
   },
   "search": {
     "placeholder": "Find in this sheet…",
@@ -27,6 +28,7 @@
     "customThemeBadge": "Custom",
     "activeTheme": "Active",
     "windowSize": "Window size",
+    "saveWindowGeometry": "Save window size and position",
     "trigger": "Trigger",
     "ctrl": "Ctrl",
     "alt": "Alt",

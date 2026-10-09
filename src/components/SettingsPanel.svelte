@@ -6,7 +6,7 @@
   - `onSave`: called with the updated snapshot when the user commits a change. The parent persists
     it (and, if it changes the trigger, re-binds the global hotkey — Task 14).
 
-  One control per field: theme (select), window size (two number inputs), trigger (three
+  One control per field: theme (select), window geometry toggle, trigger (three
   checkboxes + a key input), language (select), pinned slug (text input).
 
   Every control is uncontrolled internally but the value is driven by the bound `settings` prop, so
@@ -59,36 +59,13 @@
     onSave(settings);
   }
 
-  // Window size (width / height).
-  function onWidth(e: Event) {
-    const el = e.target as HTMLInputElement;
-    const width = positiveIntegerOrCurrent(el.value, settings.win_size.width);
+  // Window geometry. On = save main window size and position when it changes.
+  function onSaveWindowGeometry(checked: boolean) {
     settings = {
       ...settings,
-      win_size: {
-        ...settings.win_size,
-        width,
-      },
+      save_window_geometry: checked ? 'On' : 'Off',
     };
     onSave(settings);
-  }
-
-  function onHeight(e: Event) {
-    const el = e.target as HTMLInputElement;
-    const height = positiveIntegerOrCurrent(el.value, settings.win_size.height);
-    settings = {
-      ...settings,
-      win_size: {
-        ...settings.win_size,
-        height,
-      },
-    };
-    onSave(settings);
-  }
-
-  function positiveIntegerOrCurrent(value: string, current: number): number {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : current;
   }
 
   // Language (v1 ships only en-US).
@@ -196,30 +173,17 @@
     </select>
   </label>
 
-  <div class="row">
-    <span>{t('settings.windowSize')}</span>
-    <div class="size">
-      <input
-        class="ctrl size-input"
-        type="number"
-        min="1"
-        aria-label={t('settings.widthPlaceholder')}
-        placeholder={t('settings.widthPlaceholder')}
-        value={settings.win_size.width}
-        onchange={onWidth}
-      />
-      <span class="size-separator" aria-hidden="true">×</span>
-      <input
-        class="ctrl size-input"
-        type="number"
-        min="1"
-        aria-label={t('settings.heightPlaceholder')}
-        placeholder={t('settings.heightPlaceholder')}
-        value={settings.win_size.height}
-        onchange={onHeight}
-      />
-    </div>
-  </div>
+  <label class="row">
+    <span>{t('settings.saveWindowGeometry')}</span>
+    <input
+      class="switch"
+      type="checkbox"
+      role="switch"
+      aria-label={t('settings.saveWindowGeometry')}
+      checked={settings.save_window_geometry === 'On'}
+      onchange={(e) => onSaveWindowGeometry((e.target as HTMLInputElement).checked)}
+    />
+  </label>
 
   <label class="row">
     <span>{t('settings.language')}</span>
@@ -293,7 +257,6 @@
       onchange={(e) => onAlwaysOnTop((e.target as HTMLInputElement).checked)}
     />
   </label>
-
 </div>
 
 <style>
@@ -350,36 +313,16 @@
     outline: 2px solid var(--cs-accent, #7d9ad4);
     outline-offset: 1px;
   }
-  .ctrl[type='text'],
-  .ctrl[type='number'] {
+  .ctrl[type='text'] {
     background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 72%, var(--cs-fg, #cdd6f4));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 18%, transparent);
   }
-  .ctrl[type='text']:hover,
-  .ctrl[type='number']:hover {
+  .ctrl[type='text']:hover {
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 30%, transparent);
   }
-  .ctrl[type='text']:focus,
-  .ctrl[type='number']:focus {
+  .ctrl[type='text']:focus {
     background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 60%, var(--cs-fg, #cdd6f4));
     box-shadow: inset 0 0 0 1px var(--cs-accent, #7d9ad4);
-  }
-  .size {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.35rem;
-    flex: 1;
-    max-width: 180px;
-    min-width: 0;
-  }
-  .size-input {
-    width: 4.8rem;
-    min-width: 0;
-  }
-  .size-separator {
-    font-size: 0.85rem;
-    opacity: 0.65;
   }
   .language-select {
     min-width: 13rem;
@@ -446,5 +389,4 @@
     outline: 2px solid var(--cs-accent, #7d9ad4);
     outline-offset: 2px;
   }
-
 </style>

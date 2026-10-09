@@ -8,6 +8,7 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import { listen, emit } from '@tauri-apps/api/event';
+  import { getCurrentWindow } from '@tauri-apps/api/window';
   import SheetView from './components/SheetView.svelte';
   import SearchBox from './components/SearchBox.svelte';
   import Sidebar from './components/Sidebar.svelte';
@@ -133,6 +134,18 @@
   // Open the settings window (Task 19). Triggered by the gear icon in the overlay header.
   function onOpenSettings() {
     void openSettings();
+  }
+
+  // Start native resize from the bottom-right custom grip. Required because the main window is
+  // borderless (`decorations=false`) and has no OS resize handles.
+  async function onResizeGripPointerDown(event: PointerEvent) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    try {
+      await getCurrentWindow().startResizeDragging('SouthEast');
+    } catch {
+      // Resize dragging is OS/window-manager dependent. Keep the overlay usable if it fails.
+    }
   }
 
   // Whether the current sheet is the pinned one (drives the header button label).
@@ -285,6 +298,14 @@
       </div>
     </div>
   </div>
+
+  <button
+    class="resize-grip"
+    type="button"
+    aria-label={t('app.resize')}
+    title={t('app.resize')}
+    onpointerdown={onResizeGripPointerDown}
+  ></button>
 </main>
 {/key}
 
@@ -381,5 +402,30 @@
   .icon-button:disabled {
     cursor: not-allowed;
     opacity: 0.45;
+  }
+  .resize-grip {
+    position: fixed;
+    right: 0.25rem;
+    bottom: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    border: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 0 45%,
+      color-mix(in srgb, var(--cs-fg, #cdd6f4) 45%, transparent) 45% 55%,
+      transparent 55% 65%,
+      color-mix(in srgb, var(--cs-fg, #cdd6f4) 45%, transparent) 65% 75%,
+      transparent 75%
+    );
+    cursor: se-resize;
+    opacity: 0.75;
+  }
+  .resize-grip:hover,
+  .resize-grip:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--cs-accent, #7d9ad4);
+    outline-offset: 2px;
   }
 </style>

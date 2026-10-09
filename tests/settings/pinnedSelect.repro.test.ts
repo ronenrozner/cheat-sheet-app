@@ -66,7 +66,7 @@ describe('SettingsPanel controls', () => {
     expect(saved.current?.theme).toBe('Dark');
   });
 
-  it('window size inputs keep the previous positive value when cleared or set to zero', async () => {
+  it('window geometry toggle saves without editing stored geometry values', async () => {
     const saved: { current: Settings | null } = { current: null };
     inst = mount(SettingsPanel, {
       target: root,
@@ -80,21 +80,20 @@ describe('SettingsPanel controls', () => {
     });
     await flush();
 
-    const widthInput = root.querySelector<HTMLInputElement>('input[aria-label="width"]');
-    const heightInput = root.querySelector<HTMLInputElement>('input[aria-label="height"]');
-    expect(widthInput).toBeTruthy();
-    expect(heightInput).toBeTruthy();
-    expect(root.querySelector('.size-separator')?.textContent).toBe('×');
+    expect(root.querySelector<HTMLInputElement>('input[aria-label="width"]')).toBeNull();
+    expect(root.querySelector<HTMLInputElement>('input[aria-label="height"]')).toBeNull();
 
-    widthInput!.value = '0';
-    widthInput!.dispatchEvent(new Event('change', { bubbles: true }));
-    await flush();
-    expect(saved.current?.win_size.width).toBe(800);
+    const toggle = root.querySelector<HTMLInputElement>(
+      'input[aria-label="Save window size and position"]'
+    );
+    expect(toggle).toBeTruthy();
 
-    heightInput!.value = '';
-    heightInput!.dispatchEvent(new Event('change', { bubbles: true }));
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
-    expect(saved.current?.win_size.height).toBe(900);
+
+    expect(saved.current?.save_window_geometry).toBe('On');
+    expect(saved.current?.win_size).toEqual({ width: 800, height: 900 });
   });
 
   it('pinned select: saves the selected slug', async () => {

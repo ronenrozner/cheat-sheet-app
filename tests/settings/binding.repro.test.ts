@@ -54,7 +54,7 @@ describe('SettingsPanel controls', () => {
   });
 
   it('checkbox: clicking updates the saved state and stays visible', async () => {
-    const cb = root.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const cb = root.querySelector<HTMLInputElement>('input[aria-label="Show system tray icon"]');
     expect(cb).toBeTruthy();
 
     cb!.checked = true;

@@ -25,6 +25,13 @@ export function coerceSettings(raw: unknown): Settings {
     theme_light: typeof s.theme_light === 'string' ? s.theme_light : DEFAULT_SETTINGS.theme_light,
     theme_dark: typeof s.theme_dark === 'string' ? s.theme_dark : DEFAULT_SETTINGS.theme_dark,
     win_size: isWinSize(s.win_size) ? s.win_size : { ...DEFAULT_SETTINGS.win_size },
+    win_position: isWinPosition(s.win_position)
+      ? s.win_position
+      : { ...DEFAULT_SETTINGS.win_position },
+    save_window_geometry:
+      s.save_window_geometry === 'On' || s.save_window_geometry === 'Off'
+        ? s.save_window_geometry
+        : DEFAULT_SETTINGS.save_window_geometry,
     trigger: isTriggerKey(s.trigger) ? s.trigger : { ...DEFAULT_SETTINGS.trigger },
     source_mode: s.source_mode ?? DEFAULT_SETTINGS.source_mode,
     language: coerceLanguage(s.language),
@@ -74,6 +81,7 @@ async function validate(s: Settings): Promise<boolean> {
   const langs = new Set(['EnUs', 'EsEs', 'FrFr']);
   const trays = new Set(['Off', 'On']);
   const tops = new Set(['On', 'Off']);
+  const geometryToggles = new Set(['On', 'Off']);
   return (
     themes.has(s.theme) &&
     typeof s.theme_light === 'string' &&
@@ -82,7 +90,9 @@ async function validate(s: Settings): Promise<boolean> {
     langs.has(s.language) &&
     trays.has(s.show_tray) &&
     tops.has(s.always_on_top) &&
+    geometryToggles.has(s.save_window_geometry) &&
     isWinSize(s.win_size) &&
+    isWinPosition(s.win_position) &&
     isTriggerKey(s.trigger) &&
     typeof s.pinned_slug === 'string' &&
     typeof s.dataDir === 'string' &&
@@ -106,6 +116,17 @@ function isWinSize(v: unknown): v is { width: number; height: number } {
     typeof w.height === 'number' &&
     Number.isFinite(w.height) &&
     w.height > 0
+  );
+}
+
+function isWinPosition(v: unknown): v is { x: number; y: number } {
+  const p = isPlainObject(v) ? (v as { x?: unknown; y?: unknown }) : undefined;
+  return (
+    !!p &&
+    typeof p.x === 'number' &&
+    Number.isFinite(p.x) &&
+    typeof p.y === 'number' &&
+    Number.isFinite(p.y)
   );
 }
 

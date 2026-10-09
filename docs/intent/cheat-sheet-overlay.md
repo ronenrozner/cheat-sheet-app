@@ -52,8 +52,9 @@ implementation) consumes this.
   - A **toggle** across **online / local / both** sources.
   - **Search** matching *both* a natural-language description and a literal key combo
     (reverse-lookup both directions).
-- **Customization (v1):** window size, theme (light / dark / follow system), trigger key, and a
-  **language setting** (see Internationalization below).
+- **Customization (v1):** saved window geometry, theme (light / dark / follow system), trigger key,
+  and a **language setting** (see Internationalization below). The borderless overlay uses a
+  bottom-right resize grip instead of native OS resize handles.
 - **Default trigger key:** `Ctrl-Shift-Q`.
 - **Stack:** Tauri — **Rust backend**, **SvelteKit / Svelte 5 frontend**.
 - **Platform sequencing:** **Linux first**, then **Windows**, then **macOS** last.
