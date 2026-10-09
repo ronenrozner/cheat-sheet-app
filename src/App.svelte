@@ -279,7 +279,9 @@
         </button>
       </div>
       <div class="sheet">
-        <SheetView slug={selection.slug} {load} {query} />
+        {#key selection.slug}
+          <SheetView slug={selection.slug} {load} {query} />
+        {/key}
       </div>
     </div>
   </div>
