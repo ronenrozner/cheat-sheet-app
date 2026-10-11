@@ -22,6 +22,14 @@ pub fn run() {
             }
             app.handle().plugin(tauri_plugin_opener::init())?;
             app.handle().plugin(tauri_plugin_dialog::init())?;
+            // Settings store (Task 3). First run creates `<home>/.config/cheatsheet/config.json`
+            // and the configured sheet data folder. The store must be registered before any code
+            // loads settings.
+            app.handle()
+                .plugin(tauri_plugin_store::Builder::new().build())?;
+            if let Err(error) = settings::ensure_initialized(app.handle()) {
+                log::warn!("settings initialization failed: {error}");
+            }
             #[cfg(desktop)]
             app.handle()
                 .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
@@ -30,13 +38,6 @@ pub fn run() {
             // status so the UI can flag it; it never aborts `setup`.
             let status = shortcuts::register_overlay_hotkey(app.handle());
             app.manage(status);
-            // Settings store (Task 3). First run creates `<home>/.config/cheatsheet/config.json`
-            // and the configured sheet data folder.
-            app.handle()
-                .plugin(tauri_plugin_store::Builder::new().build())?;
-            if let Err(error) = settings::ensure_initialized(app.handle()) {
-                log::warn!("settings initialization failed: {error}");
-            }
             // Custom theme hot-reload. The watcher must stay alive for the full app lifetime.
             let data_dir = app
                 .path()

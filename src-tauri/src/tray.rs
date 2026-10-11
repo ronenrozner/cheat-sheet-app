@@ -2,7 +2,8 @@
 //!
 //! When `show_tray` is `On`, a persistent tray icon appears. Clicking it toggles the overlay. The
 //! icon swaps appearance when the overlay opens/closes. The tray menu has an Open/Close item and a
-//! Quit item so the resident app has an explicit shutdown path.
+//! Quit item, each with a visible keyboard shortcut, so the resident app has an explicit shutdown
+//! path.
 //!
 //! macOS renders tray icons as grayscale templates, so both icons are marked `icon_as_template`.
 //! The open-state variant is `icons/icon-open.png` (the base icon with a small checkmark badge).
@@ -33,6 +34,9 @@ pub const OPEN_MENU_ID: &str = "open";
 /// Tray menu item id for graceful app shutdown.
 pub const QUIT_MENU_ID: &str = "quit";
 
+/// Shortcut shown next to the Quit tray menu item.
+const QUIT_MENU_SHORTCUT: &str = "Ctrl+Q";
+
 /// The embedded tray icons. Relative to the crate root (`src-tauri/`).
 const ICONS: Dir<'_> = include_dir!("icons");
 
@@ -56,42 +60,48 @@ fn load_icon(path: &str) -> Option<Image<'static>> {
 }
 
 /// The Open/Close menu label for the current overlay state and locale.
-fn open_menu_label(open: bool, language: Language) -> &'static str {
-    match (open, language) {
+fn open_menu_label(open: bool, language: Language, shortcut: &str) -> String {
+    let label = match (open, language) {
         (true, Language::EsEs) => "Cerrar",
         (false, Language::EsEs) => "Abrir",
         (true, Language::FrFr) => "Fermer",
         (false, Language::FrFr) => "Ouvrir",
         (true, Language::EnUs) => "Close",
         (false, Language::EnUs) => "Open",
-    }
+    };
+    format!("{label} ({shortcut})")
 }
 
 /// The Quit menu label for the current locale.
-fn quit_menu_label(language: Language) -> &'static str {
-    match language {
+fn quit_menu_label(language: Language) -> String {
+    let label = match language {
         Language::EsEs => "Salir",
         Language::FrFr => "Quitter",
         Language::EnUs => "Quit",
-    }
-}
-
-/// Current tray menu language from persisted settings.
-fn menu_language(app: &AppHandle) -> Language {
-    crate::settings::load(app).language
+    };
+    format!("{label} ({QUIT_MENU_SHORTCUT})")
 }
 
 /// Build a tray menu for the current overlay state.
 fn build_menu(app: &AppHandle, open: bool) -> tauri::Result<Menu<tauri::Wry>> {
-    let language = menu_language(app);
+    let settings = crate::settings::load(app);
+    let language = settings.language;
+    let open_shortcut = settings.trigger.display_label();
+    let open_label = open_menu_label(open, language, &open_shortcut);
     let open = MenuItem::with_id(
         app,
         OPEN_MENU_ID,
-        open_menu_label(open, language),
+        open_label,
         true,
-        None::<&str>,
+        Some(open_shortcut.as_str()),
     )?;
-    let quit = MenuItem::with_id(app, QUIT_MENU_ID, quit_menu_label(language), true, None::<&str>)?;
+    let quit = MenuItem::with_id(
+        app,
+        QUIT_MENU_ID,
+        quit_menu_label(language),
+        true,
+        Some(QUIT_MENU_SHORTCUT),
+    )?;
     Menu::with_items(app, &[&open, &quit])
 }
 
@@ -264,18 +274,45 @@ mod tests {
 
     #[test]
     fn open_menu_label_matches_overlay_state() {
-        assert_eq!(open_menu_label(false, Language::EnUs), "Open");
-        assert_eq!(open_menu_label(true, Language::EnUs), "Close");
-        assert_eq!(open_menu_label(false, Language::EsEs), "Abrir");
-        assert_eq!(open_menu_label(true, Language::EsEs), "Cerrar");
-        assert_eq!(open_menu_label(false, Language::FrFr), "Ouvrir");
-        assert_eq!(open_menu_label(true, Language::FrFr), "Fermer");
+        assert_eq!(
+            open_menu_label(false, Language::EnUs, "Ctrl+Alt+K"),
+            "Open (Ctrl+Alt+K)"
+        );
+        assert_eq!(
+            open_menu_label(true, Language::EnUs, "Ctrl+Alt+K"),
+            "Close (Ctrl+Alt+K)"
+        );
+        assert_eq!(
+            open_menu_label(false, Language::EsEs, "Ctrl+Alt+K"),
+            "Abrir (Ctrl+Alt+K)"
+        );
+        assert_eq!(
+            open_menu_label(true, Language::EsEs, "Ctrl+Alt+K"),
+            "Cerrar (Ctrl+Alt+K)"
+        );
+        assert_eq!(
+            open_menu_label(false, Language::FrFr, "Ctrl+Alt+K"),
+            "Ouvrir (Ctrl+Alt+K)"
+        );
+        assert_eq!(
+            open_menu_label(true, Language::FrFr, "Ctrl+Alt+K"),
+            "Fermer (Ctrl+Alt+K)"
+        );
     }
 
     #[test]
     fn quit_menu_label_matches_language() {
-        assert_eq!(quit_menu_label(Language::EnUs), "Quit");
-        assert_eq!(quit_menu_label(Language::EsEs), "Salir");
-        assert_eq!(quit_menu_label(Language::FrFr), "Quitter");
+        assert_eq!(quit_menu_label(Language::EnUs), "Quit (Ctrl+Q)");
+        assert_eq!(quit_menu_label(Language::EsEs), "Salir (Ctrl+Q)");
+        assert_eq!(quit_menu_label(Language::FrFr), "Quitter (Ctrl+Q)");
+    }
+
+    #[test]
+    fn tray_menu_shortcuts_match_app_shortcuts() {
+        assert_eq!(
+            crate::settings::Settings::default().trigger.display_label(),
+            "Ctrl+Shift+Q"
+        );
+        assert_eq!(QUIT_MENU_SHORTCUT, "Ctrl+Q");
     }
 }

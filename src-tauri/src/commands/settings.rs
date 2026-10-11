@@ -13,7 +13,11 @@ pub fn get_settings(app: AppHandle) -> Settings {
 /// Persist a settings snapshot (theme / win_size / trigger / source_mode / language / pinned_slug / show_tray).
 #[tauri::command]
 pub fn set_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
+    let old_trigger = load(&app).trigger;
     save(&app, &settings).map_err(|e| e.to_string())?;
+    if old_trigger != settings.trigger {
+        crate::shortcuts::reregister_overlay_hotkey(&app);
+    }
     tray::update_menu(&app).map_err(|e| e.to_string())
 }
 

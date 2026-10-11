@@ -117,6 +117,41 @@ pub struct Settings {
     pub editor_path: String,
 }
 
+impl TriggerKey {
+    /// Format for Tauri global-shortcut registration.
+    pub fn accelerator(&self) -> String {
+        let mut parts = Vec::new();
+        if self.ctrl {
+            parts.push("ctrl".to_string());
+        }
+        if self.alt {
+            parts.push("alt".to_string());
+        }
+        if self.shift {
+            parts.push("shift".to_string());
+        }
+        parts.push(self.key.trim().to_ascii_lowercase());
+        parts.join("+")
+    }
+
+    /// Format for visible menu text.
+    pub fn display_label(&self) -> String {
+        let mut parts = Vec::new();
+        if self.ctrl {
+            parts.push("Ctrl".to_string());
+        }
+        if self.alt {
+            parts.push("Alt".to_string());
+        }
+        if self.shift {
+            parts.push("Shift".to_string());
+        }
+        let key = self.key.trim();
+        parts.push(key.to_ascii_uppercase());
+        parts.join("+")
+    }
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Self {

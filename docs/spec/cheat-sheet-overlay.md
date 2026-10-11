@@ -206,7 +206,7 @@ Body carries the **combo/syntax side**: `| `Ctrl+Shift+V` | Paste plain text |` 
 
 Tauri's `global-shortcut` plugin uses the `global-hotkey` crate, which is **X11-only on Linux**. An unprivileged app **cannot** register an arbitrary global key combo on **Wayland** (compositor security model). v1 constraint: **X11 must work; Wayland is best-effort and flagged, not required.** Design:
 
-- **X11 (must):** register `Ctrl-Shift-Q` via `tauri-plugin-global-shortcut` — a real global grab. **This is the supported path and the load-bearing requirement; it must be validated in the first spike (Plan Phase 1) on the target X11 session.**
+- **X11 (must):** register the persisted trigger key via `tauri-plugin-global-shortcut` — a real global grab. The default is `Ctrl-Shift-Q`. **This is the supported path and the load-bearing requirement; it must be validated in the first spike (Plan Phase 1) on the target X11 session.**
 - **Wayland (best-effort + flagged):** at startup, detect session type (`$XDG_SESSION_TYPE`) and whether the global registration actually fired. If it cannot bind on Wayland, the UI **flags** "Global hotkey unavailable on this compositor" and offers a best-effort toggle — `cheatsheet-app --toggle` (via `tauri-plugin-single-instance`, so a 2nd invocation routes to the running instance) — with per-compositor bind snippets shipped:
    - **Hyprland:** `bind = SUPER, SHIFT, Q, exec, cheatsheet-app --toggle`
    - **Sway:** `bindsym $mod+Shift+q exec cheatsheet-app --toggle`
@@ -214,7 +214,7 @@ Tauri's `global-shortcut` plugin uses the `global-hotkey` crate, which is **X11-
 
 Neither path fails silently: if the active path is unavailable, the UI says so. See Open Question **O1** *(resolved)*.
 
-**Shutdown paths:** `Esc` and the overlay hotkey hide/toggle windows; they do not quit the resident app. A tray **Quit** menu item calls the graceful shutdown path. Debug builds also register `Ctrl+Shift+Alt+Q` as a development-only graceful quit shortcut for `cargo tauri dev`.
+**Shutdown paths:** `Esc` and the overlay hotkey hide/toggle windows; they do not quit the resident app. A tray **Quit** menu item calls the graceful shutdown path. The tray menu shows the active trigger next to Open/Close, for example `Open (Ctrl+Shift+Q)`, and rebuilds when the user changes the trigger. Debug builds also register `Ctrl+Shift+Alt+Q` as a development-only graceful quit shortcut for `cargo tauri dev`.
 
 ---
 
@@ -233,7 +233,7 @@ Neither path fails silently: if the active path is unavailable, the UI says so. 
 
 1. **O1 — RESOLVED.** Hotkey constraint revised to **X11-must / Wayland-best-effort-flagged**: the X11 `global-shortcut` path is the must; the Wayland `--toggle` + compositor-bind path is best-effort and surfaced via a UI flag (see §Hotkey strategy). No longer blocks architecture.
 2. **O2 — i18n locale layer.** Tiny hand-rolled `$: t()` over `locales/en-US.json` vs `svelte-i18n` dep? *(Recommend: hand-rolled; add `svelte-i18n` later if needed.)*
-3. **O3 — Trigger-key change surface.** Changing the trigger key in v1 edits the app config only; on Wayland the user must also re-bind the compositor. Document, not auto-configure? *(Recommend: document + print the snippet on change.)*
+3. **O3 — RESOLVED.** Changing the trigger key persists the app config, re-registers the global shortcut in the running app, and rebuilds the tray menu text. On Wayland the user must still re-bind the compositor command manually because the app cannot auto-configure compositor shortcuts.
 4. **O4 — E2E scope.** Include Playwright overlay open/close in v1, or manual-only? *(Recommend: manual-only for v1, Playwright optional.)*
 5. **O5 — Spec location.** `docs/spec/cheat-sheet-overlay.md` (here). OK?
 

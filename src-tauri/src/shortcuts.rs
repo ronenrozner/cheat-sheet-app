@@ -168,8 +168,9 @@ pub fn register_overlay_hotkey(app: &AppHandle) -> HotkeyStatus {
 
 /// The actual `global-shortcut` wiring. Returns `Err` on a non-binding session.
 fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let overlay_shortcut = crate::settings::load(app).trigger.accelerator();
     app.global_shortcut()
-        .on_shortcut("ctrl+shift+q", |app, _shortcut, event| {
+        .on_shortcut(overlay_shortcut.as_str(), |app, _shortcut, event| {
             if event.state == ShortcutState::Pressed {
                 if let Some(window) = app.get_webview_window("main") {
                     if window.is_visible().unwrap_or(false) {
@@ -204,6 +205,14 @@ fn try_register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         })?;
     register_dev_quit_shortcut(app);
     Ok(())
+}
+
+/// Re-register global shortcuts after the user changes the trigger setting.
+pub fn reregister_overlay_hotkey(app: &AppHandle) -> HotkeyStatus {
+    if let Err(e) = app.global_shortcut().unregister_all() {
+        log::warn!("global shortcut unregister failed before re-register: {e:#}");
+    }
+    register_overlay_hotkey(app)
 }
 
 #[cfg(debug_assertions)]
