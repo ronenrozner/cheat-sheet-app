@@ -9,7 +9,7 @@
     "close": "Cerrar ventana"
   },
   "search": {
-    "placeholder": "Buscar en esta hoja… (CTRL+F)",
+    "placeholder": "Buscar en esta hoja…",
     "match": "coincidencia",
     "matches": "coincidencias",
     "noMatches": "Sin coincidencias"

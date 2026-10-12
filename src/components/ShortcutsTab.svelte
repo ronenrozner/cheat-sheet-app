@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '../lib/i18n';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
-  import { DEFAULT_SETTINGS, type Settings } from '../lib/settings/types';
+  import { DEFAULT_SETTINGS, type Settings, type TriggerKey } from '../lib/settings/types';
 
   let {
     settings = $bindable(DEFAULT_SETTINGS),
@@ -15,15 +15,56 @@
     waylandSnippets?: WaylandSnippets | null;
   }>();
 
-  function onTrigger(part: 'ctrl' | 'alt' | 'shift', checked: boolean) {
-    settings = { ...settings, trigger: { ...settings.trigger, [part]: checked } };
-    onSave(settings);
+  let listeningFor = $state<'trigger' | 'find' | null>(null);
+
+  const MODIFIER_KEYS = new Set(['Control', 'Shift', 'Alt', 'Meta', 'CapsLock']);
+
+  const triggerLabel = $derived(formatTrigger(settings.trigger));
+  const findLabel = $derived(formatTrigger(settings.find_shortcut));
+
+  function formatTrigger(trigger: TriggerKey): string {
+    const parts = [];
+    if (trigger.ctrl) parts.push(t('settings.ctrl'));
+    if (trigger.alt) parts.push(t('settings.alt'));
+    if (trigger.shift) parts.push(t('settings.shift'));
+    parts.push(trigger.key.trim().toUpperCase() || t('settings.keyPlaceholder'));
+    return parts.join(' + ');
   }
 
-  function onKey(e: Event) {
-    const el = e.target as HTMLInputElement;
-    settings = { ...settings, trigger: { ...settings.trigger, key: el.value } };
+  function startListening(target: 'trigger' | 'find') {
+    listeningFor = target;
+  }
+
+  function stopListening() {
+    listeningFor = null;
+  }
+
+  function onShortcutKeydown(e: KeyboardEvent) {
+    if (!listeningFor) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.key === 'Escape') {
+      stopListening();
+      return;
+    }
+
+    if (MODIFIER_KEYS.has(e.key)) return;
+
+    const shortcut = {
+      ctrl: e.ctrlKey,
+      alt: e.altKey,
+      shift: e.shiftKey,
+      key: e.key.length === 1 ? e.key.toLowerCase() : e.key,
+    };
+
+    settings =
+      listeningFor === 'trigger'
+        ? { ...settings, trigger: shortcut }
+        : { ...settings, find_shortcut: shortcut };
     onSave(settings);
+    stopListening();
   }
 </script>
 
@@ -31,50 +72,48 @@
   <h2 id="shortcuts-title">{t('shortcuts.title')}</h2>
   <p>{t('shortcuts.activeWhileFocused')}</p>
 
+  <div class="row section">
+    <span>{t('settings.trigger')}</span>
+    <button
+      class="trigger-capture"
+      class:listening={listeningFor === 'trigger'}
+      type="button"
+      aria-pressed={listeningFor === 'trigger'}
+      onclick={() => startListening('trigger')}
+      onblur={stopListening}
+      onkeydown={onShortcutKeydown}
+    >
+      {#if listeningFor === 'trigger'}
+        Press shortcut…
+      {:else}
+        {triggerLabel}
+      {/if}
+    </button>
+  </div>
+
   <div class="section">
     <dl class="shortcut-list">
       <div class="shortcut-item">
         <dt>{t('shortcuts.find')}</dt>
-        <dd><kbd>Ctrl</kbd><span>+</span><kbd>F</kbd></dd>
+        <dd>
+          <button
+            class="trigger-capture"
+            class:listening={listeningFor === 'find'}
+            type="button"
+            aria-pressed={listeningFor === 'find'}
+            onclick={() => startListening('find')}
+            onblur={stopListening}
+            onkeydown={onShortcutKeydown}
+          >
+            {#if listeningFor === 'find'}
+              Press shortcut…
+            {:else}
+              {findLabel}
+            {/if}
+          </button>
+        </dd>
       </div>
     </dl>
-  </div>
-
-  <div class="row section">
-    <span>{t('settings.trigger')}</span>
-    <div class="trigger">
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.ctrl}
-          onchange={(e) => onTrigger('ctrl', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.ctrl')}</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.alt}
-          onchange={(e) => onTrigger('alt', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.alt')}</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          checked={settings.trigger.shift}
-          onchange={(e) => onTrigger('shift', (e.target as HTMLInputElement).checked)}
-        />
-        {t('settings.shift')}</label
-      >
-      <input
-        class="ctrl key"
-        type="text"
-        placeholder={t('settings.keyPlaceholder')}
-        value={settings.trigger.key}
-        oninput={onKey}
-      />
-    </div>
   </div>
 
   <!-- Global hotkey status (Task 14). On Wayland the global grab is best-effort + flagged. -->
@@ -152,17 +191,6 @@
     font-size: 0.8rem;
   }
 
-  .shortcut-item kbd {
-    min-width: 1.5rem;
-    padding: 0.15rem 0.35rem;
-    border: 1px solid var(--cs-border, #44475a);
-    border-radius: 3px;
-    background: var(--cs-input-bg, #282c3f);
-    color: var(--cs-fg, #cdd6f4);
-    font-family: 'Mona Sans Mono', ui-monospace, monospace;
-    text-align: center;
-  }
-
   .row {
     display: flex;
     align-items: flex-start;
@@ -176,40 +204,26 @@
     opacity: 0.8;
   }
 
-  .ctrl {
-    padding: 0.3rem 0.4rem;
+  .trigger-capture {
+    min-width: 9rem;
+    padding: 0.3rem 0.55rem;
+    font-family: 'Mona Sans Mono', ui-monospace, monospace;
     font-size: 0.85rem;
+    text-align: center;
     border-radius: 4px;
     border: 1px solid var(--cs-border, #44475a);
     background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 72%, var(--cs-fg, #cdd6f4));
     color: var(--cs-fg, #cdd6f4);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 18%, transparent);
+    cursor: pointer;
   }
 
-  .ctrl:focus {
+  .trigger-capture:focus,
+  .trigger-capture.listening {
     outline: 2px solid var(--cs-accent, #7d9ad4);
     outline-offset: 1px;
     background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 60%, var(--cs-fg, #cdd6f4));
     box-shadow: inset 0 0 0 1px var(--cs-accent, #7d9ad4);
-  }
-
-  .trigger {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    flex: 1;
-    font-size: 0.85rem;
-  }
-
-  .trigger label {
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-  }
-
-  .trigger .key {
-    width: 3rem;
   }
 
   .wayland-body {

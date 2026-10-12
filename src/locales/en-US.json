@@ -9,7 +9,7 @@
     "close": "Close window"
   },
   "search": {
-    "placeholder": "Find in this sheet… (CTRL+F)",
+    "placeholder": "Find in this sheet…",
     "match": "match",
     "matches": "matches",
     "noMatches": "No matches"
@@ -68,7 +68,7 @@
     "settingsVersion": "Version",
     "settingsAboutNote": "This space is reserved for future content.",
     "settingsOpen": "Open settings",
-    "settingsTab": "System",
+    "settingsTab": "Appearance",
     "shortcutsTab": "Shortcuts",
     "aboutTab": "About",
     "title": "SETTINGS",
@@ -91,8 +91,8 @@
     "updateError": "Could not check for updates"
   },
   "shortcuts": {
-    "title": "LOCAL SHORTCUTS",
-    "activeWhileFocused": "Active while the app is focused.",
+    "title": "SHORTCUTS",
+    "activeWhileFocused": "Click a shortcut field and press a key to assign.",
     "find": "Find in current sheet"
   }
 }

@@ -33,6 +33,9 @@ export function coerceSettings(raw: unknown): Settings {
         ? s.save_window_geometry
         : DEFAULT_SETTINGS.save_window_geometry,
     trigger: isTriggerKey(s.trigger) ? s.trigger : { ...DEFAULT_SETTINGS.trigger },
+    find_shortcut: isTriggerKey(s.find_shortcut)
+      ? s.find_shortcut
+      : { ...DEFAULT_SETTINGS.find_shortcut },
     source_mode: s.source_mode ?? DEFAULT_SETTINGS.source_mode,
     language: coerceLanguage(s.language),
     pinned_slug: typeof s.pinned_slug === 'string' ? s.pinned_slug : DEFAULT_SETTINGS.pinned_slug,
@@ -94,6 +97,7 @@ async function validate(s: Settings): Promise<boolean> {
     isWinSize(s.win_size) &&
     isWinPosition(s.win_position) &&
     isTriggerKey(s.trigger) &&
+    isTriggerKey(s.find_shortcut) &&
     typeof s.pinned_slug === 'string' &&
     typeof s.dataDir === 'string' &&
     typeof s.editor_path === 'string'

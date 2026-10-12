@@ -8,7 +8,9 @@
 
   // `query` is bindable so typing updates App's source of truth.
   // `matchCount` is computed by the parent from the current sheet body and query.
-  let { query = $bindable(), matchCount } = $props();
+  let { query = $bindable(), matchCount, shortcutLabel = 'CTRL+F' } = $props();
+
+  const placeholder = $derived(`${t('search.placeholder')} (${shortcutLabel})`);
 
   // "N matches" when there are matches; "No matches" when zero but text is entered;
   // empty (placeholder only) when there is no text yet.
@@ -27,8 +29,8 @@
   <input
     class="search-input"
     type="text"
-    placeholder={t('search.placeholder')}
-    aria-label={t('search.placeholder')}
+    placeholder={placeholder}
+    aria-label={placeholder}
     bind:value={query}
   />
   {#if label}

@@ -19,7 +19,7 @@
     getSettings as loadSettings,
     setSettings as persistSettings,
   } from './lib/settings/bridge';
-  import { type Settings as SettingsModel, DEFAULT_SETTINGS } from './lib/settings/types';
+  import { type Settings as SettingsModel, DEFAULT_SETTINGS, type TriggerKey } from './lib/settings/types';
   import { localeRevision, setLanguageLocale, t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { openSettings } from './lib/settingsWindow';
@@ -43,7 +43,7 @@
         return null;
       }
     },
-  } = $props();
+  }: { load?: (slug: string) => Promise<string | null> } = $props();
 
   // Selection is the single source of truth shared across the overlay: the Sidebar switches it,
   // the SearchBox highlights matches in it, and SheetView renders it.
@@ -116,10 +116,30 @@
     input?.select();
   }
 
+  const findShortcutLabel = $derived(formatShortcut(settings.find_shortcut));
+
+  function formatShortcut(shortcut: TriggerKey): string {
+    const parts = [];
+    if (shortcut.ctrl) parts.push('CTRL');
+    if (shortcut.alt) parts.push('ALT');
+    if (shortcut.shift) parts.push('SHIFT');
+    parts.push(shortcut.key.trim().toUpperCase());
+    return parts.join('+');
+  }
+
+  function matchesShortcut(event: KeyboardEvent, shortcut: TriggerKey): boolean {
+    return (
+      event.ctrlKey === shortcut.ctrl &&
+      event.altKey === shortcut.alt &&
+      event.shiftKey === shortcut.shift &&
+      !event.metaKey &&
+      event.key.toLowerCase() === shortcut.key.toLowerCase()
+    );
+  }
+
   // Move focus to the in-sheet search field. Overrides the browser find shortcut in the overlay.
   function onWindowKeydown(event: KeyboardEvent) {
-    if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
-    if (event.key.toLowerCase() !== 'f') return;
+    if (!matchesShortcut(event, settings.find_shortcut)) return;
 
     event.preventDefault();
     focusSearchInput();
@@ -301,7 +321,7 @@
     </div>
   </header>
 
-  <SearchBox bind:query {matchCount} />
+  <SearchBox bind:query {matchCount} shortcutLabel={findShortcutLabel} />
 
   <div class="pane">
     <div class="pane-body">
@@ -313,7 +333,13 @@
       </div>
       <div class="sheet">
         {#key selection.slug}
-          <SheetView slug={selection.slug} {load} {query} onctrlfind={focusSearchInput} />
+          <SheetView
+            slug={selection.slug}
+            {load}
+            {query}
+            findShortcut={settings.find_shortcut}
+            onctrlfind={focusSearchInput}
+          />
         {/key}
       </div>
     </div>

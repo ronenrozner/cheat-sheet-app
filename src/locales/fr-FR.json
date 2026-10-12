@@ -9,7 +9,7 @@
     "close": "Fermer la fenetre"
   },
   "search": {
-    "placeholder": "Rechercher dans cette fiche… (CTRL+F)",
+    "placeholder": "Rechercher dans cette fiche…",
     "match": "resultat",
     "matches": "resultats",
     "noMatches": "Aucun resultat"

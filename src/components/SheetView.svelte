@@ -8,10 +8,23 @@
   import { renderMarkdown } from '../lib/markdown/render';
   import { highlightMarkdown } from '../lib/search/findInSheet';
   import { t } from '../lib/i18n';
+  import { DEFAULT_SETTINGS, type TriggerKey } from '../lib/settings/types';
 
   // `slug` (required), optional `load` (slug => body), optional `query` (Task 8), and optional
-  // `onctrlfind` callback for forwarding Ctrl+F from the focused iframe to the app shell.
-  let { slug, load, query = '', onctrlfind } = $props();
+  // `onctrlfind` callback for forwarding the find shortcut from the focused iframe to the app shell.
+  let {
+    slug,
+    load,
+    query = '',
+    findShortcut = DEFAULT_SETTINGS.find_shortcut,
+    onctrlfind,
+  }: {
+    slug: string;
+    load?: (slug: string) => Promise<string | null>;
+    query?: string;
+    findShortcut?: TriggerKey;
+    onctrlfind?: () => void;
+  } = $props();
 
   let iframe: HTMLIFrameElement | undefined;
 
@@ -48,8 +61,14 @@
     const win = iframe?.contentWindow;
     if (!win) return;
     win.onkeydown = (event: KeyboardEvent) => {
-      if (!event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
-      if (event.key.toLowerCase() !== 'f') return;
+      if (
+        event.ctrlKey !== findShortcut.ctrl ||
+        event.altKey !== findShortcut.alt ||
+        event.shiftKey !== findShortcut.shift ||
+        event.metaKey ||
+        event.key.toLowerCase() !== findShortcut.key.toLowerCase()
+      )
+        return;
       event.preventDefault();
       onctrlfind?.();
     };

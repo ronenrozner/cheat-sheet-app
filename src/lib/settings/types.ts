@@ -61,6 +61,7 @@ export interface Settings {
   win_position: WinPosition;
   save_window_geometry: SaveWindowGeometry;
   trigger: TriggerKey;
+  find_shortcut: TriggerKey;
   source_mode: SourceMode;
   language: Language;
   pinned_slug: string;
@@ -85,6 +86,7 @@ export const DEFAULT_SETTINGS: Settings = {
   win_position: { x: 0, y: 0 },
   save_window_geometry: 'Off',
   trigger: { ctrl: true, alt: false, shift: true, key: 'q' },
+  find_shortcut: { ctrl: true, alt: false, shift: false, key: 'f' },
   source_mode: 'Both',
   language: 'EnUs',
   pinned_slug: '',

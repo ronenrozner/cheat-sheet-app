@@ -107,6 +107,8 @@ pub struct Settings {
     #[serde(default)]
     pub save_window_geometry: SaveWindowGeometry,
     pub trigger: TriggerKey,
+    #[serde(default = "default_find_shortcut")]
+    pub find_shortcut: TriggerKey,
     pub source_mode: SourceMode,
     pub language: Language,
     pub pinned_slug: String,
@@ -115,6 +117,15 @@ pub struct Settings {
     pub show_tray: ShowTray,
     pub always_on_top: bool,
     pub editor_path: String,
+}
+
+fn default_find_shortcut() -> TriggerKey {
+    TriggerKey {
+        ctrl: true,
+        alt: false,
+        shift: false,
+        key: "f".to_string(),
+    }
 }
 
 impl TriggerKey {
@@ -167,6 +178,7 @@ impl Default for Settings {
                 shift: true,
                 key: "q".to_string(),
             },
+            find_shortcut: default_find_shortcut(),
             source_mode: SourceMode::Both,
             language: Language::EnUs,
             pinned_slug: String::new(),
@@ -249,6 +261,9 @@ pub fn load(app: &AppHandle) -> Settings {
     }
     if let Some(v) = store.get("trigger") {
         s.trigger = serde_json::from_value(v.clone()).unwrap_or_default();
+    }
+    if let Some(v) = store.get("find_shortcut") {
+        s.find_shortcut = serde_json::from_value(v.clone()).unwrap_or_else(|_| default_find_shortcut());
     }
     if let Some(v) = store.get("source_mode") {
         s.source_mode = serde_json::from_value(v.clone()).unwrap_or_default();
@@ -348,6 +363,10 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set(
         "trigger",
         serde_json::to_value(settings.trigger.clone()).unwrap_or_default(),
+    );
+    store.set(
+        "find_shortcut",
+        serde_json::to_value(settings.find_shortcut.clone()).unwrap_or_default(),
     );
     store.set(
         "source_mode",
