@@ -18,6 +18,7 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import AboutTab from './AboutTab.svelte';
   import ShortcutsTab from './ShortcutsTab.svelte';
+  import SheetsTab from './SheetsTab.svelte';
   import { localeRevision, t } from '../lib/i18n';
   import type { Settings, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
@@ -41,8 +42,8 @@
     themes?: ThemeDefinition[];
   }>();
 
-  // Active tab: 'settings' | 'shortcuts' | 'about'.
-  let tab = $state<'settings' | 'shortcuts' | 'about'>('settings');
+  // Active tab: 'sheets' | 'settings' | 'shortcuts' | 'about'.
+  let tab = $state<'sheets' | 'settings' | 'shortcuts' | 'about'>('sheets');
 
   // Drag the window from anywhere except form controls (decorations: false, so there is no
   // native drag handle). Without the guard below, starting a drag on a mousedown swallows the
@@ -95,6 +96,16 @@
   <div class="body">
     <nav class="tabs" aria-label={t('settings.tabsLabel')}>
       <button
+        class={`tab ${tab === 'sheets' ? 'active' : ''}`}
+        type="button"
+        aria-pressed={tab === 'sheets'}
+        onclick={() => {
+          tab = 'sheets';
+        }}
+      >
+        {t('settings.sheetsTab')}
+      </button>
+      <button
         class={`tab ${tab === 'settings' ? 'active' : ''}`}
         type="button"
         aria-pressed={tab === 'settings'}
@@ -127,8 +138,10 @@
     </nav>
 
     <div class="content">
-      {#if tab === 'settings'}
-        <SettingsPanel bind:settings {onSave} {sheetsBySlug} {themes} />
+      {#if tab === 'sheets'}
+        <SheetsTab bind:settings {onSave} {sheetsBySlug} />
+      {:else if tab === 'settings'}
+        <SettingsPanel bind:settings {onSave} {themes} />
       {:else if tab === 'shortcuts'}
         <ShortcutsTab bind:settings {onSave} {hotkeyStatus} {waylandSnippets} />
       {:else}

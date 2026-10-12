@@ -13,7 +13,6 @@
   a change updates the prop and the parent persists it.
 -->
 <script lang="ts">
-  import { open } from '@tauri-apps/plugin-dialog';
   import type { Settings, Theme, Language, ThemeDefinition } from '../lib/settings/types';
   import { DEFAULT_SETTINGS } from '../lib/settings/types';
   import { setLanguageLocale, t } from '../lib/i18n';
@@ -21,12 +20,10 @@
   let {
     settings = $bindable(DEFAULT_SETTINGS),
     onSave,
-    sheetsBySlug = {},
     themes = [],
   } = $props<{
     settings?: Settings;
     onSave: (s: Settings) => void;
-    sheetsBySlug?: Record<string, string>;
     themes?: ThemeDefinition[];
   }>();
 
@@ -94,37 +91,6 @@
     onSave(settings);
   }
 
-  // Editor: empty path means use the system default .md app.
-  async function onChooseEditor() {
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      title: t('settings.editorSelect'),
-    });
-    if (typeof selected !== 'string') return;
-    settings = { ...settings, editor_path: selected };
-    onSave(settings);
-  }
-
-  function onEditorPath(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
-    settings = { ...settings, editor_path: value };
-    onSave(settings);
-  }
-
-  function onSystemEditor() {
-    settings = { ...settings, editor_path: '' };
-    onSave(settings);
-  }
-
-  // Pinned sheet: dropdown of every available sheet. The header shows the current title, or the
-  // placeholder when nothing is pinned. Selecting a sheet sets `pinned_slug` (the value the overlay
-  // uses to open the sheet). Clearing it sets an empty slug (no pin).
-  function onPinned(e: Event) {
-    const el = e.target as HTMLSelectElement;
-    settings = { ...settings, pinned_slug: el.value };
-    onSave(settings);
-  }
 </script>
 
 <div class="panel">
@@ -191,46 +157,6 @@
       <option value="EnUs">{t('settings.optionEnUs')}</option>
       <option value="EsEs">{t('settings.optionEsEs')}</option>
       <option value="FrFr">{t('settings.optionFrFr')}</option>
-    </select>
-  </label>
-
-  <div class="row">
-    <span>{t('settings.editor')}</span>
-    <div class="editor-control">
-      <input
-        class="ctrl editor-output"
-        type="text"
-        aria-label={t('settings.editor')}
-        placeholder={t('settings.editorSystem')}
-        value={settings.editor_path}
-        onchange={onEditorPath}
-      />
-      <button class="ctrl button" type="button" onclick={onChooseEditor}>
-        {t('settings.editorBrowse')}
-      </button>
-      <button
-        class="ctrl button"
-        type="button"
-        onclick={onSystemEditor}
-        disabled={!settings.editor_path.trim()}
-      >
-        {t('settings.editorUseSystem')}
-      </button>
-    </div>
-  </div>
-
-  <label class="row">
-    <span>{t('settings.pinnedSheet')}</span>
-    <select
-      class="ctrl"
-      value={settings.pinned_slug}
-      onchange={onPinned}
-      aria-label={t('settings.pinnedSheet')}
-    >
-      <option value="">{t('settings.nonePlaceholder')}</option>
-      {#each Object.keys(sheetsBySlug).sort((a, b) => a.localeCompare(b)) as slug (slug)}
-        <option value={slug}>{sheetsBySlug[slug]}</option>
-      {/each}
     </select>
   </label>
 
@@ -313,42 +239,8 @@
     outline: 2px solid var(--cs-accent, #7d9ad4);
     outline-offset: 1px;
   }
-  .ctrl[type='text'] {
-    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 72%, var(--cs-fg, #cdd6f4));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 18%, transparent);
-  }
-  .ctrl[type='text']:hover {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 30%, transparent);
-  }
-  .ctrl[type='text']:focus {
-    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 60%, var(--cs-fg, #cdd6f4));
-    box-shadow: inset 0 0 0 1px var(--cs-accent, #7d9ad4);
-  }
   .language-select {
     min-width: 13rem;
-  }
-  .editor-control {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.35rem;
-    flex: 1;
-    min-width: 0;
-  }
-  .editor-output {
-    flex: 1;
-    min-width: 8rem;
-    max-width: 16rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .button {
-    cursor: pointer;
-  }
-  .button:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
   }
   .switch {
     position: relative;
