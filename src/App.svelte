@@ -366,6 +366,7 @@
     gap: 0.5rem;
     padding: 1rem;
     height: 100vh;
+    overflow: hidden;
     box-sizing: border-box;
     background: var(--cs-bg, #1e1e2e);
     color: var(--cs-fg, #cdd6f4);
@@ -391,7 +392,7 @@
     flex-direction: column;
     gap: 0.5rem;
     min-height: 0;
-    width: calc(7rem + 30px);
+    width: calc(7rem + 40px);
   }
   .left-rail :global(.sidebar) {
     flex: 1;
@@ -400,6 +401,7 @@
   .sheet {
     flex: 1;
     min-height: 0;
+    overflow: auto;
   }
   .pane-body {
     display: flex;
@@ -410,6 +412,8 @@
   .pane {
     display: flex;
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
   .pin {
     width: 100%;

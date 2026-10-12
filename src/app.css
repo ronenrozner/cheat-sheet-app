@@ -21,6 +21,13 @@
   font-optical-sizing: auto;
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Mona Sans', system-ui, sans-serif;
 }

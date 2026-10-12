@@ -98,6 +98,7 @@
   .sheet-view {
     width: 100%;
     height: 100%;
+    display: block;
     border: 0;
     box-sizing: border-box;
   }
