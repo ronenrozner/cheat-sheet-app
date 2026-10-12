@@ -45,7 +45,8 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 /**
  * Sanitize rendered HTML, removing scripts / inline handlers / javascript: URLs.
  *
- * Falls back to the raw HTML (no crash) if DOMPurify is unavailable.
+ * Fails closed when DOMPurify is unavailable or throws. Raw HTML must never be returned because
+ * Markdown is untrusted input.
  */
 export function sanitize(html: string): string {
   try {
@@ -57,7 +58,7 @@ export function sanitize(html: string): string {
       });
     }
   } catch {
-    // DOMPurify unavailable (e.g. no DOM); fall through to raw.
+    // DOMPurify unavailable or failed. Do not render untrusted HTML.
   }
-  return html;
+  return '';
 }

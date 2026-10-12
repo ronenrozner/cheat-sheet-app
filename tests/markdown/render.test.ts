@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 // Markdown render tests (Task 5). Runs in jsdom so DOMPurify has a DOM to sanitize against.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import DOMPurify from 'dompurify';
 import { renderMarkdown, sanitize } from '../../src/lib/markdown/render';
 
 describe('renderMarkdown', () => {
@@ -47,5 +48,15 @@ describe('sanitize', () => {
   it('is a no-op on safe HTML', () => {
     const html = sanitize('<p>plain</p>');
     expect(html).toContain('<p>plain</p>');
+  });
+
+  it('fails closed when DOMPurify throws', () => {
+    const spy = vi.spyOn(DOMPurify, 'sanitize').mockImplementation(() => {
+      throw new Error('sanitizer unavailable');
+    });
+
+    expect(sanitize('<img src=x onerror="evil()">')).toBe('');
+
+    spy.mockRestore();
   });
 });
