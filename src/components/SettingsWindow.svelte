@@ -65,91 +65,91 @@
 </script>
 
 {#key $localeRevision}
-<div
-  class="window"
-  role="dialog"
-  aria-label={t('settings.title')}
-  tabindex="-1"
-  onmousedown={onStartDrag}
->
-  <header class="titlebar">
-    <span class="title">{t('settings.title')}</span>
-    <button
-      class="close"
-      type="button"
-      aria-label={t('settings.close')}
-      // Stop the mousedown from bubbling to the .window drag handle, otherwise clicking the X
-      // starts a window drag instead of calling onClose().
-      onmousedown={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      }}
-      onclick={(e) => {
-        e.stopPropagation();
-        onClose();
-      }}
-    >
-      ×
-    </button>
-  </header>
+  <div
+    class="window"
+    role="dialog"
+    aria-label={t('settings.title')}
+    tabindex="-1"
+    onmousedown={onStartDrag}
+  >
+    <header class="titlebar">
+      <span class="title">{t('settings.title')}</span>
+      <button
+        class="close"
+        type="button"
+        aria-label={t('settings.close')}
+        // Stop the mousedown from bubbling to the .window drag handle, otherwise clicking the X
+        // starts a window drag instead of calling onClose().
+        onmousedown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+        onclick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      >
+        ×
+      </button>
+    </header>
 
-  <div class="body">
-    <nav class="tabs" aria-label={t('settings.tabsLabel')}>
-      <button
-        class={`tab ${tab === 'sheets' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={tab === 'sheets'}
-        onclick={() => {
-          tab = 'sheets';
-        }}
-      >
-        {t('settings.sheetsTab')}
-      </button>
-      <button
-        class={`tab ${tab === 'settings' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={tab === 'settings'}
-        onclick={() => {
-          tab = 'settings';
-        }}
-      >
-        {t('settings.settingsTab')}
-      </button>
-      <button
-        class={`tab ${tab === 'shortcuts' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={tab === 'shortcuts'}
-        onclick={() => {
-          tab = 'shortcuts';
-        }}
-      >
-        {t('settings.shortcutsTab')}
-      </button>
-      <button
-        class={`tab ${tab === 'about' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={tab === 'about'}
-        onclick={() => {
-          tab = 'about';
-        }}
-      >
-        {t('settings.aboutTab')}
-      </button>
-    </nav>
+    <div class="body">
+      <nav class="tabs" aria-label={t('settings.tabsLabel')}>
+        <button
+          class={`tab ${tab === 'sheets' ? 'active' : ''}`}
+          type="button"
+          aria-pressed={tab === 'sheets'}
+          onclick={() => {
+            tab = 'sheets';
+          }}
+        >
+          {t('settings.sheetsTab')}
+        </button>
+        <button
+          class={`tab ${tab === 'settings' ? 'active' : ''}`}
+          type="button"
+          aria-pressed={tab === 'settings'}
+          onclick={() => {
+            tab = 'settings';
+          }}
+        >
+          {t('settings.settingsTab')}
+        </button>
+        <button
+          class={`tab ${tab === 'shortcuts' ? 'active' : ''}`}
+          type="button"
+          aria-pressed={tab === 'shortcuts'}
+          onclick={() => {
+            tab = 'shortcuts';
+          }}
+        >
+          {t('settings.shortcutsTab')}
+        </button>
+        <button
+          class={`tab ${tab === 'about' ? 'active' : ''}`}
+          type="button"
+          aria-pressed={tab === 'about'}
+          onclick={() => {
+            tab = 'about';
+          }}
+        >
+          {t('settings.aboutTab')}
+        </button>
+      </nav>
 
-    <div class="content">
-      {#if tab === 'sheets'}
-        <SheetsTab bind:settings {onSave} {sheetsBySlug} />
-      {:else if tab === 'settings'}
-        <SettingsPanel bind:settings {onSave} {themes} />
-      {:else if tab === 'shortcuts'}
-        <ShortcutsTab bind:settings {onSave} {hotkeyStatus} {waylandSnippets} />
-      {:else}
-        <AboutTab {version} />
-      {/if}
+      <div class="content">
+        {#if tab === 'sheets'}
+          <SheetsTab bind:settings {onSave} {sheetsBySlug} />
+        {:else if tab === 'settings'}
+          <SettingsPanel bind:settings {onSave} {themes} />
+        {:else if tab === 'shortcuts'}
+          <ShortcutsTab bind:settings {onSave} {hotkeyStatus} {waylandSnippets} />
+        {:else}
+          <AboutTab {version} />
+        {/if}
+      </div>
     </div>
   </div>
-</div>
 {/key}
 
 <style>

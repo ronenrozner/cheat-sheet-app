@@ -35,15 +35,19 @@ categories: [Keyboard Shortcuts]
 ## Pipelines
 
 ### Filter and format
+
 ```powershell
 Get-Process | Where-Object CPU -gt 100 | Sort-Object WorkingSet -Descending
 ```
+
 ### Select properties
+
 ```powershell
 Get-Service | Select-Object Name, Status, StartType
 ```
 
 ### Count and output
+
 ```powershell
 Get-ChildItem -Recurse | Where-Object { $_.Extension -eq '.log' } | Measure-Object
 ```
@@ -51,6 +55,7 @@ Get-ChildItem -Recurse | Where-Object { $_.Extension -eq '.log' } | Measure-Obje
 ## Registry
 
 ### Read a registry value
+
 ```powershell
 Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |
   Select-Object DisplayName, DisplayVersion

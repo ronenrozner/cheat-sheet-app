@@ -38,22 +38,27 @@ categories: [Keyboard Shortcuts]
 ## Built-in Patterns
 
 ### Pipe: feed one command into the next
+
 ```bash
 cat file | grep error | wc -l
 ```
 
 ### Redirect output- overwrite
+
 ```bash
 echo "done" > out.txt
 ```
+
 ### Redirect output- append
+
 ```bash
 echo "done" >> out.txt
 ```
 
 ### Combine conditions
+
 ```bash
 if [ -f file.txt ] && [ -w file.txt ]; then
-  echo "exists and writable"  
+  echo "exists and writable"
 fi
 ```

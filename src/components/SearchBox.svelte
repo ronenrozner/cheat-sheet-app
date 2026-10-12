@@ -29,7 +29,7 @@
   <input
     class="search-input"
     type="text"
-    placeholder={placeholder}
+    {placeholder}
     aria-label={placeholder}
     bind:value={query}
   />

@@ -90,7 +90,6 @@
     };
     onSave(settings);
   }
-
 </script>
 
 <div class="panel">

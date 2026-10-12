@@ -19,7 +19,11 @@
     getSettings as loadSettings,
     setSettings as persistSettings,
   } from './lib/settings/bridge';
-  import { type Settings as SettingsModel, DEFAULT_SETTINGS, type TriggerKey } from './lib/settings/types';
+  import {
+    type Settings as SettingsModel,
+    DEFAULT_SETTINGS,
+    type TriggerKey,
+  } from './lib/settings/types';
   import { localeRevision, setLanguageLocale, t } from './lib/i18n';
   import { findMatches } from './lib/search/findInSheet';
   import { openSettings } from './lib/settingsWindow';
@@ -287,72 +291,72 @@
 <svelte:window onkeydown={onWindowKeydown} />
 
 {#key $localeRevision}
-<main class="overlay">
-  <header class="title">
-    <div class="drag-region" data-tauri-drag-region>
-      <h1 data-tauri-drag-region>{t('app.title')}</h1>
-    </div>
-    <div class="title-actions">
-      <button
-        class="icon-button"
-        type="button"
-        aria-label={t('app.edit')}
-        onclick={onEditSheet}
-        disabled={!selection.slug}
-      >
-        ✎
-      </button>
-      <button
-        class="icon-button gear"
-        type="button"
-        aria-label={t('settings.settingsOpen')}
-        onclick={onOpenSettings}
-      >
-        ⚙
-      </button>
-      <button
-        class="icon-button close-window"
-        type="button"
-        aria-label={t('app.close')}
-        onclick={onCloseWindow}
-      >
-        ×
-      </button>
-    </div>
-  </header>
-
-  <SearchBox bind:query {matchCount} shortcutLabel={findShortcutLabel} />
-
-  <div class="pane">
-    <div class="pane-body">
-      <div class="left-rail">
-        <Sidebar {selection} onselect={onSelect} />
-        <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
-          {isPinned ? t('app.unpin') : t('app.pin')}
+  <main class="overlay">
+    <header class="title">
+      <div class="drag-region" data-tauri-drag-region>
+        <h1 data-tauri-drag-region>{t('app.title')}</h1>
+      </div>
+      <div class="title-actions">
+        <button
+          class="icon-button"
+          type="button"
+          aria-label={t('app.edit')}
+          onclick={onEditSheet}
+          disabled={!selection.slug}
+        >
+          ✎
+        </button>
+        <button
+          class="icon-button gear"
+          type="button"
+          aria-label={t('settings.settingsOpen')}
+          onclick={onOpenSettings}
+        >
+          ⚙
+        </button>
+        <button
+          class="icon-button close-window"
+          type="button"
+          aria-label={t('app.close')}
+          onclick={onCloseWindow}
+        >
+          ×
         </button>
       </div>
-      <div class="sheet">
-        {#key selection.slug}
-          <SheetView
-            slug={selection.slug}
-            {load}
-            {query}
-            findShortcut={settings.find_shortcut}
-            onctrlfind={focusSearchInput}
-          />
-        {/key}
+    </header>
+
+    <SearchBox bind:query {matchCount} shortcutLabel={findShortcutLabel} />
+
+    <div class="pane">
+      <div class="pane-body">
+        <div class="left-rail">
+          <Sidebar {selection} onselect={onSelect} />
+          <button class="pin" type="button" onclick={onPin} aria-pressed={isPinned}>
+            {isPinned ? t('app.unpin') : t('app.pin')}
+          </button>
+        </div>
+        <div class="sheet">
+          {#key selection.slug}
+            <SheetView
+              slug={selection.slug}
+              {load}
+              {query}
+              findShortcut={settings.find_shortcut}
+              onctrlfind={focusSearchInput}
+            />
+          {/key}
+        </div>
       </div>
     </div>
-  </div>
 
-  <button
-    class="resize-grip"
-    type="button"
-    aria-label={t('app.resize')}
-    title={t('app.resize')}
-    onpointerdown={onResizeGripPointerDown}
-  ></button>
-</main>
+    <button
+      class="resize-grip"
+      type="button"
+      aria-label={t('app.resize')}
+      title={t('app.resize')}
+      onpointerdown={onResizeGripPointerDown}
+    ></button>
+  </main>
 {/key}
 
 <style>

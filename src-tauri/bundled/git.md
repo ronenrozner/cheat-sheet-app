@@ -39,6 +39,7 @@ categories: [Keyboard Shortcuts]
 ```bash
 git restore --staged file.txt
 ```
+
 ### Discard local changes
 
 ```bash
