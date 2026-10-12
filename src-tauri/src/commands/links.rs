@@ -6,6 +6,8 @@ const ICON_CREDIT_URL: &str = "https://www.flaticon.com/free-icons/parchment";
 
 fn is_allowed_external_url(url: &str) -> bool {
     matches!(url, RELEASE_NOTES_URL | SOURCE_CODE_URL | ICON_CREDIT_URL)
+        || url.starts_with("https://")
+        || url.starts_with("http://")
 }
 
 #[tauri::command]
@@ -28,11 +30,14 @@ mod tests {
         assert!(is_allowed_external_url(RELEASE_NOTES_URL));
         assert!(is_allowed_external_url(SOURCE_CODE_URL));
         assert!(is_allowed_external_url(ICON_CREDIT_URL));
+        assert!(is_allowed_external_url("https://example.com"));
+        assert!(is_allowed_external_url("http://example.com"));
     }
 
     #[test]
     fn other_urls_are_rejected() {
-        assert!(!is_allowed_external_url("https://example.com"));
         assert!(!is_allowed_external_url("file:///etc/passwd"));
+        assert!(!is_allowed_external_url("javascript:alert(1)"));
+        assert!(!is_allowed_external_url("mailto:test@example.com"));
     }
 }

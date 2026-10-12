@@ -43,6 +43,7 @@ export function coerceSettings(raw: unknown): Settings {
     show_tray:
       s.show_tray === 'On' || s.show_tray === 'Off' ? s.show_tray : DEFAULT_SETTINGS.show_tray,
     always_on_top: coerceAlwaysOnTop(s.always_on_top),
+    open_links: coerceOpenLinksModifier(s.open_links),
     editor_path: typeof s.editor_path === 'string' ? s.editor_path : DEFAULT_SETTINGS.editor_path,
   };
 }
@@ -85,6 +86,7 @@ async function validate(s: Settings): Promise<boolean> {
   const trays = new Set(['Off', 'On']);
   const tops = new Set(['On', 'Off']);
   const geometryToggles = new Set(['On', 'Off']);
+  const openLinks = new Set(['None', 'Click', 'Ctrl', 'Alt']);
   return (
     themes.has(s.theme) &&
     typeof s.theme_light === 'string' &&
@@ -98,6 +100,7 @@ async function validate(s: Settings): Promise<boolean> {
     isWinPosition(s.win_position) &&
     isTriggerKey(s.trigger) &&
     isTriggerKey(s.find_shortcut) &&
+    openLinks.has(s.open_links) &&
     typeof s.pinned_slug === 'string' &&
     typeof s.dataDir === 'string' &&
     typeof s.editor_path === 'string'
@@ -143,6 +146,11 @@ function coerceAlwaysOnTop(value: unknown): Settings['always_on_top'] {
   if (value === 'On' || value === true) return 'On';
   if (value === 'Off' || value === false) return 'Off';
   return DEFAULT_SETTINGS.always_on_top;
+}
+
+function coerceOpenLinksModifier(value: unknown): Settings['open_links'] {
+  if (value === 'Click' || value === 'Ctrl' || value === 'Alt') return value;
+  return DEFAULT_SETTINGS.open_links;
 }
 
 function toBackendSettings(settings: Settings): Omit<Settings, 'always_on_top'> & {

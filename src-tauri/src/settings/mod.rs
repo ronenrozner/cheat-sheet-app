@@ -95,6 +95,16 @@ pub enum SaveWindowGeometry {
     On,
 }
 
+/// Modifier required to open links in sheets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum OpenLinksModifier {
+    #[default]
+    None,
+    Click,
+    Ctrl,
+    Alt,
+}
+
 /// Full persisted settings snapshot.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
@@ -109,6 +119,8 @@ pub struct Settings {
     pub trigger: TriggerKey,
     #[serde(default = "default_find_shortcut")]
     pub find_shortcut: TriggerKey,
+    #[serde(default)]
+    pub open_links: OpenLinksModifier,
     pub source_mode: SourceMode,
     pub language: Language,
     pub pinned_slug: String,
@@ -179,6 +191,7 @@ impl Default for Settings {
                 key: "q".to_string(),
             },
             find_shortcut: default_find_shortcut(),
+            open_links: OpenLinksModifier::None,
             source_mode: SourceMode::Both,
             language: Language::EnUs,
             pinned_slug: String::new(),
@@ -263,7 +276,11 @@ pub fn load(app: &AppHandle) -> Settings {
         s.trigger = serde_json::from_value(v.clone()).unwrap_or_default();
     }
     if let Some(v) = store.get("find_shortcut") {
-        s.find_shortcut = serde_json::from_value(v.clone()).unwrap_or_else(|_| default_find_shortcut());
+        s.find_shortcut =
+            serde_json::from_value(v.clone()).unwrap_or_else(|_| default_find_shortcut());
+    }
+    if let Some(v) = store.get("open_links") {
+        s.open_links = serde_json::from_value(v.clone()).unwrap_or_default();
     }
     if let Some(v) = store.get("source_mode") {
         s.source_mode = serde_json::from_value(v.clone()).unwrap_or_default();
@@ -367,6 +384,10 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), std::io::Error> 
     store.set(
         "find_shortcut",
         serde_json::to_value(settings.find_shortcut.clone()).unwrap_or_default(),
+    );
+    store.set(
+        "open_links",
+        serde_json::to_value(settings.open_links).unwrap_or_default(),
     );
     store.set(
         "source_mode",
@@ -547,6 +568,7 @@ mod tests {
                 key: "q".to_string(),
             },
             find_shortcut: default_find_shortcut(),
+            open_links: OpenLinksModifier::None,
             source_mode: SourceMode::Local,
             language: Language::EnUs,
             pinned_slug: "1password".to_string(),

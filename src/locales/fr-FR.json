@@ -94,6 +94,11 @@
   "shortcuts": {
     "title": "RACCOURCIS LOCAUX",
     "activeWhileFocused": "Actifs quand l'application a le focus.",
-    "find": "Rechercher dans la fiche actuelle"
+    "find": "Rechercher dans la fiche actuelle",
+    "openLinks": "Ouvrir les liens",
+    "openLinksNo": "Non",
+    "openLinksClickOnly": "Clic seulement",
+    "openLinksCtrlClick": "Ctrl + clic",
+    "openLinksAltClick": "Alt + clic"
   }
 }

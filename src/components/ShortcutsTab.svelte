@@ -1,7 +1,12 @@
 <script lang="ts">
   import { t } from '../lib/i18n';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
-  import { DEFAULT_SETTINGS, type Settings, type TriggerKey } from '../lib/settings/types';
+  import {
+    DEFAULT_SETTINGS,
+    type OpenLinksModifier,
+    type Settings,
+    type TriggerKey,
+  } from '../lib/settings/types';
 
   let {
     settings = $bindable(DEFAULT_SETTINGS),
@@ -37,6 +42,12 @@
 
   function stopListening() {
     listeningFor = null;
+  }
+
+  function onOpenLinks(e: Event) {
+    const openLinks = (e.target as HTMLSelectElement).value as OpenLinksModifier;
+    settings = { ...settings, open_links: openLinks };
+    onSave(settings);
   }
 
   function onShortcutKeydown(e: KeyboardEvent) {
@@ -113,6 +124,17 @@
           </button>
         </dd>
       </div>
+      <div class="shortcut-item open-links-item">
+        <dt>{t('shortcuts.openLinks')}</dt>
+        <dd>
+          <select class="ctrl" value={settings.open_links} onchange={onOpenLinks}>
+            <option value="None">{t('shortcuts.openLinksNo')}</option>
+            <option value="Click">{t('shortcuts.openLinksClickOnly')}</option>
+            <option value="Ctrl">{t('shortcuts.openLinksCtrlClick')}</option>
+            <option value="Alt">{t('shortcuts.openLinksAltClick')}</option>
+          </select>
+        </dd>
+      </div>
     </dl>
   </div>
 
@@ -178,6 +200,12 @@
     gap: 1rem;
   }
 
+  .open-links-item {
+    border-top: 1px solid var(--cs-border, #44475a);
+    padding-top: 0.75rem;
+    margin-top: 0.35rem;
+  }
+
   .shortcut-item dt {
     font-size: 0.85rem;
     opacity: 0.8;
@@ -202,6 +230,15 @@
   .row span {
     font-size: 0.85rem;
     opacity: 0.8;
+  }
+
+  .ctrl {
+    min-width: 9rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid var(--cs-border, #44475a);
+    background: var(--cs-input-bg, #282c3f);
+    color: var(--cs-fg, #cdd6f4);
   }
 
   .trigger-capture {

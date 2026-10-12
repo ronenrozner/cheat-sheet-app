@@ -52,6 +52,9 @@ export type ShowTray = 'Off' | 'On';
 /** Whether the overlay stays above other windows (Task 18). Default on. */
 export type AlwaysOnTop = 'On' | 'Off';
 
+/** Modifier required to open links in sheets. */
+export type OpenLinksModifier = 'None' | 'Click' | 'Ctrl' | 'Alt';
+
 /** Full persisted settings snapshot. */
 export interface Settings {
   theme: Theme;
@@ -68,6 +71,7 @@ export interface Settings {
   dataDir: string;
   show_tray: ShowTray;
   always_on_top: AlwaysOnTop;
+  open_links: OpenLinksModifier;
   /** Editor executable path. Empty means use the system default editor for .md files. */
   editor_path: string;
 }
@@ -82,7 +86,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'Follow',
   theme_light: 'Cheatsheet Light',
   theme_dark: 'Cheatsheet',
-  win_size: { width: 800, height: 900 },
+  win_size: { width: 1000, height: 900 },
   win_position: { x: 0, y: 0 },
   save_window_geometry: 'Off',
   trigger: { ctrl: true, alt: false, shift: true, key: 'q' },
@@ -93,5 +97,6 @@ export const DEFAULT_SETTINGS: Settings = {
   dataDir: 'cheatsheets',
   show_tray: 'Off',
   always_on_top: 'On',
+  open_links: 'None',
   editor_path: '',
 };

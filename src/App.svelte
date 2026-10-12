@@ -22,6 +22,7 @@
   import {
     type Settings as SettingsModel,
     DEFAULT_SETTINGS,
+    type OpenLinksModifier,
     type TriggerKey,
   } from './lib/settings/types';
   import { localeRevision, setLanguageLocale, t } from './lib/i18n';
@@ -162,6 +163,14 @@
   // Open the settings window (Task 19). Triggered by the gear icon in the overlay header.
   function onOpenSettings() {
     void openSettings();
+  }
+
+  async function onOpenSheetLink(url: string) {
+    try {
+      await invoke('open_external_url', { url });
+    } catch {
+      // The OS did not open the link. Keep the overlay usable.
+    }
   }
 
   async function onCloseWindow() {
@@ -342,7 +351,9 @@
               {load}
               {query}
               findShortcut={settings.find_shortcut}
+              openLinks={settings.open_links as OpenLinksModifier}
               onctrlfind={focusSearchInput}
+              onopenlink={onOpenSheetLink}
             />
           {/key}
         </div>

@@ -8,7 +8,7 @@
   import { renderMarkdown } from '../lib/markdown/render';
   import { highlightMarkdown } from '../lib/search/findInSheet';
   import { t } from '../lib/i18n';
-  import { DEFAULT_SETTINGS, type TriggerKey } from '../lib/settings/types';
+  import { DEFAULT_SETTINGS, type OpenLinksModifier, type TriggerKey } from '../lib/settings/types';
 
   // `slug` (required), optional `load` (slug => body), optional `query` (Task 8), and optional
   // `onctrlfind` callback for forwarding the find shortcut from the focused iframe to the app shell.
@@ -17,13 +17,17 @@
     load,
     query = '',
     findShortcut = DEFAULT_SETTINGS.find_shortcut,
+    openLinks = DEFAULT_SETTINGS.open_links,
     onctrlfind,
+    onopenlink,
   }: {
     slug: string;
     load?: (slug: string) => Promise<string | null>;
     query?: string;
     findShortcut?: TriggerKey;
+    openLinks?: OpenLinksModifier;
     onctrlfind?: () => void;
+    onopenlink?: (url: string) => void;
   } = $props();
 
   let iframe: HTMLIFrameElement | undefined;
@@ -57,9 +61,17 @@
     }
   }
 
+  function canOpenLink(event: MouseEvent): boolean {
+    if (openLinks === 'Click') return true;
+    if (openLinks === 'Ctrl') return event.ctrlKey;
+    if (openLinks === 'Alt') return event.altKey;
+    return false;
+  }
+
   function onIframeLoad() {
     const win = iframe?.contentWindow;
-    if (!win) return;
+    const doc = iframe?.contentDocument;
+    if (!win || !doc) return;
     win.onkeydown = (event: KeyboardEvent) => {
       if (
         event.ctrlKey !== findShortcut.ctrl ||
@@ -71,6 +83,14 @@
         return;
       event.preventDefault();
       onctrlfind?.();
+    };
+    doc.onclick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      const link = target?.closest('a[href]') as HTMLAnchorElement | null;
+      if (!link) return;
+      event.preventDefault();
+      if (!canOpenLink(event)) return;
+      onopenlink?.(link.href);
     };
   }
 
