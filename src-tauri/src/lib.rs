@@ -12,6 +12,7 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -128,7 +129,9 @@ pub fn run() {
             crate::commands::sheets::load_sheet,
             crate::commands::sheets::open_sheet_for_edit,
             crate::commands::sheets::get_online_listing,
-            crate::commands::sheets::refresh_online_listing
+            crate::commands::sheets::refresh_online_listing,
+            crate::commands::updater::check_update,
+            crate::commands::updater::install_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

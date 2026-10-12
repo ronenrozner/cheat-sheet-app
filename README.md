@@ -115,6 +115,53 @@ src-tauri/target/release/bundle/
 
 The exact files depend on the operating system. For example, Linux can produce AppImage, deb, and rpm bundles.
 
+## Updater releases
+
+The About tab uses the Tauri v2 updater. The app reads a static manifest from:
+
+```text
+https://raw.githubusercontent.com/ronenrozner/cheat-sheet-app/main/latest.json
+```
+
+The checked-in [`latest.json`](latest.json) is the manifest template for the current release. Each entry needs the release artifact URL and the **contents** of the generated `.sig` file. Do not put a `.sig` URL in the `signature` field.
+
+Generate updater keys once:
+
+```sh
+npm run tauri signer generate -- -w ~/.tauri/cheatsheet.key
+```
+
+Put the printed public key in `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. Keep the private key secret. If you lose it, installed apps cannot verify future updates signed with a new key.
+
+Sign a Linux AppImage:
+
+```sh
+npm run tauri signer sign -- \
+  -f ~/.tauri/cheatsheet.key \
+  src-tauri/target/release/bundle/appimage/CheatSheet_26.9.29_amd64.AppImage \
+  > CheatSheet_26.9.29_amd64.AppImage.sig
+```
+
+On macOS, sign the `.app.tar.gz` updater artifact. On Windows PowerShell, use the same command shape with backticks and a Windows path:
+
+```powershell
+npm run tauri signer sign -- `
+  -f "$env:USERPROFILE\.tauri\cheatsheet.key" `
+  "path\to\CheatSheet_26.9.29_x64-setup.exe" `
+  > "CheatSheet_26.9.29_x64-setup.exe.sig"
+```
+
+For each release:
+
+1. Build the app with `npm run tauri build`.
+2. Upload the release artifact to GitHub Releases.
+3. Sign the artifact with `npm run tauri signer sign`.
+4. Paste the `.sig` file contents into `latest.json`.
+5. Update `version`, `notes`, `pub_date`, and artifact URLs in `latest.json`.
+6. Commit and push `latest.json` to `main`.
+
+You can also let Tauri create signatures during build by setting `TAURI_SIGNING_PRIVATE_KEY_PATH` before `npm run tauri build`.
+
 If you prefer the Rust Tauri CLI, install it first:
 
 ```sh
@@ -214,7 +261,7 @@ Creating or editing sheets is done manually, using your favorite text editor. Se
 
 The app source code is licensed under Apache-2.0. See [`LICENSE`](LICENSE).
 
-[Parchment icons](https://www.flaticon.com/free-icons/parchment "Parchment icons") created by Assia Benkerroum - Flaticon.
+[Parchment icons](https://www.flaticon.com/free-icons/parchment 'Parchment icons') created by Assia Benkerroum - Flaticon.
 
 Some bundled or source sheet material can have separate upstream license notices. See [`NOTICE`](NOTICE).
 

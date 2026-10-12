@@ -49,6 +49,14 @@
       }
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://raw.githubusercontent.com/ronenrozner/cheat-sheet-app/main/latest.json"
+      ]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

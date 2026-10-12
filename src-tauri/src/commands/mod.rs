@@ -6,3 +6,4 @@ pub mod links;
 pub mod settings;
 pub mod sheets;
 pub mod themes;
+pub mod updater;

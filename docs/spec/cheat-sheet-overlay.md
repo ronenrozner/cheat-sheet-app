@@ -12,6 +12,7 @@
   * **Settings moved to route-owned page (2026-09-18).** The main route `/` renders the HUD. The settings route `/settings` renders the settings window UI (`src/routes/settings/+page.svelte`). The Tauri window still uses label `settings`, but opens `/settings` via `WebviewWindow`, so `App.svelte` no longer branches on the current window label.
   * **Theme system expanded (Task 23, 2026-09-19).** Theme support now mirrors the Pomotroid JSON theme model, adapted for Cheat-Sheet App. The app ships 38 bundled themes under `static/themes/` and checked-in built assets under `dist/themes/`. It loads custom JSON themes from `app_data_dir/themes`, validates hex color values, lets custom themes override built-ins by name, emits `themes:changed` on hot reload, and lets users choose separate Light and Dark theme slots from Settings. See `THEMES.md`.
   * **Config file path and sheet data preference added (2026-09-22).** App preferences now live in `<home>/.config/cheatsheet/config.json` on Linux, macOS, and Windows. The JSON includes `dataDir`. New installs default `dataDir` to `<home>/cheatsheets`; existing `dataDir` values are kept and sheets are not moved.
+  * **About-tab updater added (2026-10-12).** The About tab now checks a static Tauri v2 updater manifest at `https://raw.githubusercontent.com/ronenrozner/cheat-sheet-app/main/latest.json`. Updates require a Tauri updater public key in `src-tauri/tauri.conf.json`, signed release artifacts, and a `latest.json` entry whose `signature` value is the contents of the generated `.sig` file.
 
 ---
 

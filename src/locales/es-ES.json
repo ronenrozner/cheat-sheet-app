@@ -83,7 +83,12 @@
     "builtWithText": "Creado con Tauri, Svelte y Rust.",
     "parchmentIconCredit": "Iconos de pergamino creados por Assia Benkerroum - Flaticon",
     "licenseAndCopyright": "Licencia Apache-2.0 — Copyright © 2026 Ronen Rozner.",
-    "aboutNote": "Este espacio está reservado para contenido futuro."
+    "aboutNote": "Este espacio está reservado para contenido futuro.",
+    "updateChecking": "Buscando actualizaciones…",
+    "updateUpToDate": "Actualizado",
+    "updateInstall": "Instalar v{{version}} — la app se reiniciará",
+    "updateInstalling": "Instalando…",
+    "updateError": "No se pudieron buscar actualizaciones"
   },
   "shortcuts": {
     "title": "ATAJOS LOCALES",

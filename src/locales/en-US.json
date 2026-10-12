@@ -83,7 +83,12 @@
     "builtWithText": "Built with Tauri, Svelte, and Rust.",
     "parchmentIconCredit": "Parchment icons created by Assia Benkerroum - Flaticon",
     "licenseAndCopyright": "Apache-2.0 License — Copyright © 2026 Ronen Rozner.",
-    "aboutNote": "This space is reserved for future content."
+    "aboutNote": "This space is reserved for future content.",
+    "updateChecking": "Checking for updates…",
+    "updateUpToDate": "Up to date",
+    "updateInstall": "Install v{{version}} — app will restart",
+    "updateInstalling": "Installing…",
+    "updateError": "Could not check for updates"
   },
   "shortcuts": {
     "title": "LOCAL SHORTCUTS",

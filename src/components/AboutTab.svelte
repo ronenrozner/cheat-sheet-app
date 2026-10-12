@@ -5,14 +5,55 @@
   - `version` (string): the app version, shown below the app name.
 -->
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
   import { t } from '../lib/i18n';
+
+  type UpdateInfo = {
+    version: string;
+    body: string | null;
+    date: string | null;
+  };
+
+  type UpdateState = 'idle' | 'checking' | 'up-to-date' | 'available' | 'installing' | 'error';
 
   const releaseNotesUrl = 'https://github.com/ronenrozner/cheat-sheet-app/releases';
   const sourceCodeUrl = 'https://github.com/ronenrozner/cheat-sheet-app';
   const iconCreditUrl = 'https://www.flaticon.com/free-icons/parchment';
 
   let { version = '' } = $props<{ version?: string }>();
+  let updateState = $state<UpdateState>('idle');
+  let availableUpdate = $state<UpdateInfo | null>(null);
+
+  onMount(() => {
+    void checkForUpdates();
+  });
+
+  async function checkForUpdates(): Promise<void> {
+    updateState = 'checking';
+    try {
+      const update = await invoke<UpdateInfo | null>('check_update');
+      if (update) {
+        availableUpdate = update;
+        updateState = 'available';
+      } else {
+        updateState = 'up-to-date';
+      }
+    } catch (error) {
+      console.warn('failed to check for updates', error);
+      updateState = 'error';
+    }
+  }
+
+  async function installUpdate(): Promise<void> {
+    updateState = 'installing';
+    try {
+      await invoke('install_update');
+    } catch (error) {
+      console.error('failed to install update', error);
+      updateState = 'error';
+    }
+  }
 
   function openExternal(event: MouseEvent, url: string): void {
     event.preventDefault();
@@ -57,6 +98,24 @@
       <span aria-hidden="true">↗</span>
     </a>
   </nav>
+
+  {#if updateState !== 'idle'}
+    <div class="update-card" aria-live="polite">
+      {#if updateState === 'checking'}
+        <div class="update-row update-row--muted">{t('settings.updateChecking')}</div>
+      {:else if updateState === 'up-to-date'}
+        <div class="update-row update-row--muted">{t('settings.updateUpToDate')}</div>
+      {:else if updateState === 'available' && availableUpdate}
+        <button class="update-row update-row--action" type="button" onclick={installUpdate}>
+          {t('settings.updateInstall', { version: availableUpdate.version })}
+        </button>
+      {:else if updateState === 'installing'}
+        <div class="update-row update-row--muted">{t('settings.updateInstalling')}</div>
+      {:else if updateState === 'error'}
+        <div class="update-row update-row--muted">{t('settings.updateError')}</div>
+      {/if}
+    </div>
+  {/if}
 
   <div class="footer">
     <a
@@ -140,6 +199,37 @@
   }
 
   .link-card a:hover {
+    background: var(--cs-hover-bg, #282c3f);
+  }
+
+  .update-card {
+    overflow: hidden;
+    border: 1px solid var(--cs-border, #44475a);
+    border-radius: 6px;
+  }
+
+  .update-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .update-row--muted {
+    color: var(--cs-fg, #cdd6f4);
+    opacity: 0.65;
+  }
+
+  .update-row--action {
+    border: 0;
+    background: transparent;
+    color: var(--cs-accent, #7d9ad4);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .update-row--action:hover {
     background: var(--cs-hover-bg, #282c3f);
   }
 
