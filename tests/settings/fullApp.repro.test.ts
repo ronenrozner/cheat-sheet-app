@@ -82,6 +82,13 @@ describe('Full App: settings controls', () => {
   });
 
   it('checkbox: checked persists', async () => {
+    const settingsTab = [...root.querySelectorAll<HTMLButtonElement>('.tab')].find((button) =>
+      button.textContent?.includes('Appearance')
+    );
+    expect(settingsTab).toBeTruthy();
+    settingsTab!.click();
+    await flush();
+
     const cb = root.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(cb).toBeTruthy();
 
@@ -93,6 +100,13 @@ describe('Full App: settings controls', () => {
   });
 
   it('select: selected value persists', async () => {
+    const settingsTab = [...root.querySelectorAll<HTMLButtonElement>('.tab')].find((button) =>
+      button.textContent?.includes('Appearance')
+    );
+    expect(settingsTab).toBeTruthy();
+    settingsTab!.click();
+    await flush();
+
     const select = root.querySelector<HTMLSelectElement>('select.ctrl');
     expect(select).toBeTruthy();
 

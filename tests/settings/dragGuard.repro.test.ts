@@ -65,7 +65,14 @@ describe('SettingsWindow drag guard', () => {
     document.body.removeChild(root);
   });
 
-  it('does NOT start a window drag on mousedown over a checkbox', () => {
+  it('does NOT start a window drag on mousedown over a checkbox', async () => {
+    const settingsTab = Array.from(root.querySelectorAll<HTMLButtonElement>('.tab')).find(
+      (button) => button.textContent?.trim() === 'Appearance'
+    );
+    expect(settingsTab).toBeTruthy();
+    settingsTab!.click();
+    await Promise.resolve();
+
     const cb = root.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(cb).toBeTruthy();
     cb!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));

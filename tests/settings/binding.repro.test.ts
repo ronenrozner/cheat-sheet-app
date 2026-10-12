@@ -1,38 +1,27 @@
 // @vitest-environment jsdom
-// Focused regression test for the settings controls.
-//
-// SettingsPanel receives `settings` as a bindable prop and updates it through explicit handlers.
-// User edits must stay visible in the DOM after Svelte flushes updates.
+// Focused regression tests for settings controls.
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mount, unmount } from 'svelte';
 import SettingsPanel from '../../src/components/SettingsPanel.svelte';
+import SheetsTab from '../../src/components/SheetsTab.svelte';
 import { DEFAULT_SETTINGS, type Settings } from '../../src/lib/settings/types';
 
 let root: HTMLElement;
 let inst: ReturnType<typeof mount>;
 let saved: Settings | null = null;
 
-beforeEach(() => {
-  saved = null;
-  root = document.createElement('div');
-  document.body.appendChild(root);
-  inst = mount(SettingsPanel, {
-    target: root,
-    props: {
-      settings: { ...DEFAULT_SETTINGS, trigger: { ...DEFAULT_SETTINGS.trigger, key: 'q' } },
-      onSave: (s: Settings) => {
-        saved = s;
-      },
-      sheetsBySlug: { vim: 'Vim', git: 'Git' },
-    },
-  });
-});
-
 afterEach(() => {
   unmount(inst);
   document.body.removeChild(root);
 });
+
+function mountIntoRoot(component: Parameters<typeof mount>[0], props: Record<string, unknown>) {
+  saved = null;
+  root = document.createElement('div');
+  document.body.appendChild(root);
+  inst = mount(component, { target: root, props });
+}
 
 async function flush(): Promise<void> {
   await Promise.resolve();
@@ -40,17 +29,14 @@ async function flush(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-describe('SettingsPanel controls', () => {
-  it('text input: typing updates the saved state and stays visible', async () => {
-    const input = root.querySelector<HTMLInputElement>('input[type="text"]');
-    expect(input).toBeTruthy();
-
-    input!.value = '/usr/bin/code';
-    input!.dispatchEvent(new Event('change', { bubbles: true }));
-    await flush();
-
-    expect(input!.value).toBe('/usr/bin/code');
-    expect(saved?.editor_path).toBe('/usr/bin/code');
+describe('settings controls', () => {
+  beforeEach(() => {
+    mountIntoRoot(SettingsPanel, {
+      settings: { ...DEFAULT_SETTINGS, trigger: { ...DEFAULT_SETTINGS.trigger, key: 'q' } },
+      onSave: (s: Settings) => {
+        saved = s;
+      },
+    });
   });
 
   it('checkbox: clicking updates the saved state and stays visible', async () => {
@@ -75,5 +61,27 @@ describe('SettingsPanel controls', () => {
 
     expect(select!.value).toBe('Dark');
     expect(saved?.theme).toBe('Dark');
+  });
+
+  it('text input: typing updates the saved state and stays visible', async () => {
+    unmount(inst);
+    document.body.removeChild(root);
+    mountIntoRoot(SheetsTab, {
+      settings: { ...DEFAULT_SETTINGS },
+      onSave: (s: Settings) => {
+        saved = s;
+      },
+      sheetsBySlug: { vim: 'Vim', git: 'Git' },
+    });
+
+    const input = root.querySelector<HTMLInputElement>('input[type="text"]');
+    expect(input).toBeTruthy();
+
+    input!.value = '/usr/bin/code';
+    input!.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+
+    expect(input!.value).toBe('/usr/bin/code');
+    expect(saved?.editor_path).toBe('/usr/bin/code');
   });
 });

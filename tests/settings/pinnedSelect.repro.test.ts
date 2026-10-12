@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
 import SettingsPanel from '../../src/components/SettingsPanel.svelte';
+import SheetsTab from '../../src/components/SheetsTab.svelte';
 import { DEFAULT_SETTINGS, type Settings } from '../../src/lib/settings/types';
 
 let fakeSettings: Settings;
@@ -22,7 +23,7 @@ async function flush(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-describe('SettingsPanel controls', () => {
+describe('settings tabs controls', () => {
   let root: HTMLElement;
   let inst: ReturnType<typeof mount>;
 
@@ -45,7 +46,6 @@ describe('SettingsPanel controls', () => {
         onSave: (s: Settings) => {
           saved.current = s;
         },
-        sheetsBySlug,
       },
     });
     await flush();
@@ -53,12 +53,6 @@ describe('SettingsPanel controls', () => {
     const themeSelect = root.querySelectorAll<HTMLSelectElement>('select.ctrl')[0];
     expect(themeSelect).toBeTruthy();
 
-    const darkOption = [...root.querySelectorAll<HTMLOptionElement>('option')].find(
-      (option) => option.value === 'Dark'
-    );
-    expect(darkOption).toBeTruthy();
-
-    darkOption!.click();
     themeSelect!.value = 'Dark';
     themeSelect!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();
@@ -75,7 +69,6 @@ describe('SettingsPanel controls', () => {
         onSave: (s: Settings) => {
           saved.current = s;
         },
-        sheetsBySlug,
       },
     });
     await flush();
@@ -98,7 +91,7 @@ describe('SettingsPanel controls', () => {
 
   it('pinned select: saves the selected slug', async () => {
     const saved: { current: Settings | null } = { current: null };
-    inst = mount(SettingsPanel, {
+    inst = mount(SheetsTab, {
       target: root,
       props: {
         settings: fakeSettings,
@@ -113,12 +106,6 @@ describe('SettingsPanel controls', () => {
     const pinnedSelect = root.querySelector<HTMLSelectElement>('select[aria-label="Pinned sheet"]');
     expect(pinnedSelect).toBeTruthy();
 
-    const gitOption = [...root.querySelectorAll<HTMLOptionElement>('option')].find(
-      (option) => option.value === 'git'
-    );
-    expect(gitOption).toBeTruthy();
-
-    gitOption!.click();
     pinnedSelect!.value = 'git';
     pinnedSelect!.dispatchEvent(new Event('change', { bubbles: true }));
     await flush();

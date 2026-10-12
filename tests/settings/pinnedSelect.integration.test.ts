@@ -79,6 +79,13 @@ describe('Settings window: pinned-sheet dropdown', () => {
     inst = mount(SettingsPage, { target: root, props: {} });
     await flush();
 
+    const settingsTab = [...root.querySelectorAll<HTMLButtonElement>('.tab')].find((button) =>
+      button.textContent?.includes('Appearance')
+    );
+    expect(settingsTab).toBeTruthy();
+    settingsTab!.click();
+    await flush();
+
     const alwaysOnTopLabel = [...root.querySelectorAll<HTMLLabelElement>('label.row')].find(
       (label) => label.textContent?.includes('Always on top')
     );

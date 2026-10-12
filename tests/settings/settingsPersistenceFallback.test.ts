@@ -81,6 +81,13 @@ describe('settings persistence fallback', () => {
   });
 
   it('keeps a changed select value visible when saving fails', async () => {
+    const settingsTab = [...root.querySelectorAll<HTMLButtonElement>('.tab')].find((button) =>
+      button.textContent?.includes('Appearance')
+    );
+    expect(settingsTab).toBeTruthy();
+    settingsTab!.click();
+    await flush();
+
     const themeSelect = root.querySelector<HTMLSelectElement>('select.ctrl');
     expect(themeSelect).toBeTruthy();
 
