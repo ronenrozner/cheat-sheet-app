@@ -2,13 +2,13 @@
 // Focused regression tests for settings controls.
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mount, unmount } from 'svelte';
+import { mount, unmount, type Component } from 'svelte';
 import SettingsPanel from '../../src/components/SettingsPanel.svelte';
 import SheetsTab from '../../src/components/SheetsTab.svelte';
 import { DEFAULT_SETTINGS, type Settings } from '../../src/lib/settings/types';
 
 let root: HTMLElement;
-let inst: ReturnType<typeof mount>;
+let inst: Record<string, unknown>;
 let saved: Settings | null = null;
 
 afterEach(() => {
@@ -16,7 +16,10 @@ afterEach(() => {
   document.body.removeChild(root);
 });
 
-function mountIntoRoot(component: Parameters<typeof mount>[0], props: Record<string, unknown>) {
+function mountIntoRoot<Props extends Record<string, unknown>>(
+  component: Component<Props, Record<string, unknown>, any>,
+  props: Props
+) {
   saved = null;
   root = document.createElement('div');
   document.body.appendChild(root);

@@ -23,7 +23,7 @@ pub enum Theme {
     Follow,
 }
 
-const DEFAULT_WIN_WIDTH: u32 = 800;
+const DEFAULT_WIN_WIDTH: u32 = 1000;
 const DEFAULT_WIN_HEIGHT: u32 = 900;
 
 /// Overlay window size in pixels.
@@ -515,7 +515,7 @@ mod tests {
         assert_eq!(
             s.win_size,
             WinSize {
-                width: 800,
+                width: 1000,
                 height: 900
             }
         );
@@ -571,7 +571,7 @@ mod tests {
         assert_eq!(
             parsed.win_size,
             WinSize {
-                width: 800,
+                width: 1000,
                 height: 900
             }
         );

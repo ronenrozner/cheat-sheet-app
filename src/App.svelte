@@ -391,7 +391,7 @@
     flex-direction: column;
     gap: 0.5rem;
     min-height: 0;
-    width: 7rem;
+    width: calc(7rem + 30px);
   }
   .left-rail :global(.sidebar) {
     flex: 1;
