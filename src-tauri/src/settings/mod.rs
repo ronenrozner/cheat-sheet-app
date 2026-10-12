@@ -546,6 +546,7 @@ mod tests {
                 shift: true,
                 key: "q".to_string(),
             },
+            find_shortcut: default_find_shortcut(),
             source_mode: SourceMode::Local,
             language: Language::EnUs,
             pinned_slug: "1password".to_string(),
