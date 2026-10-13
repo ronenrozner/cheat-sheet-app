@@ -84,27 +84,28 @@
   <h2 id="shortcuts-title">{t('shortcuts.title')}</h2>
   <p>{t('shortcuts.activeWhileFocused')}</p>
 
-  <div class="row section">
-    <span>{t('settings.trigger')}</span>
-    <button
-      class="trigger-capture"
-      class:listening={listeningFor === 'trigger'}
-      type="button"
-      aria-pressed={listeningFor === 'trigger'}
-      onclick={() => startListening('trigger')}
-      onblur={stopListening}
-      onkeydown={onShortcutKeydown}
-    >
-      {#if listeningFor === 'trigger'}
-        Press shortcut…
-      {:else}
-        {triggerLabel}
-      {/if}
-    </button>
-  </div>
-
   <div class="section">
     <dl class="shortcut-list">
+      <div class="shortcut-item">
+        <dt>{t('settings.trigger')}</dt>
+        <dd>
+          <button
+            class="trigger-capture"
+            class:listening={listeningFor === 'trigger'}
+            type="button"
+            aria-pressed={listeningFor === 'trigger'}
+            onclick={() => startListening('trigger')}
+            onblur={stopListening}
+            onkeydown={onShortcutKeydown}
+          >
+            {#if listeningFor === 'trigger'}
+              Press shortcut…
+            {:else}
+              {triggerLabel}
+            {/if}
+          </button>
+        </dd>
+      </div>
       <div class="shortcut-item">
         <dt>{t('shortcuts.find')}</dt>
         <dd>
@@ -193,7 +194,7 @@
   .shortcut-list {
     display: flex;
     flex-direction: column;
-    margin: 0.25rem 0 0;
+    margin: 0;
   }
 
   .shortcut-item {
@@ -201,8 +202,12 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid var(--cs-border, #44475a);
+  }
+
+  .shortcut-item:last-child {
+    border-bottom: 0;
   }
 
   .shortcut-item dt {
@@ -242,24 +247,27 @@
 
   .trigger-capture {
     min-width: 9rem;
-    padding: 0.3rem 0.55rem;
+    padding: 0.1rem 0;
     font-family: 'Mona Sans Mono', ui-monospace, monospace;
     font-size: 0.85rem;
     text-align: center;
-    border-radius: 4px;
-    border: 1px solid var(--cs-border, #44475a);
-    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 72%, var(--cs-fg, #cdd6f4));
+    border: 0;
+    background: none;
     color: var(--cs-fg, #cdd6f4);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg, #cdd6f4) 18%, transparent);
+    box-shadow: none;
     cursor: pointer;
+  }
+
+  .trigger-capture:hover {
+    color: var(--cs-accent, #7d9ad4);
   }
 
   .trigger-capture:focus,
   .trigger-capture.listening {
     outline: 2px solid var(--cs-accent, #7d9ad4);
-    outline-offset: 1px;
-    background: color-mix(in srgb, var(--cs-input-bg, #282c3f) 60%, var(--cs-fg, #cdd6f4));
-    box-shadow: inset 0 0 0 1px var(--cs-accent, #7d9ad4);
+    outline-offset: 3px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--cs-accent, #7d9ad4) 14%, transparent);
   }
 
   .wayland-body {
