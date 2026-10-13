@@ -90,7 +90,7 @@
     "updateInstall": "Install v{{version}} — app will restart",
     "updateInstalling": "Installing…",
     "updateError": "Could not check for updates",
-    "editorTooltip": "Choose the editor for new sheets. \"System\" opens the default editor. \"Browse\" picks a specific editor executable. Or type a path directly."
+    "editorTooltip": "Choose the editor for new sheets. \"System\" opens the default editor. \"Browse\" picks a specific editor executable or type a path directly."
   },
   "shortcuts": {
     "title": "SHORTCUTS",
