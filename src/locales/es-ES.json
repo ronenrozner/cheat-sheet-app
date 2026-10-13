@@ -94,7 +94,7 @@
   },
   "shortcuts": {
     "title": "ATAJOS LOCALES",
-    "activeWhileFocused": "Activos mientras la aplicación tiene el foco.",
+    "activeWhileFocused": "Haz clic en un atajo y presiona teclas para asignarlo.",
     "find": "Buscar en la hoja actual",
     "openLinks": "Abrir enlaces",
     "openLinksNo": "No",

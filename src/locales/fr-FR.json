@@ -94,7 +94,7 @@
   },
   "shortcuts": {
     "title": "RACCOURCIS LOCAUX",
-    "activeWhileFocused": "Actifs quand l'application a le focus.",
+    "activeWhileFocused": "Cliquez sur un raccourci et appuyez sur des touches pour l’attribuer.",
     "find": "Rechercher dans la fiche actuelle",
     "openLinks": "Ouvrir les liens",
     "openLinksNo": "Non",

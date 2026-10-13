@@ -187,8 +187,8 @@
 
   .section {
     border-top: 1px solid var(--cs-border, #44475a);
-    padding-top: 0.75rem;
-    margin-top: 0.25rem;
+    padding-top: 0;
+    margin-top: 0;
   }
 
   .shortcut-list {
@@ -202,8 +202,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 12px 0;
+    height: 52px;
+    padding: 0;
     border-bottom: 1px solid var(--cs-border, #44475a);
+    box-sizing: border-box;
   }
 
   .shortcut-item:last-child {
@@ -225,10 +227,11 @@
 
   .row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-top: 0.5rem;
+    min-height: 52px;
+    margin-top: 0;
   }
 
   .row span {
@@ -238,11 +241,13 @@
 
   .ctrl {
     min-width: 9rem;
-    padding: 0.3rem 0.55rem;
+    height: 30px;
+    padding: 0 0.55rem;
     border-radius: 4px;
     border: 1px solid var(--cs-border, #44475a);
     background: var(--cs-input-bg, #282c3f);
     color: var(--cs-fg, #cdd6f4);
+    box-sizing: border-box;
   }
 
   .trigger-capture {

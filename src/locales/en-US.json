@@ -94,7 +94,7 @@
   },
   "shortcuts": {
     "title": "SHORTCUTS",
-    "activeWhileFocused": "Click a shortcut field and press a key to assign.",
+    "activeWhileFocused": "Click a shortcut and press keys to assign.",
     "find": "Find in current sheet",
     "openLinks": "Open Links",
     "openLinksNo": "No",

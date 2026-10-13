@@ -188,9 +188,6 @@
   .panel {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--cs-border, #44475a);
-    border-radius: 4px;
-    padding: 0.6rem;
   }
   .row {
     display: flex;
