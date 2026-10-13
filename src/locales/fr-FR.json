@@ -9,7 +9,7 @@
     "close": "Fermer la fenetre"
   },
   "search": {
-    "placeholder": "Rechercher dans cette fiche…",
+    "placeholder": "Rechercher dans cette ficheâ€¦",
     "match": "resultat",
     "matches": "resultats",
     "noMatches": "Aucun resultat"
@@ -38,7 +38,7 @@
     "pinnedSheet": "Fiche epinglee",
     "editor": "Editeur",
     "editorSystem": "Systeme",
-    "editorBrowse": "Parcourir…",
+    "editorBrowse": "Parcourirâ€¦",
     "editorUseSystem": "Utiliser le systeme",
     "editorSelect": "Selectionner l'editeur",
     "select": "[Selectionner]",
@@ -50,8 +50,8 @@
     "optionLight": "Clair",
     "optionDark": "Sombre",
     "optionEnUs": "English",
-    "optionEsEs": "Español",
-    "optionFrFr": "Français",
+    "optionEsEs": "EspaÃ±ol",
+    "optionFrFr": "FranÃ§ais",
     "waylandTitle": "Raccourci global",
     "waylandUnavailable": "Le raccourci global n'est pas disponible sur Wayland.",
     "waylandUseToggle": "Utilisez plutot le commutateur en ligne de commande :",
@@ -83,13 +83,14 @@
     "builtWith": "Cree avec",
     "builtWithText": "Cree avec Tauri, Svelte et Rust.",
     "parchmentIconCredit": "Icones de parchemin creees par Assia Benkerroum - Flaticon",
-    "licenseAndCopyright": "Licence Apache-2.0 — Copyright © 2026 Ronen Rozner.",
+    "licenseAndCopyright": "Licence Apache-2.0 â€” Copyright Â© 2026 Ronen Rozner.",
     "aboutNote": "Cet espace est reserve a du contenu futur.",
-    "updateChecking": "Recherche de mises à jour…",
-    "updateUpToDate": "À jour",
-    "updateInstall": "Installer v{{version}} — l’application redémarrera",
-    "updateInstalling": "Installation…",
-    "updateError": "Impossible de vérifier les mises à jour"
+    "updateChecking": "Recherche de mises Ã  jourâ€¦",
+    "updateUpToDate": "Ã€ jour",
+    "updateInstall": "Installer v{{version}} â€” lâ€™application redÃ©marrera",
+    "updateInstalling": "Installationâ€¦",
+    "updateError": "Impossible de vÃ©rifier les mises Ã  jour",
+    "editorTooltip": "Choisissez l'éditeur pour les nouvelles fiches. « System » ouvre l'éditeur par défaut. « Browse » sélectionne un executable d'éditeur précis. Vous pouvez aussi saisir un chemin directement."
   },
   "shortcuts": {
     "title": "RACCOURCIS LOCAUX",
@@ -99,6 +100,7 @@
     "openLinksNo": "Non",
     "openLinksClickOnly": "Clic seulement",
     "openLinksCtrlClick": "Ctrl + clic",
-    "openLinksAltClick": "Alt + clic"
+    "openLinksAltClick": "Alt + clic",
+    "openLinksTooltip": "Choisissez comment les liens de vos fiches s'ouvrent. « Non » désactive l'ouverture. « Clic seulement » ouvre avec un clic normal. « Ctrl + clic » ou « Alt + clic » n'ouvrent que quand vous maintenez cette touche en cliquant."
   }
 }

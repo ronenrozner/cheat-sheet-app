@@ -1,6 +1,7 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-dialog';
   import { t } from '../lib/i18n';
+  import TooltipInfo from './TooltipInfo.svelte';
   import { DEFAULT_SETTINGS, type Settings } from '../lib/settings/types';
 
   let {
@@ -59,7 +60,10 @@
   </label>
 
   <div class="row">
-    <span>{t('settings.editor')}</span>
+    <label class="editor-label">
+      <span>{t('settings.editor')}</span>
+      <TooltipInfo text={t('settings.editorTooltip')} />
+    </label>
     <div class="editor-control">
       <input
         class="ctrl editor-output"
@@ -110,6 +114,11 @@
   .row span {
     font-size: 0.85rem;
     opacity: 0.8;
+  }
+  .editor-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
   }
   .ctrl {
     padding: 0.3rem 0.4rem;

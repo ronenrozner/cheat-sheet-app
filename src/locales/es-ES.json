@@ -89,7 +89,8 @@
     "updateUpToDate": "Actualizado",
     "updateInstall": "Instalar v{{version}} — la app se reiniciará",
     "updateInstalling": "Instalando…",
-    "updateError": "No se pudieron buscar actualizaciones"
+    "updateError": "No se pudieron buscar actualizaciones",
+    "editorTooltip": "Elige el editor para nuevas hojas. \"System\" abre el editor predeterminado. \"Browse\" elige un executable de editor concreto. Tambien puedes escribir una ruta directamente."
   },
   "shortcuts": {
     "title": "ATAJOS LOCALES",
@@ -99,6 +100,7 @@
     "openLinksNo": "No",
     "openLinksClickOnly": "Solo clic",
     "openLinksCtrlClick": "Ctrl + clic",
-    "openLinksAltClick": "Alt + clic"
+    "openLinksAltClick": "Alt + clic",
+    "openLinksTooltip": "Elige cómo se abren los enlaces de tus hojas. \"No\" deshabilita la apertura. \"Solo clic\" abre con un clic normal. \"Ctrl + clic\" o \"Alt + clic\" abren solo cuando mantenes esa tecla al hacer clic."
   }
 }

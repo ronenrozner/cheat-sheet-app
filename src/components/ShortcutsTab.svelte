@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '../lib/i18n';
+  import TooltipInfo from './TooltipInfo.svelte';
   import { type HotkeyStatus, type WaylandSnippets, isWayland } from '../lib/overlay/hotkey';
   import {
     DEFAULT_SETTINGS,
@@ -125,7 +126,10 @@
         </dd>
       </div>
       <div class="shortcut-item open-links-item">
-        <dt>{t('shortcuts.openLinks')}</dt>
+        <dt>
+          {t('shortcuts.openLinks')}
+          <TooltipInfo text={t('shortcuts.openLinksTooltip')} />
+        </dt>
         <dd>
           <select class="ctrl" value={settings.open_links} onchange={onOpenLinks}>
             <option value="None">{t('shortcuts.openLinksNo')}</option>

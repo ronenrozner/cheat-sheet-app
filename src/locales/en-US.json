@@ -89,7 +89,8 @@
     "updateUpToDate": "Up to date",
     "updateInstall": "Install v{{version}} — app will restart",
     "updateInstalling": "Installing…",
-    "updateError": "Could not check for updates"
+    "updateError": "Could not check for updates",
+    "editorTooltip": "Choose the editor for new sheets. \"System\" opens the default editor. \"Browse\" picks a specific editor executable. Or type a path directly."
   },
   "shortcuts": {
     "title": "SHORTCUTS",
@@ -99,6 +100,7 @@
     "openLinksNo": "No",
     "openLinksClickOnly": "Click only",
     "openLinksCtrlClick": "Ctrl + Click",
-    "openLinksAltClick": "Alt + Click"
+    "openLinksAltClick": "Alt + Click",
+    "openLinksTooltip": "Choose how links in your sheets open. \"No\" disables link opening. \"Click only\" opens on a plain click. \"Ctrl + Click\" or \"Alt + Click\" opens only when that key is held while clicking."
   }
 }
