@@ -193,7 +193,6 @@
   .shortcut-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
     margin: 0.25rem 0 0;
   }
 
@@ -202,12 +201,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-  }
-
-  .open-links-item {
-    border-top: 1px solid var(--cs-border, #44475a);
-    padding-top: 0.75rem;
-    margin-top: 0.35rem;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cs-border, #44475a);
   }
 
   .shortcut-item dt {
