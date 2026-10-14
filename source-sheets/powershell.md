@@ -33,7 +33,6 @@ categories: [Keyboard Shortcuts]
 | `Get-ChildItem`          | List directory contents |
 
 ## Pipelines
-
 ### Filter and format
 ```powershell
 Get-Process | Where-Object CPU -gt 100 | Sort-Object WorkingSet -Descending
@@ -42,15 +41,13 @@ Get-Process | Where-Object CPU -gt 100 | Sort-Object WorkingSet -Descending
 ```powershell
 Get-Service | Select-Object Name, Status, StartType
 ```
-
 ### Count and output
 ```powershell
 Get-ChildItem -Recurse | Where-Object { $_.Extension -eq '.log' } | Measure-Object
 ```
 
 ## Registry
-
-### Read a registry value
+#### Read a registry value
 ```powershell
 Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |
   Select-Object DisplayName, DisplayVersion
